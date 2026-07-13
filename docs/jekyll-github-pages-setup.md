@@ -30,7 +30,7 @@ GitHub에서 먼저 저장소를 생성합니다.
   → `https://사용자명.github.io`로 서비스됨
 - **프로젝트/블로그용**으로 쓸 경우: 저장소 이름 자유(예: `blog`)
   → `https://사용자명.github.io/blog/`로 서비스됨 (이 경우 `_config.yml`에 `baseurl: "/blog"` 추가 필요)
-
+스케일링 1
 로컬로 clone:
 
 ```bash

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/jekyll-github-pages-setup.md",
+                "file": "docs/01-overview.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "jekyll-github-pages-setup"
+              "title": "01-overview"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "docs/jekyll-github-pages-setup.md",
+                "file": "docs/01-overview.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "jekyll-github-pages-setup 의 백링크"
+              "title": "01-overview 의 백링크"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "docs/jekyll-github-pages-setup.md",
+                "file": "docs/01-overview.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "jekyll-github-pages-setup 의 나가는 링크"
+              "title": "01-overview 의 나가는 링크"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/jekyll-github-pages-setup.md",
+                "file": "docs/01-overview.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "jekyll-github-pages-setup 의 개요"
+              "title": "01-overview 의 개요"
             }
           },
           {
@@ -194,9 +194,10 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "e847fa64c9076b4f",
+  "active": "58ea73866e567079",
   "lastOpenFiles": [
-    "docs",
-    "docs/jekyll-github-pages-setup.md"
+    "docs/jekyll-github-pages-setup.md",
+    "docs/01-overview.md",
+    "docs"
   ]
 }
