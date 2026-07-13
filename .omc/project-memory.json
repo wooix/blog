@@ -1,0 +1,97 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1783916680933,
+  "projectRoot": "/Volumes/EX400U/workspace/blog",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Ruby",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Gemfile"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "bundler",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "_posts": {
+      "path": "_posts",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1783916680926,
+      "keyFiles": [
+        "2026-07-13-welcome-to-jekyll.markdown"
+      ]
+    },
+    "_site": {
+      "path": "_site",
+      "purpose": null,
+      "fileCount": 4,
+      "lastAccessed": 1783916680926,
+      "keyFiles": [
+        "404.html",
+        "LICENSE",
+        "feed.xml",
+        "index.html"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1783916680926,
+      "keyFiles": [
+        "01-overview.md",
+        "jekyll-github-pages-setup.md"
+      ]
+    },
+    "_site/assets": {
+      "path": "_site/assets",
+      "purpose": "Static assets",
+      "fileCount": 2,
+      "lastAccessed": 1783916680926,
+      "keyFiles": [
+        "main.css",
+        "minima-social-icons.svg"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "_config.yml",
+      "accessCount": 1,
+      "lastAccessed": 1783916741624,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
