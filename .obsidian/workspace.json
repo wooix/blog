@@ -194,12 +194,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "58ea73866e567079",
+  "active": "cde38b4019e86bb1",
   "lastOpenFiles": [
     "docs/01-overview.md",
     "_posts/01-overview.md",
     "index~.markdown",
-    "docs/jekyll-github-pages-setup.md",
+    "_posts/jekyll-github-pages-setup.md",
     "docs"
   ]
 }
