@@ -1,4 +1,5 @@
 ---
+layout: post
 date: 2026-07-13
 tags: sample, nums
 ---

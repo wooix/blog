@@ -15,7 +15,7 @@
               "state": {
                 "file": "_posts/01-overview.md",
                 "mode": "source",
-                "source": false
+                "source": true
               },
               "icon": "lucide-file",
               "title": "01-overview"
@@ -194,12 +194,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "cde38b4019e86bb1",
+  "active": "58ea73866e567079",
   "lastOpenFiles": [
-    "docs/01-overview.md",
-    "_posts/01-overview.md",
-    "index~.markdown",
     "_posts/jekyll-github-pages-setup.md",
+    "_posts/01-overview.md",
+    "docs/01-overview.md",
+    "index~.markdown",
     "docs"
   ]
 }
