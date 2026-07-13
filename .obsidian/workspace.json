@@ -11,14 +11,14 @@
             "id": "58ea73866e567079",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "split-diff-view",
               "state": {
-                "file": "docs/01-overview.md",
-                "mode": "source",
-                "source": false
+                "aFile": "_config.yml",
+                "bFile": "_config.yml",
+                "aRef": ""
               },
-              "icon": "lucide-file",
-              "title": "01-overview"
+              "icon": "diff",
+              "title": "Diff: _config.yml  (Working Tree)"
             }
           }
         ]
@@ -94,7 +94,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "docs/01-overview.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +103,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "01-overview 의 백링크"
+              "title": "백링크"
             }
           },
           {
@@ -113,12 +112,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "docs/01-overview.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "01-overview 의 나가는 링크"
+              "title": "나가는 링크"
             }
           },
           {
@@ -156,13 +154,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/01-overview.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "01-overview 의 개요"
+              "title": "개요"
             }
           },
           {
@@ -196,8 +193,8 @@
   },
   "active": "58ea73866e567079",
   "lastOpenFiles": [
-    "docs/jekyll-github-pages-setup.md",
     "docs/01-overview.md",
+    "docs/jekyll-github-pages-setup.md",
     "docs"
   ]
 }
