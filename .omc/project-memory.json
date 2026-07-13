@@ -88,8 +88,20 @@
   "hotPaths": [
     {
       "path": "_config.yml",
+      "accessCount": 2,
+      "lastAccessed": 1783918271344,
+      "type": "file"
+    },
+    {
+      "path": "_posts/2026-07-13-sample-post.md",
       "accessCount": 1,
-      "lastAccessed": 1783916741624,
+      "lastAccessed": 1783918284200,
+      "type": "file"
+    },
+    {
+      "path": "sample-page.md",
+      "accessCount": 1,
+      "lastAccessed": 1783918290621,
       "type": "file"
     }
   ],

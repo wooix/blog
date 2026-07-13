@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/overview.md",
+                "file": "sample-page.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "overview"
+              "title": "sample-page"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "_posts/overview.md",
+                "file": "sample-page.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "overview 의 백링크"
+              "title": "sample-page 의 백링크"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "_posts/overview.md",
+                "file": "sample-page.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "overview 의 나가는 링크"
+              "title": "sample-page 의 나가는 링크"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "_posts/overview.md",
+                "file": "sample-page.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "overview 의 개요"
+              "title": "sample-page 의 개요"
             }
           },
           {
@@ -194,10 +194,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "cde38b4019e86bb1",
+  "active": "58ea73866e567079",
   "lastOpenFiles": [
     "_posts/jekyll-github-pages-setup.md",
+    "_posts/2026-07-13-sample-post.md",
     "_posts/overview.md",
+    "sample-page.md",
     "docs/01-overview.md",
     "index~.markdown",
     "docs"
