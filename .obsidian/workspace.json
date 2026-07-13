@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/01-overview.md",
+                "file": "_posts/overview.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "01-overview"
+              "title": "overview"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "_posts/01-overview.md",
+                "file": "_posts/overview.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "01-overview 의 백링크"
+              "title": "overview 의 백링크"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "_posts/01-overview.md",
+                "file": "_posts/overview.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "01-overview 의 나가는 링크"
+              "title": "overview 의 나가는 링크"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "_posts/01-overview.md",
+                "file": "_posts/overview.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "01-overview 의 개요"
+              "title": "overview 의 개요"
             }
           },
           {
@@ -194,10 +194,10 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "58ea73866e567079",
+  "active": "cde38b4019e86bb1",
   "lastOpenFiles": [
     "_posts/jekyll-github-pages-setup.md",
-    "_posts/01-overview.md",
+    "_posts/overview.md",
     "docs/01-overview.md",
     "index~.markdown",
     "docs"
