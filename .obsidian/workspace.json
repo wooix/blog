@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "sample-page.md",
+                "file": "_posts/2026-07-13-sample-post.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "sample-page"
+              "title": "2026-07-13-sample-post"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "sample-page.md",
+                "file": "_posts/2026-07-13-sample-post.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "sample-page 의 백링크"
+              "title": "2026-07-13-sample-post 의 백링크"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "sample-page.md",
+                "file": "_posts/2026-07-13-sample-post.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "sample-page 의 나가는 링크"
+              "title": "2026-07-13-sample-post 의 나가는 링크"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "sample-page.md",
+                "file": "_posts/2026-07-13-sample-post.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "sample-page 의 개요"
+              "title": "2026-07-13-sample-post 의 개요"
             }
           },
           {
@@ -196,10 +196,10 @@
   },
   "active": "58ea73866e567079",
   "lastOpenFiles": [
+    "sample-page.md",
     "_posts/jekyll-github-pages-setup.md",
     "_posts/2026-07-13-sample-post.md",
     "_posts/overview.md",
-    "sample-page.md",
     "docs/01-overview.md",
     "index~.markdown",
     "docs"
