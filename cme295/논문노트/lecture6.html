@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 6강 논문 노트 — 추론 모델과 GRPO</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1200px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+b{color:var(--ink)}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:14px;width:100%}
+.brandmark{font-weight:800;font-size:14.5px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:2px;flex-wrap:wrap;align-items:center}
+#topnav nav a{color:var(--ink2);font-size:12.5px;font-weight:600;padding:6px 9px;border-radius:8px;white-space:nowrap}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+#topnav nav a.xlink{color:var(--brand2)}
+#topnav nav .sep{width:1px;height:16px;background:var(--line2);margin:0 4px}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600;margin-left:6px}
+@media(max-width:980px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:112px 0 46px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.4vw,52px);margin:.1em 0 .3em;letter-spacing:-1px;line-height:1.12}
+.hero .sub{font-size:clamp(16.5px,2.1vw,19px);color:var(--ink2);max-width:800px;margin:0 0 22px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:20px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:14.5px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:58px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:18.5px;color:var(--ink2);max-width:820px}
+h3{font-size:21px;margin:1.6em 0 .5em}h4{font-size:16.5px;margin:1.2em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+/* footer + misc */
+footer{padding:44px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+footer nav.flinks{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ---- landscape timeline ---- */
+.tl-wrap{position:relative;margin:36px 0 12px;padding-top:14px}
+.tl-line{position:absolute;top:21px;left:2%;right:2%;height:2px;background:var(--line2)}
+.tl-years{display:flex;justify-content:space-between;position:relative;gap:6px}
+.tl-year{text-align:center;flex:1;min-width:0}
+.tl-dot{display:inline-block;width:13px;height:13px;border-radius:50%;background:var(--brand);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--line2);margin-bottom:10px}
+body.light .tl-dot{box-shadow:0 0 0 2px var(--line2)}
+.tl-year.hl .tl-dot{background:var(--syn);width:16px;height:16px}
+.tl-year b{display:block;font-size:15px;color:var(--ink)}
+.tl-year .tl-p{font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.5}
+@media(max-width:760px){.tl-year b{font-size:12.5px}.tl-year .tl-p{font-size:10.5px}.tl-line{left:4%;right:4%;top:18px}.tl-dot{width:10px;height:10px}}
+
+/* ---- master-detail ---- */
+.notes-shell{display:grid;grid-template-columns:360px 1fr;gap:26px;align-items:start;margin-top:30px}
+@media(max-width:900px){.notes-shell{display:block}}
+#paperSearch{width:100%;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:12px 15px;border-radius:11px;font-size:15px;margin-bottom:16px}
+#paperSearch::placeholder{color:var(--ink3)}
+.master-list{display:flex;flex-direction:column;gap:6px;max-height:none}
+@media(min-width:901px){.master-list{max-height:calc(100vh - 210px);overflow-y:auto;padding-right:6px}}
+.group-h{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--brand2);margin:16px 0 4px;padding:0 2px}
+.group-h:first-child{margin-top:0}
+.paper-item{display:block;width:100%;text-align:left;font:inherit;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.paper-item:hover{border-color:var(--line2);background:var(--card2)}
+.paper-item.active{border-color:var(--brand);background:var(--brandsoft)}
+.pi-title{display:block;font-weight:700;font-size:14.5px;line-height:1.4}
+.pi-meta{display:block;font-size:12px;color:var(--ink3);margin-top:3px}
+.pi-tldr{display:block;font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.5}
+.pi-empty{color:var(--ink3);font-size:14px;padding:10px 4px}
+
+.detail{min-width:0}
+@media(min-width:901px){.detail{position:sticky;top:74px;max-height:calc(100vh - 96px);overflow-y:auto;padding-right:4px}}
+.paper-detail{display:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+.paper-detail.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pd-group{font-size:12px;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.pd-head h3{margin:0 0 8px;font-size:22px;line-height:1.35}
+.pd-meta{color:var(--ink3);font-size:13.5px;margin-bottom:14px}
+.pd-links{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.linkbtn{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);padding:7px 13px;border-radius:9px;font-size:13px;font-weight:700}
+.linkbtn:hover{background:var(--brandsoft);border-color:var(--brand);text-decoration:none}
+.pd-tldr{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15.5px;margin:0 0 18px}
+.pd-block{margin:16px 0}
+.pd-h{font-weight:700;font-size:14.5px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.pd-block p{margin:4px 0 0;color:var(--ink2)}
+.pd-figure{margin:22px 0;background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:16px}
+.pd-figure svg{display:block;width:100%;height:auto}
+.pd-figcap{font-size:12.5px;color:var(--ink3);margin-top:10px;line-height:1.6;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.pd-role{margin-top:20px;padding-top:16px;border-top:1px dashed var(--line2)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.concept-chip{font-size:12px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:4px 11px;border-radius:999px}
+
+/* svg diagram utility classes (shared across all inline diagrams) */
+.dbox{fill:var(--card2);stroke:var(--line2);stroke-width:1.5}
+.dbox.acc{fill:var(--brandsoft);stroke:var(--brand)}
+.dbox.warn{fill:var(--ext-bg);stroke:var(--ext)}
+.dbox.ok{fill:var(--syn-bg);stroke:var(--syn)}
+.dtxt{fill:var(--ink);font-size:13px;font-family:var(--sans)}
+.dtxt.sm{font-size:11px;fill:var(--ink2)}
+.dtxt.tiny{font-size:9.5px;fill:var(--ink3)}
+.dtxt.b{font-weight:700}
+.darrow{stroke:var(--ink3);stroke-width:2;fill:none}
+.dline{stroke:var(--line2);stroke-width:1.5}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>6강 논문 노트</b></span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#notes">논문 노트</a>
+    <span class="sep"></span>
+    <a class="xlink" href="../강의노트/lecture6.html" target="_blank" rel="noopener">강의 설명자 →</a>
+    <a class="xlink" href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) →</a>
+    <a class="xlink" href="../" target="_blank" rel="noopener">전체 목록 →</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">CME 295 · 6강 · 논문 노트</span>
+  <h1>CME 295 · 6강 논문 노트 — 추론 모델과 GRPO</h1>
+  <p class="sub">시험을 앞두고 혼자 정답지를 외우는 대신, 같은 문제를 여러 번 풀어보고 급우들과 서로 비교해 가며 스스로 채점 기준을 체화해 나가는 스터디 그룹을 떠올려 봅시다. 이번 6강이 다루는 <b>추론 모델(Reasoning Model)</b>과 <b>GRPO(Group Relative Policy Optimization, 그룹 상대 정책 최적화)</b>도 꼭 그런 방식으로 만들어졌습니다 — 정답 풀이를 그대로 베끼는 대신, 같은 질문에 대한 여러 번의 시도를 서로 상대적으로 비교하며 스스로 사고 과정을 발전시키는 것입니다. 이 페이지는 그 여정을 만든 8편의 논문을 마스터-디테일 구조의 논문 노트로 정리했습니다.</p>
+  <div class="metaline">
+    <span><b>강의</b> 6강 · LLM 추론 모델과 GRPO</span>
+    <span><b>논문</b> 8편</span>
+    <span><b>개념 그룹</b> 5개</span>
+    <span><b>원 강의</b> <a href="../강의노트/lecture6.html" target="_blank" rel="noopener">강의 설명자 보기 ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#notes">논문 노트 보기 ↓</a>
+    <a class="cta ghost" href="../강의노트/lecture6.html" target="_blank" rel="noopener">강의 설명자 보기 →</a>
+    <a class="cta ghost" href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-ext">외부</span><span>논문 초록·본문에 근거한 내용 (arXiv 조회로 그라운딩).</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 논문을 엮어 <b>작성자가 재구성</b>한 해설·도식·강의 연결(원 논문의 직접 주장이 아님).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== LANDSCAPE ===== -->
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">이 장의 논문 지형</span>
+  <h2>문제에서 돌파구로, 그리고 다시 갈라지는 길 <span class="en">The Paper Landscape</span></h2>
+  <p class="lead">결론부터 말하면, 이 8편은 <b>"검증 가능한 채점" → "가치 모델 없는 그룹 비교(GRPO)" → "순수 강화학습으로 이끌어낸 추론"</b>이라는 한 줄기 돌파구를 향해 모이고, 다시 <b>"더 오래 생각하기"</b>와 <b>"덜 생각하기"</b>라는 두 갈래로 갈라집니다.</p>
+
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 흐름 ① — 재료가 준비되던 시기 (2015~2022)</div>
+  <p>2021~2022년 사이, 이후 흐름에 필요한 두 재료가 각각 마련되었습니다. Chen 외의 <b>Codex/HumanEval</b> 논문은 "그럴듯한 텍스트"가 아니라 실행해 봐서 맞는 코드만 인정하는 검증 가능한 채점 방식과 <b>pass@k</b> 지표를 세상에 내놓았고, Wei 외의 <b>Chain-of-Thought(CoT, 사고 사슬)</b> 논문은 몇 개의 예시에 풀이 과정을 함께 보여주는 것만으로 거대 모델의 다단계 추론 성능이 크게 좋아진다는 사실을 보였습니다. 다만 그때까지는 이 "단계별 사고"를 학습 시점에 직접 강화할 방법이 없어, Hinton 외(2015)가 정식화한 <b>지식 증류(Knowledge Distillation)</b>처럼 교사의 결과물을 그대로 흉내 내는 SFT(Supervised Fine-Tuning, 지도 미세조정)에 의존할 수밖에 없었습니다.</p></div>
+
+  <div class="callout ext"><div class="h"><span class="badge b-syn">종합·해석</span> 흐름 ② — 돌파구, GRPO와 순수 강화학습 (2024~2025 초)</div>
+  <p>돌파구는 2024년 <b>DeepSeekMath</b> 논문에서 나왔습니다. PPO가 요구하는 무거운 가치 모델(value model)을 없애고, 같은 질문에 대해 뽑은 여러 응답을 하나의 그룹으로 묶어 상대적으로 비교하는 <b>GRPO</b>를 제안한 것입니다. 2025년 초 <b>DeepSeek-R1</b>은 여기에 "형식을 지켰는가·정답인가"라는 규칙 기반의 검증 가능한 보상만 더해, 사람이 손으로 쓴 풀이 없이 순수 강화학습만으로 OpenAI o1급 추론 능력을 이끌어낼 수 있음을 보여주었습니다. 곧이어 <b>DAPO</b>는 GRPO가 실전에서 드러낸 길이 편향·탐색 부족 같은 결함을 네 가지 기법으로 고쳐, 완전히 공개된 재현판을 내놓았습니다.</p></div>
+
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 흐름 ③ — 갈라지는 후속 연구 (2025)</div>
+  <p>이후 연구는 두 갈래로 갈라집니다. 하나는 <b>s1</b>처럼 "시험 시간을 늘려서" 정확도를 끌어올리는 <b>test-time scaling(테스트 시점 스케일링)</b> 경로이고, 다른 하나는 <b>TALE</b>처럼 정반대로 "불필요한 사고를 줄이는" 효율화 경로입니다. 그리고 DeepSeek-R1이 남긴 흥미로운 관찰 — 작은 모델에 직접 강화학습을 돌리는 것보다 큰 모델의 추론 흔적을 <b>증류(distillation)</b>하는 편이 더 나은 컴퓨트 활용법일 수 있다는 것 — 은 이 강의 전체를 관통하는 질문으로 남습니다.</p></div>
+
+  <div class="tl-wrap" role="img" aria-label="논문 발표 연도 타임라인. 2015년 Hinton 지식 증류, 2021년 Codex·HumanEval, 2022년 Chain-of-Thought, 2024년 DeepSeekMath·GRPO와 TALE, 2025년 DeepSeek-R1·DAPO·s1의 순서로 이어진다.">
+    <div class="tl-line"></div>
+    <div class="tl-years">
+      <div class="tl-year"><span class="tl-dot"></span><b>2015</b><div class="tl-p">Hinton<br>지식 증류</div></div>
+      <div class="tl-year"><span class="tl-dot"></span><b>2021</b><div class="tl-p">Codex ·<br>HumanEval</div></div>
+      <div class="tl-year"><span class="tl-dot"></span><b>2022</b><div class="tl-p">Chain-of-<br>Thought</div></div>
+      <div class="tl-year"><span class="tl-dot"></span><b>2024</b><div class="tl-p">DeepSeekMath·GRPO<br>TALE</div></div>
+      <div class="tl-year hl"><span class="tl-dot"></span><b>2025</b><div class="tl-p">DeepSeek-R1<br>DAPO · s1</div></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===== MASTER-DETAIL NOTES ===== -->
+<section id="notes"><div class="wrap reveal">
+  <span class="sec-no">논문 노트</span>
+  <h2>8편의 논문, 5개의 개념 <span class="en">Paper Notes</span></h2>
+  <p class="lead">왼쪽에서 논문을 고르면 오른쪽에 상세 요약이 열립니다. 제목·저자·개념으로 검색할 수 있고(한/영 모두 가능), 처음에는 이 흐름의 중심에 있는 <b>DeepSeek-R1</b>이 미리 펼쳐져 있습니다.</p>
+
+  <div class="notes-shell">
+    <aside class="master">
+      <label for="paperSearch" class="sr-only">논문 검색</label>
+      <input type="text" id="paperSearch" placeholder="제목·저자·개념 검색… (예: GRPO, 증류, DAPO)" autocomplete="off">
+      <div class="master-list" id="masterList">
+
+        <h3 class="group-h" data-group="reasoning-models">추론 모델 <span class="en">Reasoning Model</span></h3>
+        <button class="paper-item" data-paper="cot2022" data-group="reasoning-models" data-search="chain-of-thought prompting elicits reasoning in large language models wei et al 2022 추론 모델 reasoning model 사고 사슬 사고사슬 씨오티 cot 프롬프팅" tabindex="0">
+          <span class="pi-title">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</span>
+          <span class="pi-meta">Wei et al. · 2022 · arXiv:2201.11903</span>
+          <span class="pi-tldr">예시에 정답 대신 풀이 과정을 보여주기만 해도 거대 모델의 추론 성능이 크게 좋아짐을 처음 보임</span>
+        </button>
+        <button class="paper-item" data-paper="codex2021" data-group="reasoning-models" data-search="evaluating large language models trained on code codex humaneval pass@k chen et al 2021 추론 모델 reasoning model 코덱스 휴먼이발 패스앳케이" tabindex="0">
+          <span class="pi-title">Evaluating Large Language Models Trained on Code</span>
+          <span class="pi-meta">Chen et al. · 2021 · arXiv:2107.03374</span>
+          <span class="pi-tldr">Codex와 HumanEval, 그리고 이후 추론 모델의 표준 지표가 된 pass@k를 정의</span>
+        </button>
+
+        <h3 class="group-h" data-group="rl-for-reasoning">추론을 위한 강화학습 <span class="en">RL for Reasoning</span></h3>
+        <button class="paper-item" data-paper="deepseekr1" data-group="rl-for-reasoning" data-search="deepseek-r1 incentivizing reasoning capability in llms via reinforcement learning deepseek-ai 2025 딥시크 알원 추론을 위한 강화학습 rl for reasoning grpo" tabindex="0">
+          <span class="pi-title">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</span>
+          <span class="pi-meta">DeepSeek-AI · 2025 · arXiv:2501.12948</span>
+          <span class="pi-tldr">SFT 없이 순수 강화학습만으로 o1급 추론 능력을 이끌어낸 R1-Zero와, 이를 다듬은 DeepSeek-R1</span>
+        </button>
+
+        <h3 class="group-h" data-group="grpo">GRPO <span class="en">Group Relative Policy Optimization</span></h3>
+        <button class="paper-item" data-paper="deepseekmath2024" data-group="grpo" data-search="deepseekmath pushing the limits of mathematical reasoning in open language models shao et al 2024 grpo 그룹 상대 정책 최적화 group relative policy optimization 딥시크매스" tabindex="0">
+          <span class="pi-title">DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</span>
+          <span class="pi-meta">Shao et al. · 2024 · arXiv:2402.03300</span>
+          <span class="pi-tldr">가치 모델을 없애고 그룹 내 상대 보상으로 advantage를 계산하는 GRPO를 처음 제안</span>
+        </button>
+        <button class="paper-item" data-paper="dapo2025" data-group="grpo" data-search="dapo an open-source llm reinforcement learning system at scale yu et al 2025 grpo 그룹 상대 정책 최적화 다포 decoupled clip dynamic sampling policy optimization" tabindex="0">
+          <span class="pi-title">DAPO: An Open-Source LLM Reinforcement Learning System at Scale</span>
+          <span class="pi-meta">Yu et al. · 2025 · arXiv:2503.14476</span>
+          <span class="pi-tldr">GRPO의 길이 편향·탐색 부족을 네 가지 기법으로 고친 완전 오픈소스 RL 시스템</span>
+        </button>
+
+        <h3 class="group-h" data-group="test-time-scaling">테스트 시점 스케일링 <span class="en">Test-time Scaling</span></h3>
+        <button class="paper-item" data-paper="s12025" data-group="test-time-scaling" data-search="s1 simple test-time scaling muennighoff et al 2025 테스트 시점 스케일링 test-time scaling budget forcing 예산 강제 에스원" tabindex="0">
+          <span class="pi-title">s1: Simple test-time scaling</span>
+          <span class="pi-meta">Muennighoff et al. · 2025 · arXiv:2501.19393</span>
+          <span class="pi-tldr">1,000개짜리 데이터셋과 budget forcing만으로 o1-preview를 능가한 최소주의 레시피</span>
+        </button>
+        <button class="paper-item" data-paper="tale2024" data-group="test-time-scaling" data-search="token-budget-aware llm reasoning tale han et al 2024 테스트 시점 스케일링 test-time scaling 토큰 예산 테일 동적 예산" tabindex="0">
+          <span class="pi-title">Token-Budget-Aware LLM Reasoning</span>
+          <span class="pi-meta">Han et al. · 2024 · arXiv:2412.18547</span>
+          <span class="pi-tldr">문제별 적정 토큰 예산을 모델 스스로 추정해 불필요한 사고를 줄이는 TALE</span>
+        </button>
+
+        <h3 class="group-h" data-group="distillation">지식 증류 <span class="en">Distillation</span></h3>
+        <button class="paper-item" data-paper="deepseekr1" data-group="distillation" data-search="deepseek-r1 distill qwen llama 지식 증류 distillation 추론 흔적 sft 딥시크 알원" tabindex="0">
+          <span class="pi-title">DeepSeek-R1 (R1-Distill 시리즈)</span>
+          <span class="pi-meta">DeepSeek-AI · 2025 · arXiv:2501.12948</span>
+          <span class="pi-tldr">R1의 추론 흔적으로 Qwen·Llama를 SFT — 작은 모델 직접 RL보다 더 나은 결과</span>
+        </button>
+        <button class="paper-item" data-paper="hinton2015" data-group="distillation" data-search="distilling the knowledge in a neural network hinton vinyals dean 2015 지식 증류 distillation 힌튼 소프트 타겟 온도" tabindex="0">
+          <span class="pi-title">Distilling the Knowledge in a Neural Network</span>
+          <span class="pi-meta">Hinton, Vinyals &amp; Dean · 2015 · arXiv:1503.02531</span>
+          <span class="pi-tldr">온도를 높인 소프트맥스로 지식 증류 개념을 처음 정식화한 원조 논문</span>
+        </button>
+
+        <p class="pi-empty" id="noResults" hidden>검색 결과가 없습니다. 다른 키워드로 시도해 보세요.</p>
+      </div>
+    </aside>
+
+    <div class="detail" id="detailPanel">
+
+      <!-- 1. Chain-of-Thought -->
+      <article class="paper-detail" id="detail-cot2022" data-paper="cot2022">
+        <div class="pd-head">
+          <div class="pd-group">추론 모델 · Reasoning Model</div>
+          <h3>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</h3>
+          <div class="pd-meta">Wei et al. · 2022 · arXiv:2201.11903</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2201.11903" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> 몇 개의 예시에 정답 대신 <b>중간 풀이 과정의 연쇄(Chain-of-Thought, CoT, 사고 사슬)</b>를 보여주는 것만으로, 추가 학습 없이도 거대 모델의 다단계 추론 성능이 크게 좋아진다는 것을 처음 보였습니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>당시 LLM은 산술·상식·기호 추론처럼 여러 단계를 거쳐야 하는 문제에서 계속 성능이 정체되어 있었습니다. 모델 크기를 키우는 것만으로는 이 벽을 넘기 어려웠고, 저자들은 프롬프트를 어떻게 구성하느냐가 이 문제의 열쇠일 수 있다고 보았습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p><b>Chain-of-Thought prompting</b>: few-shot 예시에서 질문 바로 다음에 답을 적는 대신, 사람이 문제를 풀 때 밟는 중간 추론 단계를 함께 적어 두는 것입니다. 모델은 이 예시를 흉내 내며 스스로도 단계별로 풀이를 전개하게 됩니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>PaLM 540B를 포함한 세 개의 대규모 언어모델에 8개 안팎의 CoT 예시만 프롬프트에 넣었습니다. 별도의 미세조정이나 추가 파라미터는 전혀 사용하지 않았습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>540B 모델이 단 8개의 CoT 예시만으로 초등 수학 문장제 벤치마크인 GSM8K에서 당시 최고 수준의 정확도를 달성했고, 검증기(verifier)까지 갖춘 미세조정 GPT-3보다도 높은 성능을 보였습니다. 산술·상식·기호 추론 전반에서 비슷한 향상이 관찰되었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>이 논문은 "사고 사슬을 보여주면 추론이 좋아진다"는 프롬프팅 차원의 발견이었지만, 이후 연구자들은 자연스럽게 "이 사고 사슬 자체를 학습 시점에 더 강하게 만들 수는 없을까"라는 질문으로 나아갔습니다. DeepSeek-R1이 강화학습으로 사고 사슬을 대규모로 길게, 스스로 확장하도록 훈련한 것은 이 질문에 대한 답이라고 볼 수 있습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 260" role="img" aria-label="표준 프롬프팅은 질문에서 바로 답으로 이어지지만, Chain-of-Thought 프롬프팅은 질문과 답 사이에 여러 단계의 중간 풀이를 거쳐 다단계 추론 정확도를 높인다는 것을 보여주는 두 흐름 비교 도식">
+            <text x="16" y="24" class="dtxt sm b">표준 프롬프팅 (정답만 제시)</text>
+            <rect x="16" y="40" width="120" height="46" rx="10" class="dbox"/><text x="76" y="68" text-anchor="middle" class="dtxt">질문</text>
+            <line x1="136" y1="63" x2="196" y2="63" class="darrow" marker-end="url(#a1)"/>
+            <rect x="196" y="40" width="150" height="46" rx="10" class="dbox warn"/><text x="271" y="68" text-anchor="middle" class="dtxt">바로 답변</text>
+            <text x="360" y="68" class="dtxt tiny">← few-shot 예시가 질문-답 쌍뿐 → 다단계 문제에 취약</text>
+
+            <text x="16" y="130" class="dtxt sm b">Chain-of-Thought 프롬프팅 (풀이 과정 포함)</text>
+            <rect x="16" y="146" width="110" height="46" rx="10" class="dbox"/><text x="71" y="174" text-anchor="middle" class="dtxt">질문</text>
+            <line x1="126" y1="169" x2="176" y2="169" class="darrow" marker-end="url(#a1)"/>
+            <rect x="176" y="146" width="120" height="46" rx="10" class="dbox acc"/><text x="236" y="168" text-anchor="middle" class="dtxt sm">중간 단계 1</text><text x="236" y="182" text-anchor="middle" class="dtxt tiny">"먼저 ~를 구하면"</text>
+            <line x1="296" y1="169" x2="336" y2="169" class="darrow" marker-end="url(#a1)"/>
+            <rect x="336" y="146" width="120" height="46" rx="10" class="dbox acc"/><text x="396" y="168" text-anchor="middle" class="dtxt sm">중간 단계 2</text><text x="396" y="182" text-anchor="middle" class="dtxt tiny">"그다음 ~이므로"</text>
+            <line x1="456" y1="169" x2="496" y2="169" class="darrow" marker-end="url(#a1)"/>
+            <rect x="496" y="146" width="110" height="46" rx="10" class="dbox ok"/><text x="551" y="174" text-anchor="middle" class="dtxt">답변</text>
+            <text x="16" y="220" class="dtxt sm">8개 예시 + 540B 모델 → GSM8K에서 검증기 장착 fine-tuned GPT-3도 능가</text>
+            <defs><marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>표준 프롬프팅과 CoT 프롬프팅의 흐름을 비교한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>이 논문은 6강의 출발점입니다. "사고 사슬을 만들면 추론이 좋아진다"는 발견이 없었다면, 이후 <b>추론 모델</b>이 사고 사슬을 학습 목표 그 자체로 삼는 발상도 나오기 어려웠을 것입니다.</p>
+          <div class="chips"><span class="concept-chip">추론 모델</span><span class="concept-chip">Chain-of-Thought</span><span class="concept-chip">프롬프팅</span></div>
+        </div>
+      </article>
+
+      <!-- 2. Codex / HumanEval -->
+      <article class="paper-detail" id="detail-codex2021" data-paper="codex2021">
+        <div class="pd-head">
+          <div class="pd-group">추론 모델 · Reasoning Model</div>
+          <h3>Evaluating Large Language Models Trained on Code</h3>
+          <div class="pd-meta">Chen et al. · 2021 · arXiv:2107.03374</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2107.03374" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2107.03374" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> GitHub 코드로 미세조정한 <b>Codex</b>와, 실행해서 통과하는지로 채점하는 <b>HumanEval</b> 벤치마크, 그리고 이후 추론 모델의 표준 평가지표가 된 <b>pass@k</b>를 함께 세상에 내놓은 논문입니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>코드 생성 모델을 평가할 때 텍스트 유사도만으로는 "그럴듯하지만 틀린 코드"를 걸러낼 수 없습니다. 저자들은 docstring(함수 설명)으로부터 실제로 동작하는 프로그램을 합성하는 능력을 재는 것이 핵심이라고 보았습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p>GitHub의 공개 코드로 GPT 계열을 추가 학습한 <b>Codex</b>를 만들고, 각 문제마다 단위 테스트(unit test)로 채점하는 <b>HumanEval</b> 평가셋(164개 문제)을 함께 설계했습니다. 여러 번 샘플링했을 때 적어도 하나가 통과할 확률을 추정하는 불편추정량(unbiased estimator) <b>pass@k</b>도 이 논문에서 정의되었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>같은 프롬프트에서 온도(temperature)를 둔 샘플링으로 여러 개의 후보 코드를 생성한 뒤, 각 후보를 실제로 실행해 단위 테스트 통과 여부로 채점합니다. k개를 뽑았을 때의 성공 확률은 시행 횟수를 늘려도 편향되지 않도록 조합론적으로 추정합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>1개 샘플만 볼 때 Codex는 28.8%를 해결한 반면 GPT-3는 0%, GPT-J는 11.4%에 그쳤습니다. 문제당 100개까지 샘플링을 늘리면 Codex는 70.2%의 문제를 해결했습니다. 다만 긴 연산 체인을 설명하는 docstring이나 여러 변수를 연쇄적으로 다루는 연산에는 여전히 취약했습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>pass@k는 코딩을 넘어 수학·STEM 추론 전반에서 추론 모델을 평가하는 표준 지표가 되었고, 6강에서 다루는 <b>test-time scaling(테스트 시점 스케일링)</b>도 결국 "샘플 수(k)를 늘려 pass@k나 Cons@k를 어떻게 끌어올릴 것인가"라는 질문의 연장선에 있습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 260" role="img" aria-label="하나의 프롬프트에서 n개의 코드 샘플을 생성해 단위 테스트로 채점하고, k개를 뽑았을 때 적어도 하나가 통과할 확률을 추정하는 pass at k 계산 과정을 보여주는 도식">
+            <rect x="16" y="20" width="110" height="46" rx="10" class="dbox"/><text x="71" y="48" text-anchor="middle" class="dtxt">프롬프트</text>
+            <line x1="126" y1="43" x2="166" y2="43" class="darrow" marker-end="url(#a2)"/>
+            <text x="170" y="20" class="dtxt tiny">온도 샘플링으로 n개 생성</text>
+            <g>
+              <rect x="170" y="30" width="46" height="30" rx="6" class="dbox ok"/><text x="193" y="50" text-anchor="middle" class="dtxt tiny">c1 ✓</text>
+              <rect x="222" y="30" width="46" height="30" rx="6" class="dbox warn"/><text x="245" y="50" text-anchor="middle" class="dtxt tiny">c2 ✗</text>
+              <rect x="274" y="30" width="46" height="30" rx="6" class="dbox ok"/><text x="297" y="50" text-anchor="middle" class="dtxt tiny">c3 ✓</text>
+              <rect x="326" y="30" width="46" height="30" rx="6" class="dbox warn"/><text x="349" y="50" text-anchor="middle" class="dtxt tiny">c4 ✗</text>
+              <rect x="378" y="30" width="46" height="30" rx="6" class="dbox warn"/><text x="401" y="50" text-anchor="middle" class="dtxt tiny">c5 ✗</text>
+            </g>
+            <text x="16" y="100" class="dtxt sm">각 후보를 실제로 실행 → 단위 테스트 통과 여부(✓/✗)로 채점</text>
+            <line x1="16" y1="120" x2="480" y2="120" class="dline"/>
+            <rect x="16" y="140" width="468" height="70" rx="12" class="dbox acc"/>
+            <text x="250" y="168" text-anchor="middle" class="dtxt b">pass@k = 전체 n개 중 정답 c개일 때,</text>
+            <text x="250" y="190" text-anchor="middle" class="dtxt">k개를 무작위로 뽑아 적어도 하나가 통과할 확률(불편추정)</text>
+            <text x="16" y="238" class="dtxt sm">Codex: 1샘플 28.8% → 100샘플 70.2% 해결 (GPT-3 0%, GPT-J 11.4%)</text>
+            <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>pass@k의 채점·추정 과정을 정리한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>이 논문은 "검증 가능한 보상(verifiable reward)"이라는 개념의 원형을 제공합니다. 단위 테스트 통과 여부처럼 명확히 채점 가능한 신호가 있었기에, DeepSeek-R1의 정확도 보상이나 test-time scaling의 pass@k/Cons@k 평가가 자연스럽게 이어질 수 있었습니다.</p>
+          <div class="chips"><span class="concept-chip">추론 모델</span><span class="concept-chip">검증 가능한 보상</span><span class="concept-chip">테스트 시점 스케일링</span></div>
+        </div>
+      </article>
+
+      <!-- 3. DeepSeek-R1 (shared by rl-for-reasoning & distillation) -->
+      <article class="paper-detail active" id="detail-deepseekr1" data-paper="deepseekr1">
+        <div class="pd-head">
+          <div class="pd-group">추론을 위한 강화학습 · 지식 증류 — RL for Reasoning · Distillation</div>
+          <h3>DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</h3>
+          <div class="pd-meta">DeepSeek-AI · 2025 · arXiv:2501.12948</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2501.12948" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> 사람이 쓴 정답 풀이 없이, "형식을 지켰는가·정답인가"라는 규칙 기반 <b>검증 가능한 보상</b>만으로 순수 강화학습을 돌려 o1급 추론 능력을 이끌어냈고, 그 추론 흔적을 작은 모델에 <b>증류</b>하는 편이 직접 RL보다 더 나을 수 있음도 함께 보였습니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>사람이 일일이 손으로 쓴 추론 풀이(SFT 데이터)에 의존하지 않고도, 대규모 강화학습만으로 LLM의 추론 능력을 이끌어낼 수 있는지가 이 논문의 출발점입니다. 저자들은 이를 <i>순수 강화학습만으로 추론 능력을 유도할 수 있는가</i>라는 질문으로 요약합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p>형식(지정된 &lt;think&gt; 구분자 준수)과 정확도(정답 여부)라는 두 가지 규칙 기반 검증 가능 보상만으로 <b>GRPO</b>를 사전학습된 base 모델(V3-Base)에 직접 적용한 것이 <b>DeepSeek-R1-Zero</b>이고, 여기에 콜드스타트 SFT를 더해 가독성·언어 일관성 문제를 보완한 것이 <b>DeepSeek-R1</b>입니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>DeepSeek-R1은 4단계 파이프라인을 거칩니다 — ① 소량의 장문 CoT로 콜드스타트 SFT, ② 언어 일관성 보상을 포함한 추론 중심 RL, ③ RL이 수렴한 뒤 거부 샘플링(rejection sampling)으로 전 영역 SFT 데이터를 수집, ④ 인간 선호에 맞추는 2차 RL. R1-Zero는 이 중 콜드스타트 없이 GRPO만 base 모델에 직접 적용합니다. RL 과정에서 자기반성(self-reflection)과 스스로 검증하는 행동이 자연스럽게 창발했다고 보고합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>DeepSeek-R1은 AIME 2024에서 pass@1 79.8%(OpenAI-o1-1217을 근소하게 상회), MATH-500에서 97.3%(o1-1217과 대등)를 기록했습니다. R1의 추론 흔적으로 SFT한 <b>DeepSeek-R1-Distill-Qwen-32B</b>는 AIME 72.6%·MATH-500 94.3%·LiveCodeBench 57.2%를 기록했는데, 이는 같은 32B 모델에 처음부터 GRPO로 직접 RL을 돌린 R1-Zero-Qwen-32B보다 높은 점수였습니다. 7B 증류 모델도 AIME 55.5%로 QwQ-32B-Preview를 넘어섰습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>오픈 가중치로 o1급 성능을 재현 가능함을 보이며 추론 모델 연구를 크게 가속했고, GRPO와 검증 가능한 보상은 이후 사실상 표준 조합이 되었습니다. 동시에 "작은 모델에 직접 RL을 돌릴 것인가, 큰 모델의 추론을 증류할 것인가"라는 질문을 남겨, DAPO 같은 GRPO 개선 연구와 s1 같은 대안적 test-time scaling 연구 모두에 참조점이 되었습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 320" role="img" aria-label="DeepSeek-R1은 콜드스타트 SFT, 추론 중심 강화학습, 거부 샘플링 SFT, 2차 강화학습의 4단계를 거치고, R1-Zero는 콜드스타트 없이 기반 모델에 GRPO만 직접 적용하며, 완성된 R1의 추론 흔적은 다시 작은 모델에 지식 증류되어 R1-Distill 시리즈가 되는 전체 흐름을 보여주는 도식">
+            <text x="14" y="20" class="dtxt sm b">DeepSeek-R1 4단계 파이프라인</text>
+            <rect x="14" y="30" width="150" height="50" rx="10" class="dbox"/><text x="89" y="52" text-anchor="middle" class="dtxt sm">① 콜드스타트</text><text x="89" y="68" text-anchor="middle" class="dtxt tiny">소량 장문 CoT SFT</text>
+            <line x1="164" y1="55" x2="196" y2="55" class="darrow" marker-end="url(#a3)"/>
+            <rect x="196" y="30" width="150" height="50" rx="10" class="dbox acc"/><text x="271" y="52" text-anchor="middle" class="dtxt sm">② 추론 RL</text><text x="271" y="68" text-anchor="middle" class="dtxt tiny">GRPO + 검증가능보상</text>
+            <line x1="346" y1="55" x2="378" y2="55" class="darrow" marker-end="url(#a3)"/>
+            <rect x="378" y="30" width="150" height="50" rx="10" class="dbox"/><text x="453" y="52" text-anchor="middle" class="dtxt sm">③ 거부샘플링</text><text x="453" y="68" text-anchor="middle" class="dtxt tiny">전 영역 SFT 데이터</text>
+            <line x1="528" y1="55" x2="560" y2="55" class="darrow" marker-end="url(#a3)"/>
+            <rect x="560" y="30" width="126" height="50" rx="10" class="dbox ok"/><text x="623" y="52" text-anchor="middle" class="dtxt sm">④ 2차 RL</text><text x="623" y="68" text-anchor="middle" class="dtxt tiny">선호 정합</text>
+            <text x="14" y="108" class="dtxt sm b">= DeepSeek-R1</text>
+
+            <text x="14" y="140" class="dtxt sm b">R1-Zero: 콜드스타트 없이 base 모델에 GRPO만 직접 적용</text>
+            <rect x="14" y="152" width="150" height="42" rx="10" class="dbox"/><text x="89" y="178" text-anchor="middle" class="dtxt sm">V3-Base</text>
+            <line x1="164" y1="173" x2="196" y2="173" class="darrow" marker-end="url(#a3)"/>
+            <rect x="196" y="152" width="150" height="42" rx="10" class="dbox acc"/><text x="271" y="174" text-anchor="middle" class="dtxt sm">GRPO</text><text x="271" y="188" text-anchor="middle" class="dtxt tiny">형식+정확도 보상</text>
+            <line x1="346" y1="173" x2="386" y2="173" class="darrow" marker-end="url(#a3)"/>
+            <rect x="386" y="152" width="150" height="42" rx="10" class="dbox ok"/><text x="461" y="178" text-anchor="middle" class="dtxt sm">R1-Zero</text>
+
+            <text x="14" y="238" class="dtxt sm b">증류: R1의 추론 흔적 → 작은 모델 SFT</text>
+            <rect x="14" y="250" width="140" height="42" rx="10" class="dbox ok"/><text x="84" y="276" text-anchor="middle" class="dtxt sm">R1 추론 흔적</text>
+            <line x1="154" y1="271" x2="196" y2="271" class="darrow" marker-end="url(#a3)"/>
+            <rect x="196" y="250" width="120" height="42" rx="10" class="dbox"/><text x="256" y="276" text-anchor="middle" class="dtxt sm">SFT</text>
+            <line x1="316" y1="271" x2="356" y2="271" class="darrow" marker-end="url(#a3)"/>
+            <rect x="356" y="250" width="260" height="42" rx="10" class="dbox acc"/><text x="486" y="272" text-anchor="middle" class="dtxt sm">R1-Distill (Qwen·Llama, 1.5B~70B)</text>
+            <defs><marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>R1의 4단계 파이프라인, R1-Zero의 지름길, R1-Distill로 이어지는 증류 흐름을 한 도식에 정리했습니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>이 논문은 6강의 중심입니다. <b>추론을 위한 강화학습</b> 개념 전체가 이 논문 하나로 성립하며, 동시에 <b>지식 증류</b> 개념에서도 "작은 모델에 직접 RL 대 큰 모델 증류"라는 핵심 논쟁을 제공합니다.</p>
+          <div class="chips"><span class="concept-chip">추론을 위한 강화학습</span><span class="concept-chip">GRPO</span><span class="concept-chip">지식 증류</span><span class="concept-chip">검증 가능한 보상</span></div>
+        </div>
+      </article>
+
+      <!-- 4. DeepSeekMath / GRPO -->
+      <article class="paper-detail" id="detail-deepseekmath2024" data-paper="deepseekmath2024">
+        <div class="pd-head">
+          <div class="pd-group">GRPO · Group Relative Policy Optimization</div>
+          <h3>DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</h3>
+          <div class="pd-meta">Shao et al. · 2024 · arXiv:2402.03300</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2402.03300" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2402.03300" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> PPO의 무거운 가치 모델(critic)을 없애고, 같은 질문에 대한 여러 응답을 그룹으로 묶어 상대적으로 비교하는 <b>GRPO(Group Relative Policy Optimization, 그룹 상대 정책 최적화)</b>를 처음 제안한 논문입니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>오픈소스 언어모델의 수학 추론 성능이 GPT-4·Gemini-Ultra 같은 폐쇄형 모델에 크게 뒤처져 있었습니다. 저자들은 수학적 추론이 복잡하고 구조화된 특성 때문에 언어모델에게 특히 어려운 과제라고 짚습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p><b>GRPO</b>는 PPO와 달리 별도의 가치 모델을 두지 않습니다. 대신 같은 질문에 대해 그룹으로 G개의 응답을 한 번에 샘플링하고, 그룹 내 보상의 평균·표준편차로 advantage를 표준화해 계산합니다. 수학적 추론 능력을 끌어올리면서 동시에 PPO의 메모리 사용량을 최적화한다고 설명합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>DeepSeek-Coder-Base-v1.5 7B에 수학 관련 웹 토큰 120B로 지속 사전학습을 수행하고, Common Crawl에서 수학 코퍼스를 정교하게 선별하는 데이터 파이프라인을 함께 사용했습니다. 이렇게 얻은 DeepSeekMath 7B에 GRPO로 강화학습을 적용했습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>도구 사용 없이 MATH 벤치마크에서 51.7%를 달성했고, 64개 샘플에 대한 self-consistency 적용 시 60.9%까지 올라 Gemini-Ultra·GPT-4에 근접하는 수준을 보였습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>GRPO는 이후 DeepSeek-R1을 비롯한 여러 추론 모델의 RL 단계에서 사실상 표준 알고리즘으로 채택되었습니다. 가치 모델이 필요 없다는 점은 대규모 추론 모델 학습의 연산·메모리 비용을 크게 낮춰, 오픈소스 진영이 폐쇄형 모델을 따라잡는 데 중요한 발판이 되었습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 260" role="img" aria-label="PPO는 별도의 가치 모델이 보상을 예측해 advantage를 계산하지만, GRPO는 같은 질문에 대한 그룹 내 여러 응답의 보상 평균과 표준편차로 advantage를 표준화해 가치 모델을 없앤다는 차이를 보여주는 비교 도식">
+            <text x="16" y="22" class="dtxt sm b">PPO</text>
+            <rect x="16" y="34" width="120" height="42" rx="10" class="dbox"/><text x="76" y="60" text-anchor="middle" class="dtxt sm">정책 모델</text>
+            <rect x="16" y="86" width="120" height="42" rx="10" class="dbox warn"/><text x="76" y="112" text-anchor="middle" class="dtxt sm">가치 모델</text>
+            <text x="150" y="60" class="dtxt tiny">응답 1개 생성</text>
+            <text x="150" y="112" class="dtxt tiny">별도 신경망이 보상을 예측</text>
+            <line x1="16" y1="140" x2="330" y2="140" class="dline"/>
+            <rect x="16" y="150" width="314" height="40" rx="10" class="dbox acc"/><text x="173" y="175" text-anchor="middle" class="dtxt sm">advantage = 보상 − 가치모델 예측값</text>
+            <text x="16" y="208" class="dtxt tiny">→ 가치 모델만큼 추가 메모리·연산 필요</text>
+
+            <line x1="360" y1="10" x2="360" y2="230" class="dline"/>
+
+            <text x="380" y="22" class="dtxt sm b">GRPO</text>
+            <rect x="380" y="34" width="130" height="42" rx="10" class="dbox"/><text x="445" y="60" text-anchor="middle" class="dtxt sm">정책 모델</text>
+            <text x="520" y="60" class="dtxt tiny">같은 질문 → G개 응답 그룹 샘플링</text>
+            <g>
+              <rect x="380" y="86" width="26" height="26" rx="6" class="dbox ok"/>
+              <rect x="410" y="86" width="26" height="26" rx="6" class="dbox warn"/>
+              <rect x="440" y="86" width="26" height="26" rx="6" class="dbox ok"/>
+              <rect x="470" y="86" width="26" height="26" rx="6" class="dbox warn"/>
+              <rect x="500" y="86" width="26" height="26" rx="6" class="dbox ok"/>
+            </g>
+            <text x="536" y="104" class="dtxt tiny">r₁…r_G</text>
+            <line x1="380" y1="140" x2="670" y2="140" class="dline"/>
+            <rect x="380" y="150" width="290" height="40" rx="10" class="dbox acc"/><text x="525" y="175" text-anchor="middle" class="dtxt sm">Aᵢ = (rᵢ − 평균) / 표준편차</text>
+            <text x="380" y="208" class="dtxt tiny">→ 별도 가치 모델 불필요, 메모리 절약</text>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>PPO와 GRPO의 구조적 차이(가치 모델 유무, advantage 계산 방식)를 비교한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>GRPO는 6강 제목에 직접 들어갈 만큼 핵심적인 알고리즘입니다. 앞서 나온 스터디 그룹 비유를 그대로 적용하면, PPO의 가치 모델이 "개인 과외 선생님의 채점"이라면 GRPO는 "같은 반 친구들끼리의 상대평가"에 해당합니다.</p>
+          <div class="chips"><span class="concept-chip">GRPO</span><span class="concept-chip">추론을 위한 강화학습</span><span class="concept-chip">PPO</span></div>
+        </div>
+      </article>
+
+      <!-- 5. DAPO -->
+      <article class="paper-detail" id="detail-dapo2025" data-paper="dapo2025">
+        <div class="pd-head">
+          <div class="pd-group">GRPO · Group Relative Policy Optimization</div>
+          <h3>DAPO: An Open-Source LLM Reinforcement Learning System at Scale</h3>
+          <div class="pd-meta">Yu et al. · 2025 · arXiv:2503.14476</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2503.14476" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> o1·R1급 모델의 RL 학습 세부사항이 대부분 비공개라는 문제를, GRPO의 결함을 고친 네 가지 기법 — <b>DAPO(Decoupled Clip and Dynamic sAmpling Policy Optimization)</b> — 으로 정면 돌파해 완전히 공개한 논문입니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>OpenAI o1이나 DeepSeek-R1처럼 추론 능력을 이끌어내는 핵심 기술 세부사항이 감추어져 있어, 커뮤니티가 이들의 RL 학습 결과를 재현하는 데 어려움을 겪고 있었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p>GRPO를 대규모로 안정적으로 굴리기 위한 네 가지 기법을 묶은 <b>DAPO</b>를 제안합니다: ① <b>Clip-Higher</b> — 비대칭 클리핑 범위(ε_low &lt; ε_high)로 상한을 완화해 탐색 다양성을 높이고 엔트로피 붕괴를 막음, ② <b>Dynamic Sampling</b> — 정확도가 0 또는 1인(그래디언트가 사라지는) 프롬프트를 걸러내고 다시 샘플링해 유효한 학습 신호를 확보, ③ <b>토큰 단위 정책 그래디언트 손실</b> — 응답 단위 평균 대신 토큰 단위로 손실을 계산해 긴 응답이 유리해지는 길이 편향을 제거, ④ <b>Overlong Reward Shaping</b> — 길이 제한을 넘긴 응답에 급격한 페널티 대신 완만한 페널티를 적용해 학습을 안정화.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>Qwen2.5-32B base 모델에 위 네 기법을 결합한 GRPO 기반 RL을 적용했고, verl 프레임워크로 구현한 학습 코드와 정제된 데이터셋을 함께 오픈소스로 공개했습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>AIME 2024에서 50점을 달성해, 세부사항이 공개되지 않은 더 큰 규모의 비공개 시스템과 견줄 만한 성능을 완전 오픈소스로 재현했습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>코드·데이터·인프라를 모두 공개함으로써 커뮤니티의 추론 RL 재현성을 크게 높였고, DAPO의 네 기법은 이후 GRPO 기반 연구에서 "GRPO를 쓸 때 흔히 참고하는 실전 보정판" 역할을 하고 있습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 280" role="img" aria-label="DAPO가 GRPO에 추가한 네 가지 기법인 Clip-Higher, Dynamic Sampling, Token-level Policy Gradient Loss, Overlong Reward Shaping을 하나의 중심 알고리즘 주위에 배치해 보여주는 도식">
+            <rect x="270" y="115" width="160" height="50" rx="12" class="dbox acc"/><text x="350" y="146" text-anchor="middle" class="dtxt b">GRPO 기반</text>
+
+            <rect x="20" y="20" width="220" height="70" rx="12" class="dbox"/>
+            <text x="130" y="42" text-anchor="middle" class="dtxt sm b">① Clip-Higher</text>
+            <text x="130" y="60" text-anchor="middle" class="dtxt tiny">비대칭 클리핑(ε_low&lt;ε_high)</text>
+            <text x="130" y="76" text-anchor="middle" class="dtxt tiny">→ 탐색↑, 엔트로피 붕괴 방지</text>
+            <line x1="200" y1="90" x2="300" y2="118" class="darrow" marker-end="url(#a5)"/>
+
+            <rect x="460" y="20" width="220" height="70" rx="12" class="dbox"/>
+            <text x="570" y="42" text-anchor="middle" class="dtxt sm b">② Dynamic Sampling</text>
+            <text x="570" y="60" text-anchor="middle" class="dtxt tiny">정확도 0/1 프롬프트 제외</text>
+            <text x="570" y="76" text-anchor="middle" class="dtxt tiny">→ 유효 그래디언트 확보</text>
+            <line x1="480" y1="90" x2="400" y2="118" class="darrow" marker-end="url(#a5)"/>
+
+            <rect x="20" y="190" width="220" height="70" rx="12" class="dbox"/>
+            <text x="130" y="212" text-anchor="middle" class="dtxt sm b">③ 토큰 단위 손실</text>
+            <text x="130" y="230" text-anchor="middle" class="dtxt tiny">응답 평균 → 토큰 평균</text>
+            <text x="130" y="246" text-anchor="middle" class="dtxt tiny">→ 길이 편향 제거</text>
+            <line x1="200" y1="190" x2="300" y2="162" class="darrow" marker-end="url(#a5)"/>
+
+            <rect x="460" y="190" width="220" height="70" rx="12" class="dbox"/>
+            <text x="570" y="212" text-anchor="middle" class="dtxt sm b">④ Overlong Reward Shaping</text>
+            <text x="570" y="230" text-anchor="middle" class="dtxt tiny">길이초과 완만한 페널티</text>
+            <text x="570" y="246" text-anchor="middle" class="dtxt tiny">→ 학습 안정화</text>
+            <line x1="480" y1="190" x2="400" y2="162" class="darrow" marker-end="url(#a5)"/>
+            <defs><marker id="a5" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>DAPO의 네 기법이 GRPO를 어떻게 보완하는지 정리한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>DAPO는 GRPO를 "이론에서 실전으로" 옮기는 다리 역할을 합니다. GRPO 자체의 개념을 이해한 뒤, 실제로 대규모 학습에서 무엇이 깨지고 어떻게 고치는지를 보여주는 사례로 이 강의에서 다뤄집니다.</p>
+          <div class="chips"><span class="concept-chip">GRPO</span><span class="concept-chip">추론을 위한 강화학습</span></div>
+        </div>
+      </article>
+
+      <!-- 6. s1 -->
+      <article class="paper-detail" id="detail-s12025" data-paper="s12025">
+        <div class="pd-head">
+          <div class="pd-group">테스트 시점 스케일링 · Test-time Scaling</div>
+          <h3>s1: Simple test-time scaling</h3>
+          <div class="pd-meta">Muennighoff et al. · 2025 · arXiv:2501.19393</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2501.19393" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2501.19393" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> 1,000개의 엄선된 문제-풀이 쌍과 사고 과정을 강제로 늘리거나 줄이는 <b>budget forcing(예산 강제)</b> 한 가지만으로, 복잡한 RL 없이도 o1-preview를 능가한 극도로 단순한 test-time scaling 레시피입니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>OpenAI o1이 보여준 test-time scaling(테스트 시점 스케일링)을 과연 가장 단순한 방법으로도 달성할 수 있는지가 출발점이었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p>난이도·다양성·품질이라는 세 기준으로 엄선한 1,000개의 문제-추론쌍 데이터셋 <b>s1K</b>와, 모델의 사고 과정 길이를 직접 통제하는 <b>budget forcing</b> 기법입니다. 사고를 강제로 끝내 종료 토큰을 앞당기거나, 종료 시점에 "Wait"이라는 한 마디를 덧붙여 모델이 스스로 풀이를 다시 검토하도록 사고를 늘릴 수 있습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>Qwen2.5-32B-Instruct를 s1K로 지도 미세조정(SFT)한 뒤, 추론 시점에 budget forcing만 적용했습니다. 추가 데이터 수집이나 복잡한 강화학습 파이프라인은 전혀 쓰지 않았습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>s1-32B는 MATH·AIME24 같은 경쟁 수학 문제에서 o1-preview 대비 최대 27% 높은 성능을 보였습니다. budget forcing으로 사고 시간을 늘려 나가자 AIME24 정확도가 50%에서 57%까지 향상되었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>test-time scaling이 소수의 고품질 데이터와 단순한 개입만으로도 재현 가능함을 입증해, 무겁고 복잡한 RL 파이프라인 없이도 추론 성능을 끌어올릴 수 있다는 대안적 경로를 열었습니다. 이는 이 강의의 "동적 예산" 통제 아이디어의 대표 사례입니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 260" role="img" aria-label="s1의 budget forcing은 사고 과정의 종료 토큰을 강제로 앞당기거나 Wait을 덧붙여 사고를 더 늘리는 방식으로 테스트 시점 연산량을 직접 통제한다는 것을 보여주는 도식">
+            <text x="16" y="24" class="dtxt sm b">사고 과정 토큰 스트림 &lt;think&gt; … &lt;/think&gt; → 답변</text>
+
+            <text x="16" y="66" class="dtxt sm">그만 생각 (강제 종료)</text>
+            <rect x="16" y="76" width="260" height="34" rx="8" class="dbox acc"/><text x="146" y="98" text-anchor="middle" class="dtxt sm">생각 진행 중…</text>
+            <rect x="276" y="76" width="90" height="34" rx="8" class="dbox warn"/><text x="321" y="98" text-anchor="middle" class="dtxt tiny">&lt;/think&gt; 강제삽입</text>
+            <line x1="366" y1="93" x2="406" y2="93" class="darrow" marker-end="url(#a6)"/>
+            <rect x="406" y="76" width="90" height="34" rx="8" class="dbox"/><text x="451" y="98" text-anchor="middle" class="dtxt sm">답변</text>
+            <text x="510" y="98" class="dtxt tiny">← 사고량 축소</text>
+
+            <text x="16" y="150" class="dtxt sm">계속 생각 (budget forcing 연장)</text>
+            <rect x="16" y="160" width="180" height="34" rx="8" class="dbox acc"/><text x="106" y="182" text-anchor="middle" class="dtxt sm">생각 진행 중…</text>
+            <rect x="196" y="160" width="70" height="34" rx="8" class="dbox ok"/><text x="231" y="182" text-anchor="middle" class="dtxt sm">"Wait"</text>
+            <line x1="266" y1="177" x2="300" y2="177" class="darrow" marker-end="url(#a6)"/>
+            <rect x="300" y="160" width="180" height="34" rx="8" class="dbox acc"/><text x="390" y="182" text-anchor="middle" class="dtxt sm">추가 검토·재풀이</text>
+            <line x1="480" y1="177" x2="514" y2="177" class="darrow" marker-end="url(#a6)"/>
+            <rect x="514" y="160" width="90" height="34" rx="8" class="dbox"/><text x="559" y="182" text-anchor="middle" class="dtxt sm">답변</text>
+            <text x="16" y="228" class="dtxt sm">budget forcing으로 사고 확장 → AIME24 정확도 50% → 57%</text>
+            <defs><marker id="a6" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>budget forcing이 사고 길이를 줄이거나 늘리는 두 방향을 비교한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>스터디 그룹 비유로 보면, s1은 "시험 시간을 늘려서 다시 검산할 기회를 주는" 전략입니다. 이 강의의 <b>테스트 시점 스케일링</b> 개념에서 "사고 길이를 직접 늘리는" 축을 대표합니다.</p>
+          <div class="chips"><span class="concept-chip">테스트 시점 스케일링</span><span class="concept-chip">추론 모델</span></div>
+        </div>
+      </article>
+
+      <!-- 7. TALE -->
+      <article class="paper-detail" id="detail-tale2024" data-paper="tale2024">
+        <div class="pd-head">
+          <div class="pd-group">테스트 시점 스케일링 · Test-time Scaling</div>
+          <h3>Token-Budget-Aware LLM Reasoning</h3>
+          <div class="pd-meta">Han et al. · 2024 · arXiv:2412.18547</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/2412.18547" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/2412.18547" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> 문제마다 필요한 토큰 예산을 모델 스스로 먼저 추정하게 해, 성능 손실은 거의 없이 추론 토큰을 큰 폭으로 줄이는 <b>TALE(Token-Budget-Aware LLM Reasoning)</b> 프레임워크입니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>CoT 추론은 성능을 높이지만 토큰 사용량을 크게 늘립니다. 저자들은 쉬운 문제에서조차 추론 과정이 불필요하게 길어진다는 점을 지적하며, 예컨대 직접 답하면 15개 토큰이면 될 문제에 CoT는 258개 토큰(약 17배)을 쓰는 경우를 관찰했습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p>문제의 난이도에 따라 필요한 토큰 예산을 동적으로 추정하고, 그 예산에 맞춘 프롬프트를 구성하는 <b>TALE</b> 프레임워크입니다. 제로샷으로 예산을 추정해 프롬프트에 포함하는 <b>TALE-EP</b>와, 최적 예산 데이터로 사후학습(post-training)하는 <b>TALE-PT</b> 두 변형을 제안합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>모델 자신에게 문제별로 적정 토큰 수를 먼저 추정하게 한 뒤, 그 예산 안에서 답하도록 프롬프트를 구성하거나(TALE-EP) 그런 방식으로 미세조정합니다(TALE-PT).</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>논문에 보고된 바에 따르면 TALE-EP는 평균 정확도 약 80.22%를 유지하면서 출력 토큰 비용을 약 67% 줄이고 비용을 약 59% 절감했으며, 전체적으로는 토큰 사용량을 약 68.64%까지 줄이는 결과도 보고되었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>성능 손실을 거의 없이 유지하면서 추론 비용을 크게 줄여, 이 강의의 "동적 예산" 통제 아이디어의 근거가 됩니다. s1의 budget forcing이 "필요하면 더 생각하게" 만드는 방향이라면, TALE은 반대로 "불필요하면 그만 생각하게" 만드는 방향으로 대비됩니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 240" role="img" aria-label="TALE 프레임워크의 두 변형인 제로샷으로 토큰 예산을 추정해 프롬프트에 포함하는 TALE-EP와, 최적 예산으로 미리 사후학습된 모델이 곧바로 예산에 맞춰 답하는 TALE-PT의 흐름 차이를 보여주는 도식">
+            <rect x="16" y="16" width="120" height="42" rx="10" class="dbox"/><text x="76" y="42" text-anchor="middle" class="dtxt sm">문제 입력</text>
+
+            <text x="160" y="24" class="dtxt sm b">TALE-EP (제로샷)</text>
+            <line x1="136" y1="37" x2="176" y2="37" class="darrow" marker-end="url(#a7)"/>
+            <rect x="176" y="16" width="150" height="42" rx="10" class="dbox acc"/><text x="251" y="42" text-anchor="middle" class="dtxt sm">토큰예산 추정</text>
+            <line x1="326" y1="37" x2="366" y2="37" class="darrow" marker-end="url(#a7)"/>
+            <rect x="366" y="16" width="150" height="42" rx="10" class="dbox"/><text x="441" y="42" text-anchor="middle" class="dtxt sm">예산 포함 프롬프트</text>
+            <line x1="516" y1="37" x2="556" y2="37" class="darrow" marker-end="url(#a7)"/>
+            <rect x="556" y="16" width="128" height="42" rx="10" class="dbox ok"/><text x="620" y="42" text-anchor="middle" class="dtxt sm">답변</text>
+
+            <text x="160" y="104" class="dtxt sm b">TALE-PT (사후학습)</text>
+            <line x1="76" y1="58" x2="76" y2="100" class="dline"/>
+            <line x1="76" y1="100" x2="176" y2="118" class="darrow" marker-end="url(#a7)"/>
+            <rect x="176" y="96" width="220" height="42" rx="10" class="dbox acc"/><text x="286" y="118" text-anchor="middle" class="dtxt sm">최적예산으로 사후학습된 모델</text>
+            <line x1="396" y1="117" x2="436" y2="117" class="darrow" marker-end="url(#a7)"/>
+            <rect x="436" y="96" width="248" height="42" rx="10" class="dbox ok"/><text x="560" y="118" text-anchor="middle" class="dtxt sm">곧바로 예산 맞춰 답변</text>
+
+            <text x="16" y="180" class="dtxt sm">결과: 정확도 약 80.22% 유지, 출력 토큰 비용 약 67%↓, 비용 약 59%↓</text>
+            <text x="16" y="204" class="dtxt tiny">(쉬운 문제 CoT 오버헤드 사례: 직접답 15토큰 vs CoT 258토큰 ≈ 17배)</text>
+            <defs><marker id="a7" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>TALE-EP와 TALE-PT 두 경로를 비교한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>TALE은 <b>테스트 시점 스케일링</b> 개념에서 "예산을 늘리는" s1과 대비되는 "예산을 줄이는" 축을 대표합니다. 두 논문을 함께 보면 test-time compute를 어느 방향으로도 조절할 수 있다는 것이 분명해집니다.</p>
+          <div class="chips"><span class="concept-chip">테스트 시점 스케일링</span><span class="concept-chip">동적 예산</span></div>
+        </div>
+      </article>
+
+      <!-- 8. Hinton distillation -->
+      <article class="paper-detail" id="detail-hinton2015" data-paper="hinton2015">
+        <div class="pd-head">
+          <div class="pd-group">지식 증류 · Distillation</div>
+          <h3>Distilling the Knowledge in a Neural Network</h3>
+          <div class="pd-meta">Hinton, Vinyals &amp; Dean · 2015 · arXiv:1503.02531</div>
+          <div class="pd-links">
+            <a class="linkbtn" href="https://arxiv.org/pdf/1503.02531" target="_blank" rel="noopener">PDF ↗</a>
+            <a class="linkbtn" href="https://arxiv.org/abs/1503.02531" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </div>
+        <p class="pd-tldr"><b>TL;DR.</b> 정답 레이블(hard label)뿐 아니라, 온도(temperature)를 높인 소프트맥스로 얻은 교사 모델의 전체 확률분포(soft target)까지 모방하게 해 지식을 압축하는 <b>지식 증류(Knowledge Distillation)</b> 개념을 처음 정식화한 논문입니다.</p>
+
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>문제의식</div><p>여러 모델을 훈련해 예측을 평균 내는 앙상블(ensemble) 방식은 성능은 좋지만, 그대로 배포하기엔 연산 비용과 지연 시간이 크다는 문제가 있었습니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>핵심 아이디어</div><p>교사(teacher) 모델의 로짓(logit)에 온도 T를 높여 부드러운 확률분포를 만들면, 정답 클래스뿐 아니라 "오답들 사이의 상대적 유사도"라는 추가 정보까지 담기게 됩니다. 학생(student) 모델은 이 soft target과 원래의 hard label을 함께 모방하도록 학습됩니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>방법</div><p>큰 모델(또는 앙상블)의 출력 로짓에 온도를 적용한 소프트맥스로 부드러운 목표 분포를 얻고, 작은 학생 모델이 이 분포와 실제 정답 레이블을 동시에 학습 목표로 삼는 손실 함수를 사용합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-ext">외부</span>주요 결과</div><p>MNIST 실험에서, 훈련 중 숫자 3을 한 번도 보지 못한 작은 모델도 증류를 통해 해당 숫자를 상당 부분 맞혔습니다(전체 테스트 오류 206개 중 숫자 3 관련 오류는 133개뿐). 상용 음성 인식 시스템의 음향 모델에서도 앙상블을 단일 모델로 압축하면서 성능을 유지하는 데 성공했다고 보고합니다.</p></div>
+        <div class="pd-block"><div class="pd-h"><span class="badge b-syn">종합·해석</span>영향·후속 연구</div><p>이 논문은 2강에서 다룬 "다음 토큰 확률분포 매칭" 방식의 증류(고전적 KD)의 원조입니다. 반면 6강에서 다루는 추론 모델의 증류(예: R1-Distill)는 확률분포가 아니라 교사가 생성한 완성된 응답(추론 흔적) 전체를 SFT로 모방한다는 점에서 방법론적으로 다른 갈래이며, 이 논문은 그 대비를 이해하는 기준점 역할을 합니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 260" role="img" aria-label="교사 모델의 로짓에 높은 온도를 적용해 부드러운 확률분포인 soft target을 만들고, 학생 모델이 이 soft target과 정답 레이블인 hard label을 함께 모방하도록 학습하는 지식 증류 과정을 보여주는 도식">
+            <text x="16" y="22" class="dtxt sm b">교사 모델 로짓 → 온도(T)별 소프트맥스</text>
+            <text x="16" y="46" class="dtxt tiny">낮은 온도 (hard label에 가까움)</text>
+            <g>
+              <rect x="16" y="54" width="18" height="50" class="dbox warn"/>
+              <rect x="40" y="94" width="18" height="10" class="dbox"/>
+              <rect x="64" y="98" width="18" height="6" class="dbox"/>
+              <rect x="88" y="100" width="18" height="4" class="dbox"/>
+            </g>
+            <text x="150" y="80" class="dtxt tiny">→ 정답 클래스에 확률이 거의 몰림</text>
+
+            <text x="16" y="140" class="dtxt tiny">높은 온도 T (soft target)</text>
+            <g>
+              <rect x="16" y="150" width="18" height="40" class="dbox ok"/>
+              <rect x="40" y="164" width="18" height="26" class="dbox ok"/>
+              <rect x="64" y="172" width="18" height="18" class="dbox ok"/>
+              <rect x="88" y="178" width="18" height="12" class="dbox ok"/>
+            </g>
+            <text x="150" y="170" class="dtxt tiny">→ 오답들 사이의 상대적 유사도까지 담김</text>
+
+            <line x1="16" y1="210" x2="230" y2="210" class="dline"/>
+            <rect x="260" y="60" width="180" height="130" rx="14" class="dbox acc"/>
+            <text x="350" y="110" text-anchor="middle" class="dtxt sm b">학생 모델</text>
+            <text x="350" y="132" text-anchor="middle" class="dtxt tiny">soft target 모방 +</text>
+            <text x="350" y="150" text-anchor="middle" class="dtxt tiny">hard label 모방</text>
+            <line x1="120" y1="79" x2="260" y2="105" class="darrow" marker-end="url(#a8)"/>
+            <line x1="120" y1="170" x2="260" y2="140" class="darrow" marker-end="url(#a8)"/>
+            <text x="480" y="120" class="dtxt sm">→ 큰 교사(앙상블)의 지식을</text>
+            <text x="480" y="140" class="dtxt sm">작은 학생 하나로 압축</text>
+            <defs><marker id="a8" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--ink3)"/></marker></defs>
+          </svg>
+          <figcaption class="pd-figcap"><span class="badge b-syn">종합·해석</span>온도별 소프트맥스 분포와 학생 모델의 이중 모방 학습을 정리한 저자 재구성 도식입니다.</figcaption>
+        </figure>
+
+        <div class="pd-role"><div class="pd-h"><span class="badge b-syn">종합·해석</span>이 강의에서의 역할</div>
+          <p>스터디 그룹 비유에서 이 논문은 "우등생의 답안지를 그대로 베껴 공부하는" 가장 오래된 방식에 해당합니다. 6강은 이 방식을 "추론 흔적 전체를 베끼는" 새로운 버전(R1-Distill)과 나란히 놓아 대비시킵니다.</p>
+          <div class="chips"><span class="concept-chip">지식 증류</span><span class="concept-chip">SFT</span></div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <nav class="flinks">
+    <a href="../강의노트/lecture6.html" target="_blank" rel="noopener">강의 설명자 보기 →</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a>
+    <a href="../" target="_blank" rel="noopener">전체 목록 →</a>
+  </nav>
+  <div class="disc"><b>자료 성격.</b> 본 페이지는 CME 295 6강(추론 모델과 GRPO)이 참조하는 8편의 논문을 비공식으로 정리한 교육용 논문 노트입니다.
+   <span class="badge b-ext">외부</span>=논문 초록·본문에 근거한 내용, <span class="badge b-syn">종합·해석</span>=여러 논문을 엮은 작성자 재구성(도식·강의 연결 포함, 원 논문의 직접 주장이 아님). 각 논문의 핵심 수치는 arXiv 초록 페이지 조회 및 보조 검색으로 그라운딩했으며, 정확한 표·수치는 원문 PDF를 함께 확인하시길 권합니다.</div>
+  <div>제작: Claude · 원저작권은 각 논문 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* chrome: progress bar, back-to-top, reveal-on-scroll, theme toggle */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* master-detail: click a paper item -> show its detail panel */
+const items=$$('.paper-item'),details=$$('.paper-detail'),detailPanel=$('#detailPanel');
+function selectPaper(id){
+  details.forEach(d=>d.classList.toggle('active', d.dataset.paper===id));
+  items.forEach(b=>{
+    const on=b.dataset.paper===id;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-current', on?'true':'false');
+  });
+  if (matchMedia('(max-width:900px)').matches){
+    detailPanel.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+items.forEach(b=>{
+  b.addEventListener('click',()=>selectPaper(b.dataset.paper));
+});
+/* Esc: return focus to the search box (graceful "close" on mobile's inline-expand layout) */
+detailPanel.addEventListener('keydown', e=>{ if(e.key==='Escape'){ $('#paperSearch').focus(); } });
+selectPaper('deepseekr1'); // 대표 논문 미리 선택
+
+/* live search filter (title/authors/concept, ko/en) */
+const searchInput=$('#paperSearch'), groupHeads=$$('.group-h'), noResults=$('#noResults');
+searchInput.addEventListener('input', e=>{
+  const q=e.target.value.trim().toLowerCase();
+  let anyVisible=false;
+  items.forEach(b=>{
+    const hay=(b.dataset.search||'').toLowerCase();
+    const show=!q || hay.includes(q);
+    b.style.display=show?'':'none';
+    if(show) anyVisible=true;
+  });
+  groupHeads.forEach(h=>{
+    const grp=h.dataset.group;
+    const vis=items.some(b=>b.dataset.group===grp && b.style.display!=='none');
+    h.style.display=vis?'':'none';
+  });
+  noResults.hidden=anyVisible;
+});
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

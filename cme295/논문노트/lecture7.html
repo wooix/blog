@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 7강 논문 노트 — 에이전틱 LLM</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1180px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:14px;width:100%}
+.brandmark{font-weight:800;font-size:14.5px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+#topnav nav a{color:var(--ink2);font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+#topnav nav a.ext{border:1px solid var(--line2)}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600;flex:0 0 auto}
+@media(max-width:1000px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:112px 0 46px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,4.6vw,50px);margin:.1em 0 .2em;letter-spacing:-1px;line-height:1.12;position:relative;z-index:1}
+.hero .sub{font-size:clamp(16px,2vw,19px);color:var(--ink2);max-width:820px;margin:0 0 20px;position:relative;z-index:1}
+.origin-links{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--ink3);font-size:14px;margin:0 0 22px;position:relative;z-index:1}
+.origin-links a{font-weight:600}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:14.5px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:56px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:18px;color:var(--ink2);max-width:820px}
+h3{font-size:21px;margin:1.6em 0 .6em}h4{font-size:16px;margin:1.2em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.syn{border-color:var(--syn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+/* timeline (landscape) */
+.tl-legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:18px 0 22px}
+.tl-legend .lgi{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2)}
+.tl-legend .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+.tl-axis{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);border-bottom:2px solid var(--line2);padding-bottom:6px;margin-bottom:4px}
+.tl-row{display:grid;grid-template-columns:190px 1fr;gap:14px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+@media(max-width:680px){.tl-row{grid-template-columns:1fr}}
+.tl-row .lab{font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;color:var(--ink);text-align:left;padding:0;font:inherit}
+.tl-row .lab:hover{color:var(--brand2)}
+.tl-row .lab span{display:block;font-size:11px;color:var(--ink3);font-weight:500}
+.tl-bar-wrap{position:relative;height:28px;background:var(--bg3);border-radius:8px}
+.tl-bar{position:absolute;top:0;bottom:0;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#0a0c12;white-space:nowrap;cursor:pointer;border:none;font-family:inherit}
+/* master-detail */
+.msearch-wrap{margin-bottom:16px}
+#paperSearch{width:100%;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:12px 16px;border-radius:12px;font-size:15px}
+#paperSearch:focus{outline:2px solid var(--brand2);outline-offset:1px}
+.result-count{font-size:12.5px;color:var(--ink3);margin:6px 2px 0}
+.split-wrap{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;margin-top:8px}
+@media(max-width:900px){.split-wrap{grid-template-columns:1fr}}
+.master{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+@media(min-width:901px){.master{max-height:calc(100vh - 96px);overflow-y:auto;position:sticky;top:76px}}
+.mgroup{margin-bottom:4px}
+.mgroup-h{font-size:12px;font-weight:800;letter-spacing:.3px;color:var(--brand2);text-transform:uppercase;margin:16px 0 3px;padding-top:12px;border-top:1px dashed var(--line)}
+.mgroup:first-child .mgroup-h{border-top:none;margin-top:0;padding-top:0}
+.mgroup-h .en{text-transform:none;letter-spacing:0;font-size:11px}
+.mgroup-sub{font-size:12px;color:var(--ink3);margin:0 0 8px;line-height:1.5}
+.paper-item{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:11px;padding:10px 11px;margin:3px 0;cursor:pointer;color:var(--ink);font:inherit}
+.paper-item:hover{background:var(--bg3)}
+.paper-item.active{background:var(--brandsoft);border-color:var(--brand)}
+.paper-item .pt{font-weight:700;font-size:14px;line-height:1.4}
+.paper-item .pm{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.paper-item .ps{font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.55}
+.no-match{color:var(--ink3);font-size:14px;padding:24px 8px;text-align:center}
+.detail{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+@media(min-width:901px){.detail{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow-y:auto}}
+.detail h3{margin-top:0;font-size:22px;letter-spacing:-.2px}
+.d-meta{color:var(--ink3);font-size:13px;margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:5px 14px}
+.d-links{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.d-links a{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line2);padding:7px 13px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.d-links a:hover{border-color:var(--brand);text-decoration:none}
+.tldr-box{background:var(--brandsoft);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;font-weight:700;margin:14px 0 20px;font-size:15.5px;line-height:1.6}
+.d-block{margin:16px 0}
+.d-block .dh{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.d-block p{margin:0;color:var(--ink2);font-size:15px}
+.d-fig{margin:22px 0;background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:14px}
+.d-fig svg{width:100%;height:auto;display:block}
+.d-fig figcaption{font-size:12.5px;color:var(--ink3);margin-top:10px;line-height:1.6}
+.d-role{background:var(--card2);border-radius:12px;padding:14px 16px;margin-top:18px}
+.chip{display:inline-block;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;margin:6px 6px 0 0}
+.footnote{margin-top:14px;font-size:12px;color:var(--ink3)}
+/* footer + misc */
+footer{padding:44px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.footlinks{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<!--eep-audio-v2--><script type="application/json" id="eep-audio-markers">{"v": 1, "src": "exact", "duration": 0.0, "sections": [{"i": 0, "title": "이 장의 논문 지형 How the pieces fit", "t": 30.2}, {"i": 1, "title": "논문 열람실 Master–detail paper notes", "t": 204.8}]}</script><div class="eep-audio" data-v="2"><audio class="eep-audio-el" preload="metadata" src="lecture7.m4a"></audio><button class="eep-play" aria-label="재생">▶</button><span class="eep-time">0:00 / 0:00</span><input class="eep-seek" type="range" min="0" max="0" value="0" aria-label="탐색"><button class="eep-rate" aria-label="재생 속도">1×</button><span class="eep-sec-label"></span></div><style>.eep-audio[data-v="2"]{position:fixed;top:0;left:0;right:0;z-index:130;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:6px 14px;min-height:44px;background:var(--bg,#0e1016);background:color-mix(in srgb,var(--bg,#0e1016) 82%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line,#2a3047);font-family:var(--mono,ui-monospace),monospace;font-size:12px;color:var(--ink,#e8ebf4)}.eep-audio[data-v="2"] audio{display:none}.eep-audio[data-v="2"] button{cursor:pointer;border:none;background:transparent;color:inherit;font:inherit;padding:0}.eep-play{width:40px;height:40px;min-width:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:var(--brand,#3cffd0);color:#000}.eep-time{font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.85}.eep-seek{flex:1;min-width:60px;accent-color:var(--brand,#3cffd0);height:4px}.eep-rate{min-width:48px;padding:6px 8px;border-radius:20px;border:1px solid var(--line,#2a3047)!important;font-weight:700}.eep-sec-label{flex:0 1 auto;max-width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.7}.eep-audio[data-v="2"].eep-attn{animation:eep-attn 1s ease-in-out 3}@keyframes eep-attn{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 3px var(--brand,#3cffd0)}}.eep-sec-play{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;min-width:34px;border-radius:50%;border:1px solid var(--line,#2a3047);background:var(--brand,#3cffd0);color:#000;font-size:14px;line-height:1;cursor:pointer;vertical-align:middle;margin-right:.4em;padding:0;-webkit-appearance:none;font-family:var(--mono,ui-monospace),monospace}.eep-sec-play.eep-playing{animation:eep-pulse 1.2s ease-in-out infinite}@keyframes eep-pulse{0%,100%{box-shadow:0 0 0 0 var(--brand,#3cffd0)}50%{box-shadow:0 0 0 6px transparent}}@media(max-width:600px){.eep-audio[data-v="2"]{gap:7px;padding:5px 10px}.eep-sec-label{display:none}.eep-time{font-size:11px}}</style><script>(function(){
+var bar=document.querySelector('.eep-audio[data-v="2"]');if(!bar)return;
+var audio=bar.querySelector('audio'),playBtn=bar.querySelector('.eep-play'),
+timeEl=bar.querySelector('.eep-time'),seek=bar.querySelector('.eep-seek'),
+rateBtn=bar.querySelector('.eep-rate'),secLabel=bar.querySelector('.eep-sec-label'),
+mjson=document.getElementById('eep-audio-markers');
+var data={};try{data=JSON.parse((mjson&&mjson.textContent)||'{}')}catch(e){}
+var markers=(data.sections||[]).slice().sort(function(a,b){return a.t-b.t});
+var fallbackDur=+data.duration||0,rates=[1,1.25,1.5,1.75,2];
+var slug=(location.pathname.split('/').pop()||'').replace(/\.html?$/i,'');
+var seeking=false,restored=false,lastSaved=-99,curSec=-2;
+function fmt(s){s=Math.max(0,Math.floor(s||0));var m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
+function dur(){return(audio.duration&&isFinite(audio.duration))?audio.duration:fallbackDur;}
+// F4: 드래그 중(seeking)에는 시간 텍스트를 timeupdate 로 덮어쓰지 않는다(깜빡임 방지).
+function paint(){var d=dur();
+if(!seeking){timeEl.textContent=fmt(audio.currentTime)+' / '+fmt(d);seek.max=d||0;seek.value=audio.currentTime||0;}}
+// 현재 시각이 속한 섹션 마커 인덱스(t ≤ 현재시각 인 마지막 마커).
+function computeIdx(){var idx=-1,ct=audio.currentTime+0.01;
+for(var i=0;i<markers.length;i++){if(markers[i].t<=ct)idx=i;else break;}return idx;}
+// 섹션 버튼/라벨 갱신. 재생 중일 때만 활성 버튼에 ⏸+펄스(F3: 일시정지면 펄스 없음).
+function paintSec(idx){var btns=document.querySelectorAll('.eep-sec-play');
+Array.prototype.forEach.call(btns,function(b){b.classList.remove('eep-playing');b.textContent='▶';});
+if(secLabel)secLabel.textContent=(idx>=0&&markers[idx])?(markers[idx].title||''):'';
+if(idx>=0&&markers[idx]&&!audio.paused){var t=markers[idx].t;
+Array.prototype.forEach.call(btns,function(b){
+if(Math.abs(parseFloat(b.getAttribute('data-eep-t'))-t)<0.05){b.classList.add('eep-playing');b.textContent='⏸';}});}}
+function applyRate(r){audio.playbackRate=r;
+rateBtn.textContent=r.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')+'×';}
+var sr=parseFloat(localStorage.getItem('eep-rate'));applyRate(rates.indexOf(sr)>=0?sr:1);
+rateBtn.addEventListener('click',function(){var i=rates.indexOf(audio.playbackRate);
+var r=rates[(i+1)%rates.length];applyRate(r);try{localStorage.setItem('eep-rate',r)}catch(e){}});
+function setPlayUI(){var p=!audio.paused;playBtn.textContent=p?'⏸':'▶';
+playBtn.setAttribute('aria-label',p?'일시정지':'재생');}
+playBtn.addEventListener('click',function(){audio.paused?audio.play():audio.pause();});
+audio.addEventListener('play',setPlayUI);audio.addEventListener('pause',setPlayUI);
+// F3: 재생 시 활성 섹션에 펄스 재적용, 일시정지 시 펄스 해제(멈췄는데 재생처럼 보이지 않게).
+audio.addEventListener('play',function(){curSec=computeIdx();paintSec(curSec);});
+audio.addEventListener('pause',function(){paintSec(curSec);});
+audio.addEventListener('play',function(){if(restored)return;restored=true;
+var pos=parseFloat(localStorage.getItem('eep-pos:'+slug)),d=dur();
+if(pos>=30&&d&&pos<=d-30){audio.currentTime=pos;}});
+seek.addEventListener('input',function(){seeking=true;
+timeEl.textContent=fmt(seek.value)+' / '+fmt(dur());});
+seek.addEventListener('change',function(){audio.currentTime=+seek.value;seeking=false;});
+audio.addEventListener('timeupdate',function(){paint();
+var idx=computeIdx();if(idx!==curSec){curSec=idx;paintSec(idx);}
+var now=audio.currentTime;if(Math.abs(now-lastSaved)>=5){lastSaved=now;
+try{localStorage.setItem('eep-pos:'+slug,now)}catch(e){}}});
+audio.addEventListener('loadedmetadata',paint);
+// F3(2차): 자연 종료 시 브라우저가 'pause' 없이 'ended' 만 보내면 setPlayUI 가 호출되지
+// 않아 메인 재생버튼이 ⏸(일시정지)로 고착된다. 재생이 끝났으므로 섹션 버튼(paintSec)뿐
+// 아니라 메인 버튼도 항상 ▶(재생)로 되돌린다(setPlayUI 는 audio.paused 에 의존해 브라우저별로
+// 불안정하므로 직접 복원).
+audio.addEventListener('ended',function(){try{localStorage.removeItem('eep-pos:'+slug)}catch(e){}
+curSec=-1;paintSec(-1);playBtn.textContent='▶';playBtn.setAttribute('aria-label','재생');});
+// F1: 섹션 버튼은 문서 하단에 있어 스크립트 동기 실행 시점엔 아직 파싱 전 → document 레벨
+// 이벤트 위임으로 클릭을 처리(파싱 시점과 무관하게 항상 동작).
+document.addEventListener('click',function(e){
+var b=e.target&&e.target.closest?e.target.closest('.eep-sec-play'):null;if(!b)return;
+var t=parseFloat(b.getAttribute('data-eep-t'))||0;
+if(b.classList.contains('eep-playing')&&!audio.paused){audio.pause();}
+else{audio.currentTime=t;restored=true;audio.play();}});
+// F6: '#eep-listen' 진입 시 자동 재생. 극초반 동기 시점의 play()는 promise가 끝내
+// settle 되지 않는 레이스가 있어(무반응 4/4 재현) 처리를 DOMContentLoaded 이후로 지연한다.
+// 펄스 폴백도 promise settle 에 의존하지 않고 타임아웃 기반으로 건다: play() 후 1.2초 뒤에도
+// audio.paused 면 차단된 것으로 보고 .eep-attn 부여. promise 가 then/catch 로 settle 되면
+// 타임아웃을 정리하고 그 결과를 반영하며, 실제 'play' 이벤트에서 펄스를 확실히 제거한다(§12 F6).
+function tryListen(){if(location.hash!=='#eep-listen')return;
+var attnTimer=setTimeout(function(){attnTimer=null;if(audio.paused)bar.classList.add('eep-attn');},1200);
+function clearAttnTimer(){if(attnTimer){clearTimeout(attnTimer);attnTimer=null;}}
+audio.addEventListener('play',function(){clearAttnTimer();bar.classList.remove('eep-attn');},{once:true});
+var pr=audio.play();
+if(pr&&pr.then){pr.then(function(){clearAttnTimer();bar.classList.remove('eep-attn');},
+function(){clearAttnTimer();if(audio.paused)bar.classList.add('eep-attn');});}}
+if(document.readyState!=='loading')tryListen();else document.addEventListener('DOMContentLoaded',tryListen);
+var pushed=null;
+function layout(){var barH=bar.offsetHeight;
+if(!pushed){pushed=[];var seen=[];
+['#topnav','#progress'].forEach(function(sel){var el=document.querySelector(sel);
+if(el){pushed.push(el);seen.push(el);}});
+var all=document.body.getElementsByTagName('*');
+for(var i=0;i<all.length;i++){var el=all[i];
+if(el===bar||(el.closest&&el.closest('.eep-audio[data-v="2"]')))continue;
+if(seen.indexOf(el)>=0)continue;var cs=getComputedStyle(el);
+if((cs.position==='fixed'||cs.position==='sticky')&&cs.top==='0px'){pushed.push(el);seen.push(el);}}}
+pushed.forEach(function(el){el.style.top=barH+'px';});
+var b=document.body;if(b.dataset.eepPad===undefined){
+b.dataset.eepPad=parseFloat(getComputedStyle(b).paddingTop)||0;}
+b.style.paddingTop=(parseFloat(b.dataset.eepPad)+barH)+'px';}
+if(document.readyState!=='loading')layout();else document.addEventListener('DOMContentLoaded',layout);
+window.addEventListener('resize',layout);setPlayUI();paint();
+})();</script><!--/eep-audio-v2-->
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME295 · L7 <b>논문 노트</b></span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#library">논문 열람실</a>
+    <a class="ext" href="../강의노트/lecture7.html" target="_blank" rel="noopener">강의 설명자 ↗</a>
+    <a class="ext" href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) ↗</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · 7강 논문 노트</span>
+  <h1>CME 295 · 7강 논문 노트 — 에이전틱 LLM</h1>
+  <p class="sub">이 강의가 딛고 선 열한 편의 논문·기술 발표를 개념별로 묶어, 각 논문이 무엇을 풀려 했고 어떻게 풀었는지 원 초록을 근거로 정리한 마스터-디테일 노트입니다.</p>
+  <div class="origin-links">
+    <span>원 강의 자료:</span>
+    <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture7.pdf" target="_blank" rel="noopener">슬라이드 PDF ↗</a>
+    <a href="../강의노트/lecture7.html" target="_blank" rel="noopener">7강 인터랙티브 설명자 ↗</a>
+  </div>
+  <div class="metaline">
+    <span><b>논문·발표</b> 11편</span>
+    <span><b>개념 그룹</b> 7개</span>
+    <span><b>발표 연도</b> 2019 – 2025</span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#library">논문 열람실로 ↓</a>
+    <a class="cta ghost" href="../" target="_blank" rel="noopener">전체 강의 목록 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>원 출처(논문·발표문)에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>논문 초록·본문을 근거로 옮긴 <b>외부 자료</b> 요약.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 논문을 엮어 만든 <b>작성자 재구성</b>(개념도·강의 연결 등).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== 이 장의 논문 지형 ===== -->
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">01 — Landscape</span>
+  <h2><button class="eep-sec-play" data-eep-t="30.2" aria-label="이 섹션부터 듣기" title="이 섹션부터 듣기">▶</button>이 장의 논문 지형 <span class="en">How the pieces fit</span></h2>
+  <p class="lead">오픈북 시험을 앞둔 수험생을 한 명 떠올려 봅시다. 모든 것을 머릿속에 욱여넣는 대신, 필요한 순간 참고서를 펼쳐 답을 찾고, 계산이 필요하면 계산기를 실제로 손에 쥐고, 문제가 복잡해지면 스스로 풀이 전략을 세워 한 단계씩 밟아 나갑니다. <b>결론부터 말하면, 이번 7강의 열한 편은 정확히 이 장면 하나를 여러 각도에서 정교하게 만들어가는 이야기입니다</b> — 참고서를 찾아 쓰는 법(검색 증강 생성), 도구를 실제로 조작하는 법(함수 호출), 그리고 감독 없이 스스로 계획을 세우고 실행하는 법(에이전트)까지.</p>
+
+  <div class="callout syn">
+    <div class="h"><span class="badge b-syn">종합·해석</span> 문제 → 돌파구 → 후속 흐름</div>
+    <p style="margin:0 0 10px">흐름은 이렇게 흘러갑니다. Lewis 등(2020)이 처음으로 참고서(외부 지식)를 옆에 두고 답을 쓰는 <b>RAG</b>(검색 증강 생성) 구조를 제안하자, 곧 "참고서에서 원하는 페이지를 어떻게 빨리 찾을까"라는 실용적 질문들이 뒤따랐습니다. Sentence-BERT(2019)의 바이 인코더(bi-encoder)가 그 페이지를 미리 색인해 두는 법을, HyDE(2022)와 Contextual Retrieval(2024)이 색인이 놓치는 지점을 하나씩 메우는 법을 보탰습니다.</p>
+    <p style="margin:0 0 10px">여기서 연구팀은 한 걸음 더 나아갑니다. 참고서만으로는 부족한 순간, 계산기나 검색창처럼 실제로 조작해야 하는 도구가 필요해지고, <b>Toolformer</b>(2023)는 그 도구 사용법을 모델이 스스로 학습하게 만들었으며, 도구가 수십 개로 늘어난 실무 현장은 라우팅으로 대응했습니다(2024).</p>
+    <p style="margin:0">마지막 흐름은 "누가 이 모든 도구 사용을 지휘하는가"라는 질문입니다. <b>ReAct</b>(2022)는 생각과 행동을 번갈아 주고받는 루프로 그 지휘봉을 정식화했고, 이 루프를 실제로 구현한 것이 강의가 정의하는 <b>에이전트</b>입니다. 도구와 에이전트가 늘어나며 생긴 새 배관 문제는 <b>MCP</b>(2024, 에이전트↔도구 표준)와 <b>A2A</b>(2025, 에이전트↔에이전트 표준)가 각각 풀었고, ToolSword(2024)와 LLM 에이전트 서베이(2023)는 이 확장의 이면에 있는 안전 문제와 개념 지도를 짚어줍니다.</p>
+  </div>
+
+  <h3 style="margin-top:36px">연도순 미니 타임라인 <span class="en" style="font-size:.55em">Timeline</span></h3>
+  <p class="muted">막대를 클릭하면 오른쪽 논문 열람실에서 해당 논문의 상세 요약으로 바로 이동합니다.</p>
+  <div class="tl-legend" id="tlLegend"></div>
+  <div class="tl-axis" id="tlAxis"></div>
+  <div id="tlRender"></div>
+</div></section>
+
+<!-- ===== 논문 열람실 (마스터-디테일) ===== -->
+<section id="library"><div class="wrap reveal">
+  <span class="sec-no">02 — Paper library</span>
+  <h2><button class="eep-sec-play" data-eep-t="204.8" aria-label="이 섹션부터 듣기" title="이 섹션부터 듣기">▶</button>논문 열람실 <span class="en">Master–detail paper notes</span></h2>
+  <p class="lead">왼쪽에서 개념별로 묶인 논문 목록을 훑어보고(검색으로 좁혀도 좋습니다), 제목을 클릭하면 오른쪽(모바일에서는 아래)에 그 논문의 상세 노트가 펼쳐집니다. 처음에는 강의의 핵심 루프를 정식화한 <b>ReAct</b> 논문이 미리 펼쳐져 있습니다.</p>
+
+  <div class="msearch-wrap">
+    <label for="paperSearch" class="sr-only">논문 검색 (제목·저자·개념, 한/영)</label>
+    <input id="paperSearch" type="text" placeholder="논문 제목·저자·개념으로 검색… (예: RAG, Toolformer, 에이전트)" autocomplete="off">
+    <div class="result-count" id="resultCount" aria-live="polite"></div>
+  </div>
+
+  <div class="split-wrap">
+    <nav class="master" id="master" aria-label="논문 목록"></nav>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="footlinks">
+    <a href="../" target="_blank" rel="noopener">전체 강의 목록 ↗</a>
+    <a href="../강의노트/lecture7.html" target="_blank" rel="noopener">7강 강의 설명자 ↗</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) ↗</a>
+    <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture7.pdf" target="_blank" rel="noopener">7강 슬라이드 PDF ↗</a>
+  </div>
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 7강("에이전틱 LLM")이 인용한 논문·발표문에 대한 비공식 교육용 해설 노트입니다.
+   <span class="badge b-src">원본</span>=원 출처, <span class="badge b-ext">외부</span>=논문·발표문 초록 및 본문 근거 요약, <span class="badge b-syn">종합·해석</span>=작성자 재구성(개념도, 강의 연결 해설 등). 각 논문의 수치·주장은 arXiv 초록 페이지(또는 해당 원문)를 직접 조회해 확인한 내용이며, 확인되지 않은 수치는 지어내지 않고 원 초록의 표현을 그대로 옮겼습니다.</div>
+  <div>제작: Claude · 원저작권은 각 논문·발표문의 저자 및 소속 기관에 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---- chrome: progress bar, back-to-top, reveal-on-scroll, theme toggle ---- */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* =========================================================================
+   DATA — 7 concept groups × 11 papers. Titles/authors/years/arXiv IDs are
+   trusted from the source JSON; problem/idea/method/results are grounded in
+   each paper's fetched abstract (arXiv abs page, or the official blog/tech-
+   disclosure page for non-arXiv items). "impact"/"role" fields and every
+   concept diagram are the agent's own synthesis (b-syn).
+   ========================================================================= */
+const GROUPS=[
+ {id:'rag', title_ko:'검색 증강 생성(RAG)', title_en:'Retrieval-Augmented Generation',
+  blurb:'파라미터에 지식을 욱여넣는 대신, 답하기 직전 외부 지식을 찾아와 함께 읽는 접근 — 참고서를 옆에 두는 것과 같습니다.'},
+ {id:'advanced-rag', title_ko:'고급 RAG 기법', title_en:'Advanced RAG Techniques',
+  blurb:'기본 RAG의 병목(질의-문서 어휘 불일치, 청크의 맥락 손실)을 하나씩 겨냥해 메우는 기법들입니다.'},
+ {id:'function-calling', title_ko:'함수 호출(도구 호출)', title_en:'Function / Tool Calling',
+  blurb:'LLM이 스스로 도구를 골라 호출하고 그 결과를 다시 읽는 능력 — 계산기를 실제로 손에 쥐는 것과 같습니다.'},
+ {id:'agents', title_ko:'에이전트', title_en:'Agents',
+  blurb:'함수 호출을 반복하며 스스로 다음 행동을 정하는 자율 루프, 그리고 그로 인한 안전 문제까지.'},
+ {id:'react', title_ko:'ReAct(추론+행동)', title_en:'ReAct (Reason + Act)',
+  blurb:'관찰·계획·행동을 반복하는 에이전트 루프를 정식화한, 강의의 핵심 프레임워크입니다.'},
+ {id:'mcp', title_ko:'MCP(모델 컨텍스트 프로토콜)', title_en:'Model Context Protocol',
+  blurb:'LLM과 도구를 잇는 배선을 표준화해 N×M 중복 통합 문제를 해소하는 개방형 프로토콜입니다.'},
+ {id:'a2a-protocol', title_ko:'A2A(에이전트 간 프로토콜)', title_en:'Agent2Agent Protocol',
+  blurb:'MCP가 에이전트-도구를 수직으로 잇는다면, A2A는 에이전트-에이전트를 수평으로 잇습니다.'}
+];
+
+const PAPERS=[
+{
+ id:'rag-lewis-2020', group:'rag', year:2020,
+ title:'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks',
+ authors:'Lewis et al.', arxiv:'2005.11401',
+ pdf:'https://arxiv.org/pdf/2005.11401', abs:'https://arxiv.org/abs/2005.11401',
+ list:'검색기+생성기를 결합해, 위키피디아를 참고서 삼아 답을 쓰게 만든 RAG의 원조 논문입니다.',
+ tldr:'지식을 파라미터에 욱여넣는 대신, 필요할 때 위키피디아에서 찾아와 쓰는 법을 LLM에 처음으로 가르친 논문입니다.',
+ problem:'대규모 사전학습 언어모델은 사실 지식을 파라미터 안에 저장하지만 그것을 정밀하게 조회·조작하는 능력은 제한적이어서, 지식 집약적(knowledge-intensive) 과제에서는 과제 전용 아키텍처에 성능이 뒤처집니다.',
+ idea:'매개변수적(parametric) 메모리인 사전학습 seq2seq 모델과, 비매개변수적(non-parametric) 메모리인 위키피디아 밀집 벡터 인덱스를 결합해, 검색된 문서를 잠재 변수처럼 다루고 최종 출력에서 그 문서들에 대한 결과를 주변화(marginalize)합니다.',
+ method:'사전학습된 신경망 검색기(retriever)로 관련 문서를 가져와 생성기 입력에 결합하고, 검색기와 생성기를 엔드투엔드로 함께 미세조정합니다. 시퀀스 전체에 같은 문서를 쓰는 방식과 토큰마다 다른 문서를 참조하는 방식 두 가지로 공식화했습니다.',
+ results:'오픈 도메인 질문응답 세 개 과제에서 최신 성능(state-of-the-art)을 세웠고, 순수 파라메트릭 seq2seq 모델보다 더 구체적이고 다양하며 사실에 기반한 텍스트를 생성했습니다.',
+ impact:'이 논문이 제안한 구조와 이름이 이후 산업 전반의 표준 RAG 파이프라인(검색기+생성기 결합)의 원형이 되었고, 강의가 다루는 고급 RAG 기법들은 대부분 이 기본 구조의 병목을 하나씩 풀어가는 후속작입니다. NeurIPS 2020에서 발표되었습니다.',
+ role:'강의에서 RAG 개념 자체를 정의하는 시조 논문이자, "오픈북 시험"이라는 핵심 비유가 성립하는 근거로 소개됩니다.',
+ chips:['검색 증강 생성','오픈 도메인 QA','비매개변수 메모리'],
+ svg:`<svg viewBox="0 0 700 210" role="img" aria-label="RAG 구조 도식: 질의가 검색기를 거쳐 위키피디아 밀집 벡터 인덱스에서 관련 문서 여러 개를 찾고, 그 문서들과 질의를 함께 생성기에 넣어 답을 만든 뒤 문서별 결과를 주변화하여 최종 답을 냅니다." xmlns="http://www.w3.org/2000/svg">
+   <rect x="8" y="70" width="96" height="62" rx="10" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="56" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">질의</text>
+   <text x="56" y="115" text-anchor="middle" font-size="10" fill="var(--ink3)">Query</text>
+   <text x="122" y="106" font-size="18" fill="var(--ink3)">→</text>
+   <rect x="148" y="55" width="150" height="92" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="223" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">검색기</text>
+   <text x="223" y="103" text-anchor="middle" font-size="10.5" fill="var(--ink2)">Retriever</text>
+   <text x="223" y="120" text-anchor="middle" font-size="10" fill="var(--ink2)">위키피디아 밀집</text>
+   <text x="223" y="134" text-anchor="middle" font-size="10" fill="var(--ink2)">벡터 인덱스</text>
+   <text x="316" y="106" font-size="18" fill="var(--ink3)">→</text>
+   <rect x="342" y="34" width="118" height="34" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="401" y="56" text-anchor="middle" font-size="11" fill="var(--ink2)">문서 z₁</text>
+   <rect x="342" y="76" width="118" height="34" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="401" y="98" text-anchor="middle" font-size="11" fill="var(--ink2)">문서 z₂ … z_k</text>
+   <rect x="342" y="118" width="118" height="30" rx="8" fill="var(--bg3)" stroke="var(--line2)" stroke-dasharray="2 3"/>
+   <text x="401" y="138" text-anchor="middle" font-size="10" fill="var(--ink3)">top-k 후보</text>
+   <text x="474" y="90" font-size="18" fill="var(--ink3)">→</text>
+   <rect x="500" y="55" width="150" height="92" rx="10" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="575" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">생성기</text>
+   <text x="575" y="103" text-anchor="middle" font-size="10.5" fill="var(--ink2)">Generator</text>
+   <text x="575" y="120" text-anchor="middle" font-size="10" fill="var(--ink2)">seq2seq</text>
+   <text x="575" y="134" text-anchor="middle" font-size="10" fill="var(--ink2)">(BART 등)</text>
+   <text x="350" y="180" font-size="11.5" fill="var(--ink3)">질의 + 문서 zᵢ 를 함께 읽어 각 문서별 답 확률을 구한 뒤,</text>
+   <text x="350" y="196" font-size="11.5" fill="var(--ink3)">문서 전체에 대해 주변화(marginalize)한 값이 최종 답이 됩니다.</text>
+ </svg>`
+},
+{
+ id:'sbert-2019', group:'rag', year:2019,
+ title:'Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks',
+ authors:'Reimers & Gurevych', arxiv:'1908.10084',
+ pdf:'https://arxiv.org/pdf/1908.10084', abs:'https://arxiv.org/abs/1908.10084',
+ list:'문장을 미리 벡터로 인코딩해 코사인 유사도만으로 빠르게 비교하는 바이 인코더를 제안했습니다.',
+ tldr:'문장 쌍을 매번 함께 넣어야 했던 느린 BERT 비교 방식을, 미리 계산해둔 벡터의 코사인 유사도 비교로 바꿔 대규모 의미 검색을 실용적으로 만들었습니다.',
+ problem:'원 BERT·RoBERTa는 문장 쌍을 함께 네트워크에 입력해야 유사도 점수를 낼 수 있어, 만 개 문장 중 가장 비슷한 쌍을 찾으려면 약 5천만 번의 추론(약 65시간)이 필요할 만큼 대규모 의미 검색에는 비현실적이었습니다.',
+ idea:'샴 네트워크(siamese network)·트리플렛 네트워크 구조로 문장을 각각 독립적으로 고정 크기 벡터에 매핑하는 바이 인코더(bi-encoder)를 만들어, 벡터를 미리 계산해두면 코사인 유사도 비교만으로 유사 문장을 찾을 수 있게 했습니다.',
+ method:'BERT·RoBERTa를 문장 쌍 목표로 미세조정하되, 두 문장을 별도로 인코딩한 뒤 풀링(pooling)한 벡터를 비교하는 구조로 학습합니다.',
+ results:'동일한 유사 문장 검색 작업을 BERT의 약 65시간에서 약 5초로(약 13,000배) 단축하면서도 BERT 수준의 정확도를 유지했습니다. EMNLP 2019에서 발표되었습니다.',
+ impact:'벡터를 미리 계산해 저장해두는 이 바이 인코더 구조는 RAG 파이프라인 1단계인 후보 검색(candidate retrieval)의 실질적 표준이 되었고, 정밀하지만 느린 크로스 인코더(cross-encoder)와의 역할 분담이라는 이후 "2단계 검색" 구조의 토대를 놓았습니다.',
+ role:'강의의 "검색은 왜 2단계로 나뉘나요?" 절에서 다룬 candidate retrieval 단계의 기술적 기반을 제공하는 논문입니다.',
+ chips:['바이 인코더','후보 검색','2단계 검색'],
+ svg:`<svg viewBox="0 0 700 230" role="img" aria-label="크로스 인코더와 바이 인코더 비교 도식: 크로스 인코더는 문장쌍을 함께 인코딩해 매번 다시 계산해야 하고, 바이 인코더는 문장을 각각 독립적으로 인코딩해 벡터를 미리 저장해두고 코사인 유사도만 비교합니다." xmlns="http://www.w3.org/2000/svg">
+   <text x="10" y="24" font-size="12.5" font-weight="700" fill="var(--warn)">기존: 크로스 인코더 (느림)</text>
+   <rect x="10" y="34" width="130" height="40" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="75" y="58" text-anchor="middle" font-size="11" fill="var(--ink2)">문장 A + 문장 B</text>
+   <text x="150" y="59" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="168" y="34" width="110" height="40" rx="8" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="223" y="58" text-anchor="middle" font-size="11" fill="var(--ink)">BERT 전체</text>
+   <text x="288" y="59" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="306" y="34" width="96" height="40" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="354" y="58" text-anchor="middle" font-size="11" fill="var(--ink2)">유사도 점수</text>
+   <text x="412" y="59" font-size="10.5" fill="var(--warn)">n개 문장마다 O(n²) 재계산 · 10k 문장 ≈ 65시간</text>
+
+   <text x="10" y="120" font-size="12.5" font-weight="700" fill="var(--ok)">SBERT: 바이 인코더 (빠름)</text>
+   <rect x="10" y="130" width="96" height="40" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="58" y="154" text-anchor="middle" font-size="11" fill="var(--ink2)">문장 A</text>
+   <text x="112" y="155" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="130" y="130" width="96" height="40" rx="8" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="178" y="154" text-anchor="middle" font-size="11" fill="var(--ink)">BERT 인코더</text>
+   <text x="232" y="155" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="250" y="130" width="90" height="40" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="295" y="154" text-anchor="middle" font-size="10.5" fill="var(--ink2)">벡터 v_A</text>
+   <text x="344" y="155" font-size="10.5" fill="var(--ink3)">(미리 저장)</text>
+
+   <rect x="10" y="178" width="96" height="40" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="58" y="202" text-anchor="middle" font-size="11" fill="var(--ink2)">문장 B</text>
+   <text x="112" y="203" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="130" y="178" width="96" height="40" rx="8" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="178" y="202" text-anchor="middle" font-size="11" fill="var(--ink)">BERT 인코더</text>
+   <text x="232" y="203" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="250" y="178" width="90" height="40" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="295" y="202" text-anchor="middle" font-size="10.5" fill="var(--ink2)">벡터 v_B</text>
+
+   <text x="420" y="160" font-size="11" fill="var(--ink2)">cos(v_A, v_B)</text>
+   <text x="420" y="176" font-size="10" fill="var(--ok)">저장된 벡터끼리 비교만 하면 됨</text>
+   <text x="420" y="192" font-size="10" fill="var(--ok)">10k 문장 ≈ 5초 (약 13,000배 ↑)</text>
+ </svg>`
+},
+{
+ id:'hyde-2022', group:'advanced-rag', year:2022,
+ title:'Precise Zero-Shot Dense Retrieval without Relevance Labels',
+ authors:'Gao et al.', arxiv:'2212.10496',
+ pdf:'https://arxiv.org/pdf/2212.10496', abs:'https://arxiv.org/abs/2212.10496',
+ list:'질의로 "가상의 답변 문서"를 먼저 생성해 검색에 쓰는 HyDE를 제안했습니다.',
+ tldr:'정답을 모르는 상태에서 질의만 던지는 대신, 언어모델이 먼저 있음직한 답변 문서를 상상해서 써보고 그걸로 검색하면 더 잘 찾힌다는 발상입니다.',
+ problem:'관련성 레이블 없이 수행하는 제로샷 밀집 검색(dense retrieval)에서는 질의(query)와 정답 문서의 표현(어휘·문체)이 크게 달라, 질의 임베딩만으로는 관련 문서를 놓치는 경우가 많습니다.',
+ idea:'지시를 따르는 언어모델(InstructGPT 등)이 질의에 대한 "가상의" 답변 문서를 먼저 생성한 뒤, 그 가상 문서를 임베딩해 실제 문서를 검색하는 데 쓰는 HyDE(Hypothetical Document Embeddings)를 제안합니다.',
+ method:'① 지시추종 LM으로 질의 기반 가상 문서 생성 → ② 대조학습된 인코더(Contriever 등)로 가상 문서를 벡터화 → ③ 그 벡터로 임베딩 공간에서 실제 문서를 검색하는 3단계로 구성됩니다.',
+ results:'관련성 레이블 없이도 웹 검색·질문응답·사실 검증 등 다양한 과제와 스와힐리어·한국어·일본어를 포함한 여러 언어에서, 기존 비지도 밀집 검색기 Contriever보다 뚜렷하게 우수한 성능을 보인다고 보고합니다.',
+ impact:'질의를 그대로 검색하지 않고 "가상의 정답처럼 보이는 텍스트"로 바꿔 검색한다는 발상은 재학습 없이 질의-문서 어휘 불일치 문제를 완화하는 실용적 트릭으로 자리 잡았습니다.',
+ role:'강의의 "고급 RAG 기법" 절에서 질의-문서 어휘 불일치 문제의 대표 해법으로 소개되었습니다.',
+ chips:['질의 확장','제로샷 검색','가상 문서'],
+ svg:`<svg viewBox="0 0 700 190" role="img" aria-label="HyDE 도식: 질의를 언어모델에 넣어 가상의 답변 문서를 먼저 생성하고, 그 가상 문서를 인코더로 벡터화한 뒤 실제 문서들의 벡터 공간에서 가장 가까운 문서를 검색합니다." xmlns="http://www.w3.org/2000/svg">
+   <rect x="8" y="60" width="110" height="56" rx="10" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="63" y="83" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">질의</text>
+   <text x="63" y="99" text-anchor="middle" font-size="9.5" fill="var(--ink3)">"고구려 수도는?"</text>
+   <text x="126" y="93" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="146" y="50" width="150" height="76" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="221" y="76" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">지시추종 LM</text>
+   <text x="221" y="92" text-anchor="middle" font-size="9.5" fill="var(--ink2)">(InstructGPT 등)</text>
+   <text x="221" y="107" text-anchor="middle" font-size="9.5" fill="var(--ink2)">가상 문서 생성</text>
+   <text x="304" y="93" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="324" y="60" width="150" height="56" rx="10" fill="var(--bg3)" stroke="var(--line2)" stroke-dasharray="3 3"/>
+   <text x="399" y="83" text-anchor="middle" font-size="11.5" fill="var(--ink)">가상 문서</text>
+   <text x="399" y="99" text-anchor="middle" font-size="9" fill="var(--ink3)">(있음직한 답변 텍스트)</text>
+   <text x="482" y="93" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="502" y="50" width="100" height="76" rx="10" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="552" y="78" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">Encoder</text>
+   <text x="552" y="94" text-anchor="middle" font-size="9" fill="var(--ink2)">(Contriever)</text>
+   <text x="552" y="110" text-anchor="middle" font-size="9" fill="var(--ink2)">→ 벡터화</text>
+   <text x="610" y="93" font-size="16" fill="var(--ink3)">→</text>
+   <circle cx="655" cy="60" r="4" fill="var(--ink3)"/><circle cx="672" cy="82" r="4" fill="var(--ink3)"/>
+   <circle cx="640" cy="95" r="6" fill="var(--gold)"/><circle cx="663" cy="108" r="4" fill="var(--ink3)"/>
+   <text x="628" y="140" font-size="10.5" fill="var(--ink3)">실제 문서 벡터 공간에서</text>
+   <text x="628" y="155" font-size="10.5" fill="var(--ink3)">가장 가까운 문서(●)를 검색</text>
+ </svg>`
+},
+{
+ id:'contextual-retrieval-2024', group:'advanced-rag', year:2024,
+ title:'Introducing Contextual Retrieval',
+ authors:'Anthropic', arxiv:null,
+ pdf:null, abs:'https://www.anthropic.com/engineering/contextual-retrieval',
+ list:'청크 앞에 짧은 맥락 요약을 붙이는 Contextual Embeddings/BM25로 검색 실패율을 크게 줄였습니다.',
+ tldr:'청크 하나만 떼어놓으면 "어느 회사, 언제 이야기인지" 잃어버리는 문제를, 청크 앞에 짧은 맥락 요약을 붙여서 푸는 기법입니다.',
+ problem:'문서를 검색 가능한 작은 청크로 쪼개면 각 청크가 원 문서의 맥락(어느 회사·어느 절인지 등)을 잃어, 예컨대 "회사 수익이 전분기 대비 3% 증가했다"처럼 그 자체로는 무엇을 말하는지 알 수 없는 조각이 되어 검색 정확도가 떨어집니다.',
+ idea:'각 청크 앞에 Claude로 생성한 짧은 맥락 설명("이 청크는 ACME사의 Q2 2023 성과를 다룬 SEC 신고서에서 발췌" 등)을 붙이는 <b>Contextual Embeddings</b>와, 동일한 맥락 정보를 키워드 검색 BM25 인덱싱에도 적용하는 <b>Contextual BM25</b>를 결합합니다.',
+ method:'문서 전체를 프롬프트에 반복 포함시켜 청크별 맥락 요약을 생성하되, 프롬프트 캐싱으로 이 반복 비용을 낮춥니다 — 프롬프트 캐싱을 적용하면 맥락 생성 비용이 백만 토큰당 $1.02 수준으로 낮아진다고 밝힙니다.',
+ results:'실험에서 검색 실패율이 Contextual Embeddings만 적용 시 5.7%→3.7%(35% 감소), Contextual BM25까지 결합 시 5.7%→2.9%(49% 감소), 재순위화(reranking)까지 더하면 5.7%→1.9%(67% 감소)로 줄었다고 보고합니다.',
+ impact:'학술 논문이 아닌 실무 기술 글이지만, 청크 단위 검색의 맥락 손실 문제를 재학습 없이 프롬프트 엔지니어링만으로 완화한 사례로 널리 채택되어, 강의 슬라이드에도 직접 인용되었습니다.',
+ role:'강의의 "고급 RAG 기법: 파이프라인 곳곳의 병목 풀기" 절에서 청크 맥락 손실 문제의 실무 해법으로 인용되었습니다.',
+ chips:['청크 맥락화','하이브리드 검색','재순위화','프롬프트 캐싱'],
+ svg:`<svg viewBox="0 0 700 220" role="img" aria-label="Contextual Retrieval 도식: 맥락 없는 청크는 검색에 실패하기 쉽지만, 청크 앞에 맥락 요약을 붙인 Contextual Embeddings와 Contextual BM25를 결합하고 재순위화까지 더하면 검색 실패율이 5.7퍼센트에서 1.9퍼센트로 줄어듭니다." xmlns="http://www.w3.org/2000/svg">
+   <text x="10" y="22" font-size="12.5" font-weight="700" fill="var(--warn)">기존: 맥락 없는 청크</text>
+   <rect x="10" y="32" width="230" height="46" rx="8" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="125" y="52" text-anchor="middle" font-size="10.5" fill="var(--ink)">"회사 수익이 전분기 대비</text>
+   <text x="125" y="66" text-anchor="middle" font-size="10.5" fill="var(--ink)">3% 증가했다" (어느 회사? 언제?)</text>
+
+   <text x="10" y="106" font-size="12.5" font-weight="700" fill="var(--ok)">개선: 맥락이 붙은 청크</text>
+   <rect x="10" y="116" width="230" height="66" rx="8" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="125" y="134" text-anchor="middle" font-size="9.5" fill="var(--ink2)">[Claude 생성 맥락] "ACME사</text>
+   <text x="125" y="147" text-anchor="middle" font-size="9.5" fill="var(--ink2)">Q2 2023 SEC 신고서 발췌"</text>
+   <text x="125" y="164" text-anchor="middle" font-size="10.5" fill="var(--ink)">+ "회사 수익이 3% 증가했다"</text>
+
+   <text x="260" y="150" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="286" y="112" width="140" height="74" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="356" y="134" text-anchor="middle" font-size="10.5" fill="var(--ink)">Contextual</text>
+   <text x="356" y="150" text-anchor="middle" font-size="10.5" fill="var(--ink)">Embeddings</text>
+   <text x="356" y="166" text-anchor="middle" font-size="10.5" fill="var(--ink)">+ BM25</text>
+   <text x="356" y="180" text-anchor="middle" font-size="9" fill="var(--ink3)">+ 재순위화</text>
+
+   <text x="440" y="150" font-size="16" fill="var(--ink3)">→</text>
+   <text x="470" y="60" font-size="11.5" font-weight="700" fill="var(--ink)">검색 실패율</text>
+   <rect x="470" y="70" width="180" height="18" rx="4" fill="var(--warn)" opacity=".85"/>
+   <text x="655" y="83" font-size="10.5" fill="var(--ink2)">5.7%</text>
+   <rect x="470" y="94" width="117" height="18" rx="4" fill="var(--ext)" opacity=".85"/>
+   <text x="592" y="107" font-size="10.5" fill="var(--ink2)">3.7%</text>
+   <rect x="470" y="118" width="92" height="18" rx="4" fill="var(--gold)" opacity=".9"/>
+   <text x="567" y="131" font-size="10.5" fill="var(--ink2)">2.9%</text>
+   <rect x="470" y="142" width="60" height="18" rx="4" fill="var(--syn)"/>
+   <text x="535" y="155" font-size="10.5" fill="var(--ink2)">1.9%</text>
+   <text x="470" y="178" font-size="9.5" fill="var(--ink3)">기본 → 맥락화 → +BM25 → +재순위화</text>
+ </svg>`
+},
+{
+ id:'toolformer-2023', group:'function-calling', year:2023,
+ title:'Toolformer: Language Models Can Teach Themselves to Use Tools',
+ authors:'Schick et al.', arxiv:'2302.04761',
+ pdf:'https://arxiv.org/pdf/2302.04761', abs:'https://arxiv.org/abs/2302.04761',
+ list:'모델이 스스로 API 호출을 삽입해보고 손실이 줄어드는 호출만 남겨 도구 사용법을 학습합니다.',
+ tldr:'사람이 일일이 시범을 보이지 않아도, 모델이 어떤 API를 쓰면 다음 단어 예측이 더 쉬워지는지 스스로 판단해 도구 사용법을 익히도록 만들었습니다.',
+ problem:'언어모델은 적은 예시나 지시만으로 새로운 과제를 푸는 데는 뛰어나지만, 역설적으로 산술 연산이나 사실 조회처럼 훨씬 작고 단순한 모델도 잘하는 기본 기능에서는 애를 먹습니다.',
+ idea:'언어모델이 간단한 API를 통해 스스로 도구 사용법을 익히도록 가르쳐, 몇 안 되는 시연만으로 도구가 언제·어떻게 호출되면 다음 토큰 예측 손실이 줄어드는지를 자기지도(self-supervised) 방식으로 판단하게 합니다.',
+ method:'계산기·질의응답 시스템·검색엔진·번역기·달력 등 각 API마다 소수의 사람 시연만 주고, 모델이 다양한 위치에 다양한 호출 후보를 스스로 삽입해본 뒤 손실을 줄이는 호출만 남겨 학습 데이터를 자체 생성하고, 그 데이터로 다시 미세조정합니다.',
+ results:'다양한 다운스트림 과제에서 제로샷 성능을 상당히 끌어올렸고, 핵심 언어 모델링 능력을 잃지 않으면서 훨씬 큰 모델들과 경쟁할 수 있는 수준을 달성했습니다.',
+ impact:'"학습을 통해 도구 사용을 가르치는" 접근의 대표적 초기 사례로, 이후 함수 호출을 모델 재학습 없이 프롬프트 안의 도구 명세만으로 유도하는 방법과 대비되는 한 축을 이룹니다.',
+ role:'강의에서 함수 호출을 모델에 "가르치는" 방법의 대표 사례로 다뤄지며, 다음 절의 도구 라우팅 문제와 자연스럽게 이어집니다.',
+ chips:['자기지도 학습','도구 사용 학습','함수 호출'],
+ svg:`<svg viewBox="0 0 700 200" role="img" aria-label="Toolformer 자기지도 학습 루프 도식: 원문에 다양한 위치와 인자로 API 호출 후보를 삽입해보고, API를 실제로 실행한 뒤 호출 전후의 다음 토큰 예측 손실을 비교해, 손실을 줄이는 호출만 남겨 미세조정 데이터셋을 만듭니다." xmlns="http://www.w3.org/2000/svg">
+   <rect x="10" y="20" width="150" height="46" rx="9" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="85" y="48" text-anchor="middle" font-size="11" fill="var(--ink)">원문 텍스트</text>
+   <text x="170" y="48" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="188" y="10" width="180" height="66" rx="9" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="278" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">후보 API 호출 삽입</text>
+   <text x="278" y="50" text-anchor="middle" font-size="9.5" fill="var(--ink2)">계산기 · 검색 · 번역 · 달력</text>
+   <text x="278" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink2)">(소수 시연에서 위치·인자 샘플링)</text>
+   <text x="378" y="48" font-size="15" fill="var(--ink3)">→</text>
+   <rect x="396" y="20" width="120" height="46" rx="9" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="456" y="48" text-anchor="middle" font-size="11" fill="var(--ink)">API 실제 실행</text>
+
+   <text x="456" y="90" font-size="15" fill="var(--ink3)" text-anchor="middle">↓</text>
+   <rect x="316" y="100" width="280" height="52" rx="9" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="456" y="122" text-anchor="middle" font-size="10.5" fill="var(--ink)">호출 전 vs 호출 후 손실 비교</text>
+   <text x="456" y="138" text-anchor="middle" font-size="9.5" fill="var(--ink2)">다음 토큰 예측 손실이 줄면 채택, 아니면 버림</text>
+
+   <text x="316" y="126" font-size="15" fill="var(--ink3)">←</text>
+   <rect x="30" y="100" width="270" height="52" rx="9" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="165" y="122" text-anchor="middle" font-size="10.5" fill="var(--ink)">필터링된 호출만 삽입된 데이터셋</text>
+   <text x="165" y="138" text-anchor="middle" font-size="9.5" fill="var(--ink2)">→ 이 데이터로 모델을 다시 미세조정</text>
+   <text x="20" y="185" font-size="10.5" fill="var(--ink3)">사람의 시연은 API마다 소수 개뿐 — 나머지는 모델이 자기지도로 스스로 생성합니다.</text>
+ </svg>`
+},
+{
+ id:'tool-selection-2024', group:'function-calling', year:2024,
+ title:'Automatic Tool Selection to Reduce Large Language Model Latency',
+ authors:'Robert et al.', arxiv:null,
+ pdf:'https://www.tdcommons.org/dpubs_series/7521/', abs:'https://www.tdcommons.org/dpubs_series/7521/',
+ list:'도구가 많아질 때, 가벼운 라우터가 먼저 관련 도구만 추려주는 2단계 구조를 제안했습니다.',
+ tldr:'도구가 수십 개로 늘어나면, 그 전체 명세를 매번 프롬프트에 다 넣는 대신 가벼운 라우터가 먼저 후보를 추려주자는 실용적 해법입니다.',
+ problem:'실전에서는 도구 개수가 늘어날수록, 모든 도구 명세를 프롬프트에 매번 포함시키면 맥락 크기(context size)와 지연시간(latency)이 함께 늘어나 성능이 나빠집니다.',
+ idea:'LLM이 최종 호출을 결정하기 전에, 작은 도구 선택 모델(라우터)이 이번 요청과 관련 있을 법한 도구만 먼저 식별하는 2단계 "도구 선택(tool selection)" 구조를 제안합니다.',
+ method:'1단계에서 가벼운 선택 모델이 과제에 적합한 도구를 식별하고, 2단계에서 LLM은 그렇게 추려진 도구의 전체 명세에만 접근해 호출을 결정합니다.',
+ results:'프롬프트 공간을 절약하고, 다단계 작업이나 외부 서비스 상호작용 같은 복잡한 요청도 처리할 수 있게 하며, 광범위한 도구 문서를 다룰 때의 응답성(responsiveness)과 계산 오버헤드를 개선한다고 설명합니다.',
+ impact:'학술지 논문이 아니라 2024년 11월 공개된 방어적 특허 공개(Defensive Publication)이지만, 강의가 다룬 "도구가 많아질 때의 라우팅" 문제에 대한 산업 현장의 실용적 해법을 보여줍니다.',
+ role:'강의의 함수 호출 절에서 도구가 많아질 때의 라우팅 문제를 다루는 산업 사례로 소개되었습니다.',
+ chips:['도구 라우팅','지연시간 최적화'],
+ svg:`<svg viewBox="0 0 700 190" role="img" aria-label="도구 선택 라우팅 도식: 수십 개의 도구 레지스트리에서 가벼운 도구 선택 모델이 이번 요청과 관련 있는 소수의 도구만 먼저 골라내고, LLM은 그 소수의 도구 명세만 프롬프트로 받아 최종 호출을 결정합니다." xmlns="http://www.w3.org/2000/svg">
+   <text x="10" y="24" font-size="11.5" font-weight="700" fill="var(--ink2)">도구 레지스트리 (수십 개)</text>
+   <g font-size="9.5" fill="var(--ink3)">
+     <rect x="10" y="34" width="56" height="24" rx="5" fill="var(--bg3)" stroke="var(--line2)"/><text x="38" y="50" text-anchor="middle">검색</text>
+     <rect x="72" y="34" width="56" height="24" rx="5" fill="var(--bg3)" stroke="var(--line2)"/><text x="100" y="50" text-anchor="middle">달력</text>
+     <rect x="134" y="34" width="56" height="24" rx="5" fill="var(--bg3)" stroke="var(--line2)"/><text x="162" y="50" text-anchor="middle">메일</text>
+     <rect x="10" y="62" width="56" height="24" rx="5" fill="var(--bg3)" stroke="var(--line2)"/><text x="38" y="78" text-anchor="middle">DB</text>
+     <rect x="72" y="62" width="56" height="24" rx="5" fill="var(--bg3)" stroke="var(--line2)"/><text x="100" y="78" text-anchor="middle">지도</text>
+     <rect x="134" y="62" width="56" height="24" rx="5" fill="var(--bg3)" stroke="var(--line2)"/><text x="162" y="78" text-anchor="middle">…N개</text>
+   </g>
+   <text x="205" y="65" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="225" y="30" width="150" height="66" rx="9" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="300" y="56" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">도구 선택 모델</text>
+   <text x="300" y="72" text-anchor="middle" font-size="9.5" fill="var(--ink2)">(경량 라우터)</text>
+   <text x="300" y="86" text-anchor="middle" font-size="9" fill="var(--ink2)">요청과 관련된 도구만 추출</text>
+   <text x="388" y="65" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="408" y="40" width="90" height="24" rx="5" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="453" y="56" text-anchor="middle" font-size="10" fill="var(--ink)">달력</text>
+   <rect x="408" y="68" width="90" height="24" rx="5" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="453" y="84" text-anchor="middle" font-size="10" fill="var(--ink)">메일</text>
+   <text x="510" y="65" font-size="16" fill="var(--ink3)">→</text>
+   <rect x="530" y="30" width="150" height="66" rx="9" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="605" y="58" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">LLM</text>
+   <text x="605" y="76" text-anchor="middle" font-size="9.5" fill="var(--ink2)">추려진 도구만 보고</text>
+   <text x="605" y="90" text-anchor="middle" font-size="9.5" fill="var(--ink2)">호출 결정</text>
+   <text x="10" y="135" font-size="10.5" fill="var(--ink3)">전체 N개 명세를 매번 넣지 않고, 관련 있는 소수만 프롬프트에 담아</text>
+   <text x="10" y="150" font-size="10.5" fill="var(--ink3)">맥락 크기와 지연시간을 함께 줄입니다.</text>
+ </svg>`
+},
+{
+ id:'agents-survey-2023', group:'agents', year:2023,
+ title:'The Rise and Potential of Large Language Model Based Agents: A Survey',
+ authors:'Xi et al.', arxiv:'2309.07864',
+ pdf:'https://arxiv.org/pdf/2309.07864', abs:'https://arxiv.org/abs/2309.07864',
+ list:'LLM 기반 에이전트를 뇌·지각·행동 세 구성요소로 정리한 종합 서베이입니다.',
+ tldr:'환경을 감지하고 판단해 행동하는 오래된 "에이전트" 개념에, LLM이 어떻게 두뇌 역할로 들어맞는지를 정리한 종합 지도입니다.',
+ problem:'인간 수준 또는 그 이상의 인공지능을 향한 오랜 추구에서, 환경을 감지(perceive)하고 결정하고 행동하는 자율 개체인 "에이전트"가 유망한 실현 경로로 여겨져 왔습니다.',
+ idea:'다재다능한 능력을 보여주는 LLM을 AGI(Artificial General Intelligence, 인공일반지능 — 특정 과제에 국한되지 않는 범용 인공지능)의 잠재적 불씨로 보고, LLM 기반 에이전트를 <b>뇌(Brain, 추론·기억·계획)·지각(Perception)·행동(Action)</b>의 세 구성요소로 체계화합니다.',
+ method:'이 세 구성요소를 축으로 기존 LLM 에이전트 연구들의 설계 공간을 분류하고, 단일 에이전트 시나리오·다중 에이전트 협력·인간-에이전트 상호작용까지 폭넓게 정리하는 서베이 방법론을 취합니다.',
+ results:'개별 실험 수치보다는, 에이전트 사회와 집단 행동까지 아우르는 통합적 분류 체계와 향후 연구 방향(평가·안전·확장성 등)을 제시하는 것이 이 서베이의 산출물입니다.',
+ impact:'강의가 "전통적 응답 → 추론 → 에이전트"로 이어지는 흐름을 설명할 때, 에이전트라는 용어 자체의 계보와 구성요소를 짚어주는 배경 지식으로 기능하며, 이후 소개되는 ReAct·MCP·A2A가 각각 뇌·지각·행동 중 어느 축을 다루는지 위치를 잡아줍니다.',
+ role:'강의의 에이전트 개념 정의부에서 배경 지식을 보강하는 외부 자료로 활용되었습니다.',
+ chips:['에이전트 구조','뇌-지각-행동','다중 에이전트'],
+ svg:`<svg viewBox="0 0 620 300" role="img" aria-label="LLM 기반 에이전트 구조 삼각형 도식: 뇌(추론·기억·계획)가 지각으로부터 환경 정보를 받아 행동으로 내보내고, 행동의 결과가 다시 지각을 통해 환경과 순환합니다." xmlns="http://www.w3.org/2000/svg">
+   <circle cx="310" cy="110" r="72" fill="var(--brandsoft)" stroke="var(--brand)" stroke-width="2"/>
+   <text x="310" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">뇌 Brain</text>
+   <text x="310" y="118" text-anchor="middle" font-size="10" fill="var(--ink2)">추론 · 기억 · 계획</text>
+   <text x="310" y="134" text-anchor="middle" font-size="10" fill="var(--ink2)">(Reasoning/Memory/Planning)</text>
+
+   <rect x="40" y="220" width="170" height="60" rx="10" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="125" y="245" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">지각 Perception</text>
+   <text x="125" y="263" text-anchor="middle" font-size="10" fill="var(--ink2)">환경·사용자 입력 감지</text>
+
+   <rect x="410" y="220" width="170" height="60" rx="10" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="495" y="245" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">행동 Action</text>
+   <text x="495" y="263" text-anchor="middle" font-size="10" fill="var(--ink2)">도구 호출 · 실행 · 개입</text>
+
+   <line x1="255" y1="155" x2="160" y2="222" stroke="var(--ink3)" stroke-width="1.6"/>
+   <line x1="365" y1="155" x2="460" y2="222" stroke="var(--ink3)" stroke-width="1.6"/>
+   <path d="M 210 250 Q 310 300 410 250" fill="none" stroke="var(--ink3)" stroke-width="1.6" stroke-dasharray="4 4"/>
+   <text x="310" y="296" text-anchor="middle" font-size="9.5" fill="var(--ink3)">환경(Environment)과의 감지↔행동 순환</text>
+ </svg>`
+},
+{
+ id:'toolsword-2024', group:'agents', year:2024,
+ title:'ToolSword: Unveiling Safety Issues of Large Language Models in Tool Learning Across Three Stages',
+ authors:'Ye et al.', arxiv:'2402.10753',
+ pdf:'https://arxiv.org/pdf/2402.10753', abs:'https://arxiv.org/abs/2402.10753',
+ list:'입력·실행·출력 3단계에 걸친 6가지 안전 시나리오로 11개 LLM의 도구 사용 취약점을 드러냈습니다.',
+ tldr:'도구를 쓰는 LLM 연구 대부분이 "더 잘하게" 만드는 데만 몰두할 때, 이 논문은 입력·실행·출력 세 단계 모두에서 "위험하게" 쓰일 수 있음을 체계적으로 드러냈습니다.',
+ problem:'도구 학습(tool learning) 연구는 대부분 LLM의 능력 증강에만 초점을 맞추고, 실제 적용에 따르는 안전 문제는 소홀히 다뤄왔다는 문제의식에서 출발합니다.',
+ idea:'입력 단계(악의적 질의·탈옥 공격)·실행 단계(노이즈 기반 오도·위험한 신호)·출력 단계(유해 피드백·오류 충돌)에 걸친 6가지 안전 시나리오를 설계한 프레임워크 ToolSword를 제안합니다.',
+ method:'이 6가지 시나리오를 기준으로 GPT-4를 포함한 오픈소스·클로즈드소스 LLM 11개를 평가하는 벤치마크를 구성합니다.',
+ results:'GPT-4를 포함한 대부분의 모델이 유해 질의 처리, 위험한 도구 사용, 유해 피드백 전달에서 취약함을 드러냈으며, 이 논문은 ACL 2024 본회의에 채택되었습니다.',
+ impact:'강의의 "안전(Safety)" 절에서 에이전트가 실세계에 작용할 때 발생할 수 있는 데이터 유출 등 구체적 위험의 근거로 직접 인용되며, 능력 향상만큼이나 안전 평가가 필요하다는 메시지를 뒷받침합니다.',
+ role:'강의의 에이전트 안전 절에서 실세계 위험의 근거 자료로 인용되었습니다.',
+ chips:['도구 학습 안전','안전 벤치마크'],
+ svg:`<svg viewBox="0 0 700 190" role="img" aria-label="ToolSword 3단계 안전 시나리오 도식: 입력 단계의 악의적 질의와 탈옥, 실행 단계의 노이즈 유도와 위험한 신호, 출력 단계의 유해 피드백과 오류 충돌이 도구 학습 파이프라인 전체에 걸쳐 있음을 보여줍니다." xmlns="http://www.w3.org/2000/svg">
+   <rect x="10" y="30" width="205" height="120" rx="10" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="112" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">① 입력 단계</text>
+   <text x="112" y="74" text-anchor="middle" font-size="10" fill="var(--ink2)">Input</text>
+   <text x="112" y="98" text-anchor="middle" font-size="9.5" fill="var(--ink2)">악의적 질의</text>
+   <text x="112" y="114" text-anchor="middle" font-size="9.5" fill="var(--ink2)">탈옥(Jailbreak) 공격</text>
+
+   <text x="225" y="95" font-size="18" fill="var(--ink3)">→</text>
+   <rect x="248" y="30" width="205" height="120" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="350" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">② 실행 단계</text>
+   <text x="350" y="74" text-anchor="middle" font-size="10" fill="var(--ink2)">Execution</text>
+   <text x="350" y="98" text-anchor="middle" font-size="9.5" fill="var(--ink2)">노이즈 기반 오도</text>
+   <text x="350" y="114" text-anchor="middle" font-size="9.5" fill="var(--ink2)">위험한 단서·신호</text>
+
+   <text x="463" y="95" font-size="18" fill="var(--ink3)">→</text>
+   <rect x="486" y="30" width="205" height="120" rx="10" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="588" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">③ 출력 단계</text>
+   <text x="588" y="74" text-anchor="middle" font-size="10" fill="var(--ink2)">Output</text>
+   <text x="588" y="98" text-anchor="middle" font-size="9.5" fill="var(--ink2)">유해한 피드백</text>
+   <text x="588" y="114" text-anchor="middle" font-size="9.5" fill="var(--ink2)">오류 충돌</text>
+
+   <text x="350" y="172" text-anchor="middle" font-size="10.5" fill="var(--warn)">GPT-4 포함 11개 모델 평가 → 세 단계 모두에서 취약점 발견</text>
+ </svg>`
+},
+{
+ id:'react-2022', group:'react', year:2022,
+ title:'ReAct: Synergizing Reasoning and Acting in Language Models',
+ authors:'Yao et al.', arxiv:'2210.03629',
+ pdf:'https://arxiv.org/pdf/2210.03629', abs:'https://arxiv.org/abs/2210.03629',
+ list:'생각과 행동을 교차 생성해 시너지를 내는, 에이전트 루프의 원형 프레임워크입니다.',
+ tldr:'생각(추론)과 행동(도구 사용)을 따로 하지 않고 번갈아 주고받게 하면, 서로가 서로를 더 잘 만든다는 것을 보여준 논문입니다.',
+ problem:'그동안 언어모델의 추론(chain-of-thought 등)과 행동(도구·환경과의 상호작용)은 대체로 따로 연구되어 왔습니다.',
+ idea:'추론 흔적(reasoning trace)과 과제 특화 행동을 교차 생성하도록 프롬프트를 설계해, 추론이 행동 계획을 유도하고 예외를 처리하며 행동에서 얻은 관찰이 다시 추론을 갱신하는 시너지 구조 <b>ReAct(Reason + Act)</b>를 제안합니다.',
+ method:'위키피디아 API 같은 외부 정보원과 상호작용하며 "생각(Thought) → 행동(Action) → 관찰(Observation)"을 번갈아 생성하는 루프를 프롬프트만으로(추가 학습 없이) 구현합니다.',
+ results:'질문응답(HotpotQA)·사실 검증(Fever)에서는 chain-of-thought 방식의 환각·오류 전파 문제를 줄이고 해석 가능성을 높였으며, 대화형 의사결정 벤치마크에서는 모방·강화학습 방식 대비 ALFWorld에서 절대 성공률 34%, WebShop에서 10% 향상을 보였습니다.',
+ impact:'이 논문에서 정식화한 "생각-행동-관찰" 루프는 강의가 설명하는 에이전트의 핵심 동작 방식 그 자체이며, 이후 대부분의 실전 에이전트 프레임워크(함수 호출 기반 에이전트 루프)의 뼈대가 되었습니다.',
+ role:'강의의 "에이전트란 무엇인가" 절에서 관찰→계획→행동 루프를 구조화하는 핵심 프레임워크로 직접 인용되었습니다.',
+ chips:['추론+행동 루프','에이전트 루프','ReAct'],
+ svg:`<svg viewBox="0 0 560 320" role="img" aria-label="ReAct 순환 루프 도식: 생각(Thought)이 행동(Action)을 계획하고, 행동이 실행되면 관찰(Observation) 결과가 돌아와 다시 생각을 갱신하며, 만족스러운 답이 나올 때까지 이 순환을 반복합니다." xmlns="http://www.w3.org/2000/svg">
+   <rect x="205" y="10" width="150" height="58" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="280" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">생각 Thought</text>
+   <text x="280" y="52" text-anchor="middle" font-size="9.5" fill="var(--ink2)">지금까지 알려진 것 종합</text>
+
+   <rect x="380" y="130" width="150" height="58" rx="10" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="455" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">행동 Action</text>
+   <text x="455" y="172" text-anchor="middle" font-size="9.5" fill="var(--ink2)">도구·API 호출 실행</text>
+
+   <rect x="30" y="130" width="150" height="58" rx="10" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="105" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">관찰 Observation</text>
+   <text x="105" y="172" text-anchor="middle" font-size="9.5" fill="var(--ink2)">실행 결과 확인</text>
+
+   <path d="M 340 55 C 400 60, 440 90, 445 128" fill="none" stroke="var(--ink3)" stroke-width="1.8" marker-end="url(#arw1)"/>
+   <path d="M 380 168 C 300 210, 200 210, 118 190" fill="none" stroke="var(--ink3)" stroke-width="1.8" marker-end="url(#arw1)"/>
+   <path d="M 90 130 C 95 95, 140 60, 210 45" fill="none" stroke="var(--ink3)" stroke-width="1.8" marker-end="url(#arw1)"/>
+   <defs><marker id="arw1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink3)"/></marker></defs>
+
+   <text x="280" y="230" text-anchor="middle" font-size="11" fill="var(--ink2)">만족스러운 답이 나올 때까지</text>
+   <text x="280" y="246" text-anchor="middle" font-size="11" fill="var(--ink2)">Thought → Action → Observation 반복</text>
+   <rect x="185" y="262" width="190" height="40" rx="9" fill="var(--bg3)" stroke="var(--line2)"/>
+   <text x="280" y="288" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">최종 답변</text>
+ </svg>`
+},
+{
+ id:'mcp-2024', group:'mcp', year:2024,
+ title:'Introducing the Model Context Protocol',
+ authors:'Anthropic', arxiv:null,
+ pdf:null, abs:'https://www.anthropic.com/news/model-context-protocol',
+ list:'AI 어시스턴트와 데이터·도구를 잇는 개방형 표준 MCP를 공개한 발표입니다.',
+ tldr:'LLM마다 도구마다 따로 배선을 깔아야 했던 N×M 문제를, 하나의 표준 프로토콜로 정리한 발표입니다.',
+ problem:'AI 어시스턴트를 파일 저장소·업무 도구·개발 환경 같은 데이터·도구 시스템과 연결하려면, 그동안 데이터 소스마다 각자 다른 커스텀 통합을 구현해야 했습니다.',
+ idea:'2024년 11월 25일 Anthropic이 공개한 개방형 표준 <b>MCP(Model Context Protocol, 모델 컨텍스트 프로토콜)</b>로, 이런 N×M 중복 통합 문제를 표준 인터페이스 하나로 해소합니다.',
+ method:'데이터를 MCP로 노출하는 서버(Server)와 그에 연결하는 AI 애플리케이션인 클라이언트(Client)로 구조를 나누고, JSON-RPC 기반으로 도구(Tools)·자원(Resources)·프롬프트(Prompts)를 표준화된 방식으로 주고받도록 설계했습니다. Python·TypeScript SDK와 Google Drive·Slack·GitHub·Git·Postgres 등 사전 구축된 서버도 함께 공개했습니다.',
+ results:'발표 즉시 Claude Desktop 앱의 로컬 MCP 서버 지원과 개발자용 빠른 시작 가이드가 함께 제공되었습니다.',
+ impact:'학술 논문은 아니지만 이후 산업 전반에서 빠르게 채택되어 함수 호출 생태계의 사실상 배관(plumbing) 표준으로 자리 잡았으며, 강의는 이를 "도구 호출이 여러 LLM·여러 도구 사이에서 중복 구현되는 문제"의 해결 사례로 소개합니다.',
+ role:'강의의 함수 호출 절에서 다중 LLM–다중 도구 통합 표준화 사례로 소개되었습니다.',
+ chips:['표준 프로토콜','N×M 통합 문제','JSON-RPC'],
+ svg:`<svg viewBox="0 0 700 230" role="img" aria-label="MCP 도식: 이전에는 LLM 애플리케이션 여러 개가 도구 여러 개에 각각 개별 배선으로 연결되어 N곱하기 M개의 통합이 필요했지만, MCP 표준이 도입된 이후에는 모든 클라이언트와 서버가 하나의 표준 프로토콜만 거치면 됩니다." xmlns="http://www.w3.org/2000/svg">
+   <text x="10" y="20" font-size="12" font-weight="700" fill="var(--warn)">이전: N × M 개별 배선</text>
+   <g font-size="10" fill="var(--ink)">
+     <rect x="10" y="30" width="70" height="26" rx="6" fill="var(--bg3)" stroke="var(--line2)"/><text x="45" y="47" text-anchor="middle">LLM A</text>
+     <rect x="10" y="62" width="70" height="26" rx="6" fill="var(--bg3)" stroke="var(--line2)"/><text x="45" y="79" text-anchor="middle">LLM B</text>
+     <rect x="10" y="94" width="70" height="26" rx="6" fill="var(--bg3)" stroke="var(--line2)"/><text x="45" y="111" text-anchor="middle">LLM C</text>
+     <rect x="230" y="30" width="70" height="26" rx="6" fill="var(--ext-bg)" stroke="var(--ext)"/><text x="265" y="47" text-anchor="middle">도구 X</text>
+     <rect x="230" y="62" width="70" height="26" rx="6" fill="var(--ext-bg)" stroke="var(--ext)"/><text x="265" y="79" text-anchor="middle">도구 Y</text>
+     <rect x="230" y="94" width="70" height="26" rx="6" fill="var(--ext-bg)" stroke="var(--ext)"/><text x="265" y="111" text-anchor="middle">도구 Z</text>
+   </g>
+   <g stroke="var(--warn)" stroke-width="1" opacity=".55">
+     <line x1="80" y1="43" x2="230" y2="43"/><line x1="80" y1="43" x2="230" y2="75"/><line x1="80" y1="43" x2="230" y2="107"/>
+     <line x1="80" y1="75" x2="230" y2="43"/><line x1="80" y1="75" x2="230" y2="75"/><line x1="80" y1="75" x2="230" y2="107"/>
+     <line x1="80" y1="107" x2="230" y2="43"/><line x1="80" y1="107" x2="230" y2="75"/><line x1="80" y1="107" x2="230" y2="107"/>
+   </g>
+
+   <text x="10" y="150" font-size="12" font-weight="700" fill="var(--ok)">MCP 이후: 표준 하나로 통합</text>
+   <g font-size="10" fill="var(--ink)">
+     <rect x="10" y="160" width="70" height="26" rx="6" fill="var(--bg3)" stroke="var(--line2)"/><text x="45" y="177" text-anchor="middle">Client</text>
+     <rect x="10" y="192" width="70" height="26" rx="6" fill="var(--bg3)" stroke="var(--line2)"/><text x="45" y="209" text-anchor="middle">Client</text>
+   </g>
+   <rect x="230" y="163" width="150" height="52" rx="9" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="305" y="185" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">MCP</text>
+   <text x="305" y="200" text-anchor="middle" font-size="9" fill="var(--ink2)">JSON-RPC 표준</text>
+   <g font-size="10" fill="var(--ink)">
+     <rect x="480" y="160" width="70" height="26" rx="6" fill="var(--ext-bg)" stroke="var(--ext)"/><text x="515" y="177" text-anchor="middle">Server X</text>
+     <rect x="480" y="192" width="70" height="26" rx="6" fill="var(--ext-bg)" stroke="var(--ext)"/><text x="515" y="209" text-anchor="middle">Server Y</text>
+   </g>
+   <line x1="80" y1="173" x2="230" y2="180" stroke="var(--ok)" stroke-width="1.6"/>
+   <line x1="80" y1="205" x2="230" y2="198" stroke="var(--ok)" stroke-width="1.6"/>
+   <line x1="380" y1="180" x2="480" y2="173" stroke="var(--ok)" stroke-width="1.6"/>
+   <line x1="380" y1="198" x2="480" y2="205" stroke="var(--ok)" stroke-width="1.6"/>
+ </svg>`
+},
+{
+ id:'a2a-2025', group:'a2a-protocol', year:2025,
+ title:'Announcing the Agent2Agent Protocol (A2A)',
+ authors:'Google', arxiv:null,
+ pdf:null, abs:'https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/',
+ list:'서로 다른 벤더의 에이전트끼리 발견·위임·통신하게 하는 개방형 표준 A2A를 발표했습니다.',
+ tldr:'MCP가 에이전트와 도구를 잇는다면, A2A는 서로 다른 회사가 만든 에이전트끼리 대화하고 협업하게 하는 표준입니다.',
+ problem:'서로 다른 벤더·프레임워크로 구축된 에이전트들은 표준화된 통신 방법이 없으면 상호운용할 수 없어, 자율성과 생산성 향상이 제한되고 장기적으로 비용이 늘어납니다.',
+ idea:'2025년 4월 9일 Google이 발표(이후 2025년 6월 Linux Foundation으로 이관)한 개방형 프로토콜 <b>A2A(Agent2Agent Protocol)</b>는, 에이전트가 서로 발견하고 작업을 위임하며 결과를 안전하게 교환할 수 있게 합니다.',
+ method:'HTTP(S)·JSON-RPC·서버-전송 이벤트(Server-Sent Events, SSE) 같은 기존 업계 표준 위에서, 에이전트가 자신의 능력을 <b>AgentCard</b>로 알리고 세부 기능을 <b>AgentSkill</b>로 정의하며 <b>AgentExecutor</b>가 실제 실행을 맡는 구조를 규정합니다. 기본 보안 설계, 장시간 실행 작업, 다양한 모달리티 지원도 설계 원칙에 포함됩니다.',
+ results:'50개 이상의 기술 파트너 및 주요 서비스 제공업체와 함께 공개되었습니다.',
+ impact:'MCP가 에이전트-도구를 수직으로 잇는 표준이라면, A2A는 에이전트-에이전트를 수평으로 잇는 표준으로, 강의가 다룬 온도조절기·에너지 관리·재실 감지·공기질 에이전트처럼 여러 전문 에이전트가 협업해야 하는 다중 에이전트 시스템의 통신 문제를 표준화된 방식으로 풀어줍니다.',
+ role:'강의의 다중 에이전트 협업·안전 절에서 에이전트 간 통신 표준화 사례로 소개되었습니다.',
+ chips:['에이전트 간 통신','다중 에이전트','AgentCard'],
+ svg:`<svg viewBox="0 0 700 230" role="img" aria-label="A2A 도식: MCP가 에이전트와 도구를 수직으로 연결하는 것과 달리, A2A는 서로 다른 벤더가 만든 에이전트들을 수평으로 연결해 AgentCard로 서로를 발견하고 JSON-RPC와 HTTP, SSE로 작업을 위임하고 결과를 주고받게 합니다." xmlns="http://www.w3.org/2000/svg">
+   <text x="10" y="20" font-size="12" font-weight="700" fill="var(--ink2)">MCP: 수직 연결 (에이전트 ↔ 도구)</text>
+   <rect x="30" y="30" width="90" height="34" rx="7" fill="var(--brandsoft)" stroke="var(--brand)"/>
+   <text x="75" y="52" text-anchor="middle" font-size="10.5" fill="var(--ink)">에이전트</text>
+   <line x1="75" y1="64" x2="75" y2="86" stroke="var(--line2)" stroke-width="1.6"/>
+   <rect x="30" y="86" width="90" height="30" rx="7" fill="var(--ext-bg)" stroke="var(--ext)"/>
+   <text x="75" y="106" text-anchor="middle" font-size="10" fill="var(--ink)">도구</text>
+
+   <text x="180" y="80" font-size="20" fill="var(--ink3)">vs</text>
+
+   <text x="230" y="20" font-size="12" font-weight="700" fill="var(--ok)">A2A: 수평 연결 (에이전트 ↔ 에이전트)</text>
+   <rect x="230" y="70" width="110" height="46" rx="8" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="285" y="90" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">Agent A</text>
+   <text x="285" y="105" text-anchor="middle" font-size="9" fill="var(--ink2)">(벤더 1)</text>
+
+   <rect x="400" y="70" width="110" height="46" rx="8" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="455" y="90" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">Agent B</text>
+   <text x="455" y="105" text-anchor="middle" font-size="9" fill="var(--ink2)">(벤더 2)</text>
+
+   <rect x="570" y="70" width="110" height="46" rx="8" fill="var(--syn-bg)" stroke="var(--syn)"/>
+   <text x="625" y="90" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">Agent C</text>
+   <text x="625" y="105" text-anchor="middle" font-size="9" fill="var(--ink2)">(벤더 3)</text>
+
+   <line x1="340" y1="93" x2="400" y2="93" stroke="var(--ok)" stroke-width="1.8"/>
+   <line x1="510" y1="93" x2="570" y2="93" stroke="var(--ok)" stroke-width="1.8"/>
+   <text x="285" y="140" text-anchor="middle" font-size="9" fill="var(--ink3)">AgentCard로</text>
+   <text x="285" y="153" text-anchor="middle" font-size="9" fill="var(--ink3)">서로 발견</text>
+   <text x="455" y="140" text-anchor="middle" font-size="9" fill="var(--ink3)">JSON-RPC·HTTP·SSE</text>
+   <text x="455" y="153" text-anchor="middle" font-size="9" fill="var(--ink3)">로 작업 위임</text>
+   <text x="625" y="140" text-anchor="middle" font-size="9" fill="var(--ink3)">AgentExecutor가</text>
+   <text x="625" y="153" text-anchor="middle" font-size="9" fill="var(--ink3)">실행 담당</text>
+ </svg>`
+}
+];
+
+/* group color for timeline bars */
+const GCOLOR={'rag':'#3b82f6','advanced-rag':'#8b5cf6','function-calling':'#f59e0b','agents':'#ef4444','react':'#06b6d4','mcp':'#2dd4bf','a2a-protocol':'#22c55e'};
+
+let currentId='react-2022';
+
+/* ---- master list render + search ---- */
+function matchesQuery(p,g,q){
+  if(!q) return true;
+  const hay=(p.title+' '+p.authors+' '+g.title_ko+' '+g.title_en+' '+p.tldr).toLowerCase();
+  return hay.includes(q);
+}
+function renderMaster(q=''){
+  q=q.trim().toLowerCase();
+  let total=0;
+  const html=GROUPS.map(g=>{
+    const papers=PAPERS.filter(p=>p.group===g.id && matchesQuery(p,g,q));
+    total+=papers.length;
+    if(!papers.length) return '';
+    const items=papers.map(p=>`
+      <button class="paper-item${p.id===currentId?' active':''}" type="button" data-id="${p.id}" aria-pressed="${p.id===currentId}">
+        <div class="pt">${esc(p.title)}</div>
+        <div class="pm">${esc(p.authors)} · ${p.year}${p.arxiv?' · arXiv:'+esc(p.arxiv):''}</div>
+        <div class="ps">${esc(p.list)}</div>
+      </button>`).join('');
+    return `<div class="mgroup">
+      <div class="mgroup-h">${esc(g.title_ko)} <span class="en">${esc(g.title_en)}</span></div>
+      <div class="mgroup-sub">${esc(g.blurb)}</div>
+      ${items}
+    </div>`;
+  }).join('');
+  master.innerHTML = html || `<p class="no-match">"${esc(q)}"와 일치하는 논문이 없습니다.</p>`;
+  resultCount.textContent = q ? `검색 결과: ${total}편` : `전체 ${PAPERS.length}편 · ${GROUPS.length}개 개념 그룹`;
+  $$('.paper-item',master).forEach(btn=>{
+    btn.addEventListener('click',()=>selectPaper(btn.dataset.id,{fromList:true}));
+  });
+}
+
+/* ---- detail panel render ---- */
+function badge(kind){
+  return kind==='ext' ? '<span class="badge b-ext">외부</span>' : (kind==='syn' ? '<span class="badge b-syn">종합·해석</span>' : '<span class="badge b-src">원본</span>');
+}
+function renderDetail(id){
+  const p=PAPERS.find(x=>x.id===id); if(!p) return;
+  const links=[];
+  if(p.pdf) links.push(`<a href="${p.pdf}" target="_blank" rel="noopener">📄 PDF</a>`);
+  if(p.abs) links.push(`<a href="${p.abs}" target="_blank" rel="noopener">${p.arxiv?'🔗 arXiv':'🔗 원문 보기'}</a>`);
+  const linksHtml = links.length ? links.join('') : '<span class="muted">공개 링크 없음</span>';
+  const g=GROUPS.find(x=>x.id===p.group);
+  detail.innerHTML = `
+    <h3 tabindex="-1" id="detailTitle">${esc(p.title)}</h3>
+    <div class="d-meta"><span>${esc(p.authors)}</span><span>${p.year}</span>${p.arxiv?`<span>arXiv:${esc(p.arxiv)}</span>`:'<span>arXiv 없음 · 원문 링크로 그라운딩</span>'}</div>
+    <div class="d-links">${linksHtml}</div>
+    <div class="tldr-box">TL;DR — ${p.tldr}</div>
+    <div class="d-block"><div class="dh">${badge('ext')} 문제의식</div><p>${p.problem}</p></div>
+    <div class="d-block"><div class="dh">${badge('ext')} 핵심 아이디어</div><p>${p.idea}</p></div>
+    <div class="d-block"><div class="dh">${badge('ext')} 방법</div><p>${p.method}</p></div>
+    <div class="d-block"><div class="dh">${badge('ext')} 주요 결과</div><p>${p.results}</p></div>
+    <div class="d-block"><div class="dh">${badge('syn')} 영향·후속 연구</div><p>${p.impact}</p></div>
+    <figure class="d-fig">
+      ${p.svg}
+      <figcaption>${badge('syn')} 이 논문의 핵심 메커니즘을 작성자가 도식화했습니다.</figcaption>
+    </figure>
+    <div class="d-role">
+      <div class="dh">🔗 이 강의에서의 역할</div>
+      <p>${p.role}</p>
+      <div>${p.chips.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}${g?`<span class="chip">개념: ${esc(g.title_ko)}</span>`:''}</div>
+    </div>
+  `;
+}
+function selectPaper(id,opts={}){
+  currentId=id;
+  renderDetail(id);
+  $$('.paper-item',master).forEach(b=>{
+    const on=b.dataset.id===id;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-pressed',on);
+  });
+  if(opts.fromList){
+    if(matchMedia('(max-width:900px)').matches){
+      requestAnimationFrame(()=>{
+        detail.scrollIntoView({behavior:'smooth',block:'start'});
+        const h=$('#detailTitle'); if(h) h.focus({preventScroll:true});
+      });
+    } else {
+      const h=$('#detailTitle'); if(h) h.focus({preventScroll:true});
+    }
+  }
+}
+/* Esc: from within the detail panel, return focus to the active list item
+   (this page uses "expand below/beside the list" rather than a modal sheet,
+   so Esc's role is to hand keyboard focus back to the master list). */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && detail.contains(document.activeElement)){
+    const btn=$(`.paper-item[data-id="${currentId}"]`,master);
+    if(btn) btn.focus();
+  }
+});
+
+const master=$('#master'),detail=$('#detail'),resultCount=$('#resultCount');
+$('#paperSearch').addEventListener('input',e=>renderMaster(e.target.value));
+renderMaster('');
+renderDetail(currentId);
+
+/* ---- landscape mini timeline (chronological, clickable → jumps into library) ---- */
+const TL=PAPERS.slice().sort((a,b)=>a.year-b.year).map(p=>({
+  id:p.id, label:p.title.length>34? p.title.slice(0,33)+'…' : p.title, authors:p.authors, year:p.year,
+  color:GCOLOR[p.group]||'var(--brand)'
+}));
+const Y0=2019,Y1=2026,SPAN=Y1-Y0;
+tlAxis.innerHTML=[2019,2020,2021,2022,2023,2024,2025,2026].map(y=>`<span>${y}</span>`).join('');
+tlRender.innerHTML=TL.map(t=>{
+  const left=((t.year-Y0)/SPAN*100).toFixed(1), width=Math.max(9,(0.7/SPAN*100)).toFixed(1);
+  return `<div class="tl-row">
+    <button class="lab" type="button" data-go="${t.id}">${esc(t.label)}<span>${esc(t.authors)}</span></button>
+    <div class="tl-bar-wrap"><button class="tl-bar" type="button" data-go="${t.id}" style="left:${left}%;width:${width}%;background:${t.color}">${t.year}</button></div>
+  </div>`;
+}).join('');
+$$('#tlRender [data-go]').forEach(b=>b.addEventListener('click',()=>{
+  selectPaper(b.dataset.go,{fromList:false});
+  $$('.paper-item',master).forEach(x=>x.classList.toggle('active',x.dataset.id===b.dataset.go));
+  const lib=$('#library'); if(lib) lib.scrollIntoView({behavior:'smooth',block:'start'});
+  requestAnimationFrame(()=>{const h=$('#detailTitle'); if(h) h.focus({preventScroll:true});});
+}));
+tlLegend.innerHTML=GROUPS.map(g=>`<span class="lgi"><span class="dot" style="background:${GCOLOR[g.id]}"></span>${esc(g.title_ko)}</span>`).join('');
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

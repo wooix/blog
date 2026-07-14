@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 3강 — 거대 언어 모델, 다음 단어를 고르는 법</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,6vw,58px);margin:.1em 0 .2em;letter-spacing:-1.2px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:780px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(26px,4vw,40px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+/* eqn */
+.eqn{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:16px 0;font-family:var(--serif);font-size:19px;text-align:center;overflow-x:auto}
+.eqn-note{font-size:14px;color:var(--ink2);margin:8px 0 18px}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* cascade */
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:22px;margin:.2em 0 .1em;font-family:var(--serif)}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden;background:var(--card)}
+.acc summary{padding:15px 18px;cursor:pointer;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .ar{margin-left:auto;transition:.2s;color:var(--ink3)}.acc[open] summary .ar{transform:rotate(90deg)}
+.acc .body{padding:0 18px 18px;color:var(--ink2)}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+/* footer + misc */
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.92em;background:var(--bg3);padding:1px 6px;border-radius:5px}
+
+/* ===== custom widget: decoding lab ===== */
+.declab{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.declab .row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+.declab .field{flex:1 1 220px}
+.declab .field label{font-size:13px;color:var(--ink2);font-weight:600;display:flex;justify-content:space-between}
+.declab .field label b{color:var(--brand2)}
+.declab input[type=range]{width:100%;accent-color:var(--brand);height:6px;margin-top:10px}
+.modebar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}
+.modebtn{font:inherit;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:8px 14px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13.5px}
+.modebtn.on{background:var(--brandsoft);border-color:var(--brand);color:var(--ink)}
+.decbars{display:flex;align-items:flex-end;gap:5px;height:190px;padding:0 2px;overflow-x:auto}
+.decbar{flex:1 1 0;min-width:44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.decbar .pct{font-size:10.5px;color:var(--ink3);margin-bottom:4px;font-variant-numeric:tabular-nums}
+.decbar .fill{width:100%;border-radius:6px 6px 3px 3px;background:var(--ink3);transition:height .25s,background .25s;min-height:3px}
+.decbar .fill.sel{background:var(--brand)}
+.decbar .wd{font-size:11px;color:var(--ink2);margin-top:7px;text-align:center;word-break:break-word}
+.decreadout{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+@media(max-width:700px){.decreadout{grid-template-columns:1fr}}
+.decreadout .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.decreadout .box .big{font-size:22px;font-weight:800;color:var(--gold)}
+.decreadout .box .lb{font-size:12px;color:var(--ink3);margin-top:2px}
+
+/* ===== custom widget: MoE routing ===== */
+.moe-panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.moe-tokens{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.moe-token{font:inherit;padding:9px 15px;border-radius:10px;border:1px solid var(--line2);background:var(--bg3);color:var(--ink2);cursor:pointer;font-weight:700;font-size:14.5px}
+.moe-token.active{background:var(--brandsoft);border-color:var(--brand);color:var(--ink)}
+.moe-kbar{display:flex;gap:8px;margin-bottom:18px}
+.moe-experts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:680px){.moe-experts{grid-template-columns:repeat(2,1fr)}}
+.moe-expert{background:var(--bg3);border:2px solid var(--line);border-radius:12px;padding:14px 10px;text-align:center;transition:.2s}
+.moe-expert.on{border-color:var(--ok);background:rgba(52,211,153,.10)}
+.moe-expert .nm{font-weight:800;font-size:14px}
+.moe-expert .sc{font-size:20px;font-weight:800;color:var(--gold);margin-top:4px}
+.moe-expert .mk{font-size:16px;margin-top:4px}
+.moe-formula{margin-top:16px;background:var(--bg3);border-radius:12px;padding:14px 16px;font-family:var(--serif);font-size:16px;text-align:center;overflow-x:auto}
+.moe-util{margin-top:22px}
+.moe-util .urow{display:flex;align-items:center;gap:12px;margin:8px 0;font-size:13.5px}
+.moe-util .unm{width:34px;font-weight:700;color:var(--ink2)}
+.moe-util .ubarwrap{flex:1;height:16px;background:var(--bg3);border-radius:8px;overflow:hidden}
+.moe-util .ubar{height:100%;background:var(--brand);border-radius:8px;transition:width .3s}
+.moe-util .uct{width:30px;text-align:right;color:var(--ink3)}
+
+/* ===== custom widget: self-consistency ===== */
+.sc-panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.sc-q{background:var(--bg3);border-radius:12px;padding:14px 16px;font-size:15px;margin-bottom:16px}
+.sc-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.sc-btn{font:inherit;background:var(--brand);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14.5px}
+.sc-btn.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}
+.sc-btn:disabled{opacity:.4;cursor:not-allowed}
+.sc-samples{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;max-height:280px;overflow-y:auto}
+.sc-sample{display:flex;gap:12px;align-items:center;background:var(--bg3);border-radius:10px;padding:10px 14px;font-size:13.5px;animation:fade .3s}
+.sc-sample .idx{color:var(--ink3);font-weight:700;width:20px}
+.sc-sample .txt{flex:1;color:var(--ink2)}
+.sc-sample .ans{font-weight:800;padding:3px 12px;border-radius:999px;background:var(--brandsoft);color:var(--brand2);white-space:nowrap}
+.sc-sample .ans.outlier{background:rgba(248,113,113,.16);color:var(--warn)}
+.sc-tally{display:flex;gap:12px;flex-wrap:wrap}
+.sc-tally .tbox{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:center;flex:1 1 90px}
+.sc-tally .tbox .big{font-size:24px;font-weight:800}
+.sc-tally .tbox.winner{border-color:var(--ok);background:rgba(52,211,153,.10)}
+.sc-verdict{margin-top:16px;font-size:14.5px}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>3강</b> LLM</span>
+  <nav>
+    <a href="#overview">개요</a>
+    <a href="#moe">MoE</a>
+    <a href="#decoding">디코딩</a>
+    <a href="#prompting">프롬프팅</a>
+    <a href="#reasoning">추론</a>
+    <a href="#check">점검</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · Fall 2025 · Lecture 3 · 인터랙티브 해설</span>
+  <h1>CME 295 · 3강 — 거대 언어 모델, 다음 단어를 고르는 법</h1>
+  <p class="sub">결론부터 말하면, 거대 언어 모델(LLM)은 지금까지 나온 토큰들을 보고 <b>다음 토큰의 확률 분포</b>를 계산하는 하나의 함수일 뿐입니다. 이 강의는 그 함수를 (1) Mixture of Experts로 더 크게 키우고, (2) 온도와 샘플링으로 더 다양하게 뽑고, (3) 프롬프팅·사고 사슬·자기 일관성으로 더 정확하게 쓰는 세 갈래 이야기를 따라갑니다.</p>
+  <div class="metaline">
+    <span><b>강의</b> Afshine &amp; Shervine Amidi · Stanford ICME</span>
+    <span><b>일자</b> 2025-10-10</span>
+    <span><b>원 슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture3.pdf" target="_blank" rel="noopener">fall25-cme295-lecture3.pdf ↗</a></span>
+    <span><b>영상</b> <a href="https://www.youtube.com/watch?v=Q5baLehv5So" target="_blank" rel="noopener">YouTube ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#overview">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://cme295.stanford.edu/slides/fall25-cme295-lecture3.pdf" target="_blank" rel="noopener">원 슬라이드 PDF ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>강의 슬라이드에서 직접 가져온 정의·수식·예시.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>슬라이드가 인용했거나 추가로 찾아본 <b>논문/자료</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>비유·위젯 등 <b>작성자가 재구성</b>한 설명(슬라이드의 직접 주장 아님).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== 01 OVERVIEW ===== -->
+<section id="overview"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>거대 언어 모델이란 무엇인가 <span class="en">What is an LLM</span></h2>
+  <p class="lead">동네에 아주 큰 주방이 하나 있다고 떠올려 봅시다. 이 주방이 오늘 강의 전체를 관통하는 비유가 됩니다.</p>
+
+  <p><span class="badge b-syn">종합·해석</span> 요리사 수천 명이 대기하는 거대한 주방을 상상해 봅시다. 손님이 주문을 넣으면(=지금까지 쓰인 문장을 주면) 주방은 재료를 살펴보고 다음에 올릴 재료 하나(=다음 단어)를 골라 접시에 얹습니다. 이 과정을 손님이 "됐다"고 할 때까지 한 글자씩 반복하면 이야기 한 편, 코드 한 줄, 답변 한 통이 완성됩니다. 이 거대한 주방이 바로 <b>거대 언어 모델(LLM, Large Language Model)</b>입니다. 이번 강의는 이 주방이 (1) 모든 요리사를 다 부르지 않고도 실력을 유지하는 방법(Mixture of Experts), (2) 재료를 고를 때 얼마나 모험을 할지 정하는 방법(샘플링과 온도), (3) 주문서를 잘 쓰고 요리사가 소리 내어 생각하게 만드는 방법(프롬프팅과 사고 사슬)을 차례로 따라갑니다.</p>
+
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 슬라이드의 정의</div>
+  <span class="quote" style="display:block;margin:8px 0 0">"A language model is a statistical or machine learning model that assigns probabilities to sequences of tokens."<span class="src">즉, <b>언어 모델(Language Model)</b>이란 토큰(token) 시퀀스에 확률을 부여하는 통계·머신러닝 모델입니다. <b>LLM</b>은 여기에 "거대(Large)"가 붙은 것으로, 지난 강의에서 배운 트랜스포머(Transformer) 구조를 그대로 물려받습니다.</span></span>
+  </div>
+
+  <h3>"큰(Large)" 것의 세 가지 기준</h3>
+  <p><span class="badge b-src">원본</span> 슬라이드는 "크다"의 기준을 세 가지 수치로 제시합니다.</p>
+  <div class="grid g3">
+    <div class="card"><div class="icon">①</div><h4>모델 크기</h4><p>파라미터(parameter) 수 <b>수십억 개 이상</b></p></div>
+    <div class="card"><div class="icon">②</div><h4>훈련 데이터</h4><p>토큰 <b>수천억 개 이상</b></p></div>
+    <div class="card"><div class="icon">③</div><h4>연산량</h4><p>대규모 GPU 클러스터가 필요한 <b>컴퓨팅</b></p></div>
+  </div>
+
+  <h3>구조적 특징: 디코더 전용(Decoder-only) 트랜스포머</h3>
+  <p><span class="badge b-src">원본</span> 지난 강의에서 트랜스포머 기반 모델을 인코더-디코더(encoder-decoder), 인코더 전용(encoder-only), 디코더 전용(decoder-only) 세 범주로 나눴습니다. LLM은 이 중 <b>디코더 전용</b> 구조입니다 — 마스크드 멀티헤드 어텐션(masked multi-head attention)만 쌓아 올려, 이전 토큰만 보고 다음 토큰을 예측하도록 만든 구조입니다.</p>
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 다른 강의와의 연결</div>이 디코더 블록은 1강의 <b>트랜스포머(Transformer)</b>와 <b>어텐션(Attention)</b>, 2강의 멀티헤드 어텐션(MHA) 논의를 그대로 이어받습니다. LLM은 새로운 발명이라기보다, 트랜스포머 디코더를 극단적으로 키운 결과에 가깝습니다.</div>
+  <p><span class="badge b-src">원본</span> 대표 예시: <b>GPT</b> 시리즈, <b>LLaMA</b>, <b>Gemma</b>, <b>DeepSeek</b>, <b>Mistral</b>, <b>Qwen</b> 등이 모두 이 구조를 따릅니다.</p>
+</div></section>
+
+<!-- ===== 02 MoE ===== -->
+<section id="moe"><div class="wrap reveal">
+  <span class="sec-no">02 — Mixture of Experts</span>
+  <h2>모든 요리사를 매번 다 부를 필요는 없다 <span class="en">Mixture of Experts (MoE)</span></h2>
+  <p class="lead">모델이 커질수록 순전파(forward pass)의 연산량도 함께 커집니다. 그런데 입력 하나를 처리하는 데 정말 모든 가중치가 다 필요할까요?</p>
+
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 출발점</div>"Idea. Not all weights are useful in the forward pass." — 거대한 모델 전체가 아니라, 입력에 따라 <b>부분집합</b>만 쓰면 충분하지 않을까 하는 질문에서 MoE가 출발합니다.</div>
+  <p><span class="badge b-syn">종합·해석</span> 대형 주방에서 파스타 주문이 들어왔다고 디저트 담당 요리사까지 전부 불러 모을 필요는 없습니다. 파스타 담당 몇 명만 호출하면 충분합니다. <b>MoE(Mixture of Experts, 전문가 혼합)</b>는 정확히 이 아이디어를 신경망에 적용한 것입니다.</p>
+
+  <h3>게이팅 네트워크와 전문가들</h3>
+  <p><span class="badge b-src">원본</span> MoE 계층은 입력 <code>x</code>를 보고 각 전문가(expert) <code>E<sub>i</sub></code>에게 얼마나 가중치를 줄지 정하는 <b>게이팅 네트워크(gating network) G</b>와, 실제 연산을 담당하는 여러 개의 전문가 서브네트워크로 구성됩니다.</p>
+  <div class="eqn">ŷ = Σ<sub>i=1</sub><sup>n</sup> G(x)<sub>i</sub> · E<sub>i</sub>(x)</div>
+  <p class="eqn-note"><span class="badge b-syn">종합·해석</span> 이 수식이 측정하는 것: <code>G(x)<sub>i</sub></code>는 게이팅 네트워크가 입력 <code>x</code>를 보고 계산한 "전문가 <code>i</code>를 얼마나 신뢰할지"에 대한 가중치이고, <code>E<sub>i</sub>(x)</code>는 전문가 <code>i</code>가 실제로 내놓는 출력입니다. 왜 이렇게 설계했는지 — 하나의 거대한 네트워크 대신, 여러 개의 작은 전문가 네트워크의 <b>가중 평균</b>으로 예측을 만들면, 게이팅 네트워크가 입력별로 어느 전문가가 적합한지 동적으로 조절할 수 있습니다.</p>
+
+  <div class="grid g2">
+    <div class="card soft"><h4>Dense MoE</h4><p><span class="badge b-src">원본</span> <b>모든</b> 전문가의 출력을 가중 평균합니다. 게이팅은 있지만, 계산량은 결국 큰 모델 하나를 쓰는 것과 비슷하게 비쌉니다.</p></div>
+    <div class="card soft"><h4>Sparse MoE</h4><p><span class="badge b-src">원본</span> <b>top-k 선택</b>으로 뽑힌 일부 전문가만 사용합니다. <span class="badge b-ext">외부</span> Shazeer et al., 2017의 sparsely-gated MoE가 이 방식을 대중화했습니다.</p></div>
+  </div>
+  <div class="eqn">ŷ = Σ<sub>i∈I<sub>k</sub></sub> G(x)<sub>i</sub> · E<sub>i</sub>(x) &nbsp;&nbsp;(top-k 선택, I<sub>k</sub> = 상위 k개 전문가 집합)</p>
+  <p class="eqn-note"><span class="badge b-syn">종합·해석</span> 마치 병원에서 증상에 맞는 전문의 한둘만 호출하는 것과 같습니다. 병원 전체의 전문성(총 파라미터 수)은 그대로인데, 환자 한 명(토큰 하나)을 진료하는 데 드는 의료진 수(연산량)는 확 줄어듭니다. 이것이 MoE 기반 LLM이 "총 파라미터는 크지만 토큰당 활성 파라미터는 작은" 이유입니다.</p>
+
+  <h3>트랜스포머 안에서: 매 토큰마다 새로 라우팅</h3>
+  <p><span class="badge b-src">원본</span> MoE는 트랜스포머 블록의 <b>피드포워드(Feed Forward)</b> 자리를 대체합니다. 그리고 라우팅은 <b>토큰마다</b> 독립적으로 다시 이루어집니다 — 즉 같은 문장 안에서도 단어마다 다른 전문가 조합이 선택될 수 있습니다.</p>
+
+  <h4>위젯 — MoE 라우팅 데모</h4>
+  <p class="muted">아래 문장의 토큰을 하나씩 눌러 게이팅 네트워크가 각 전문가에게 부여하는 점수를 확인하고, Top-1 / Top-2 선택에 따라 어떤 전문가가 실제로 활성화되는지 살펴보세요. <span class="badge b-syn">종합·해석</span> 점수는 강의 예시를 재구성한 합성 값입니다.</p>
+  <div class="moe-panel">
+    <div class="moe-tokens" id="moeTokens" role="group" aria-label="토큰 선택"></div>
+    <div class="moe-kbar" id="moeKbar" role="group" aria-label="top-k 선택"></div>
+    <div class="moe-experts" id="moeExperts"></div>
+    <div class="moe-formula" id="moeFormula" aria-live="polite"></div>
+    <div class="moe-util">
+      <div class="muted" style="margin-bottom:8px">문장 전체 기준, 이번 top-k 설정에서 전문가별로 몇 개의 토큰이 라우팅되는지(활용도) 보여줍니다.</div>
+      <div id="moeUtil"></div>
+    </div>
+  </div>
+
+  <h3>훈련의 함정: 라우팅 붕괴</h3>
+  <div class="callout warn"><div class="h"><span class="badge b-src">원본</span> 증상</div>"Symptom. Same expert gets selected most of the time." — 이른바 <b>라우팅 붕괴(routing collapse)</b>. <span class="badge b-ext">외부</span> Fedus et al., 2021 (Switch Transformer)이 이 현상을 상세히 다뤘습니다.</div>
+  <p><span class="badge b-src">원본</span> 해법은 다른 전문가들도 "게임에 끼워주는" 보조 손실(auxiliary loss)입니다.</p>
+  <div class="eqn">loss = α · N · Σ<sub>i=1</sub><sup>N</sup> f<sub>i</sub> · P<sub>i</sub></div>
+  <p class="eqn-note"><span class="badge b-src">원본</span> <code>f<sub>i</sub></code> = 전문가 i로 라우팅된 토큰의 비율, <code>P<sub>i</sub></code> = 전문가 i에 대한 평균 라우팅 확률. <span class="badge b-syn">종합·해석</span> 왜 이렇게 설계했는지 — 특정 전문가에 토큰이 쏠리면 그 전문가의 <code>f<sub>i</sub></code>와 <code>P<sub>i</sub></code>가 함께 커지고, 곱해서 더한 이 손실도 함께 커집니다. 이 손실을 줄이도록 학습시키면 모델이 자연스럽게 부하를 고르게 분산시키게 됩니다 — 마치 주방장이 특정 요리사에게만 일감을 몰아주면 벌점을 매겨, 일감을 고르게 나누도록 유도하는 것과 같습니다.</p>
+  <p><span class="badge b-src">원본</span> 실제로 오픈소스 MoE 모델인 <b>Mixtral</b>(<span class="badge b-ext">외부</span> Jiang et al., 2024)의 라우팅 코드를 보면, 각 토큰이 <code>torch.topk</code>로 전문가를 선택하고 <code>softmax</code>로 가중치를 정규화한 뒤 결과를 합산하는 과정을 그대로 확인할 수 있습니다.</p>
+</div></section>
+
+<!-- ===== 03 DECODING ===== -->
+<section id="decoding"><div class="wrap reveal">
+  <span class="sec-no">03 — Response generation</span>
+  <h2>확률 분포에서 다음 단어를 어떻게 뽑을까 <span class="en">Decoding &amp; sampling strategies</span></h2>
+  <p class="lead">LLM은 매 스텝마다 어휘 전체에 대한 확률 분포 하나를 내놓습니다. 실제로 그 분포에서 어떤 단어를 뽑아낼지 정하는 규칙이 <b>디코딩(decoding)</b>, 즉 <b>샘플링 전략(sampling strategies)</b>입니다.</p>
+
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 자기회귀적 생성</div>슬라이드의 예시처럼 <code>[BOS] → A → teddy → bear → is → kind → ...</code> 순서로, 매 스텝 지금까지 생성된 토큰 전부를 다시 넣어 다음 토큰 하나를 예측하고, 그 토큰을 이어붙여 다음 입력으로 씁니다. 이를 <b>자기회귀적(autoregressive)</b> 생성이라 부릅니다.</div>
+  <p><span class="badge b-src">원본</span> 디코더 마지막 단의 <b>Linear</b> 층이 <code>d<sub>model</sub></code> 차원 벡터를 어휘 크기 <code>|V|</code>만큼의 로짓(logit)으로 사영하고, <b>Softmax</b>가 이를 합이 1인 확률로 바꿉니다.</p>
+
+  <h3>세 가지 디코딩 아이디어</h3>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="디코딩 전략 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>탐욕적 디코딩</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>빔 서치</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>샘플링</button>
+  </div>
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">탐욕적 디코딩 <span class="en">Greedy decoding</span></h3>
+    <p><span class="badge b-src">원본</span> <b>1st idea.</b> 매 스텝 확률이 가장 높은 토큰 하나만 고릅니다.</p>
+    <p><span class="badge b-syn">종합·해석</span> 마치 메뉴판에서 항상 가장 인기 있는 베스트셀러 메뉴만 시키는 것과 같습니다. 안전하지만 늘 같은 선택이 반복됩니다.</p>
+    <p><span class="badge b-src">원본</span> <b>한계.</b> 출력이 최적이지도, 자연스럽지도, 다양하지도 않을 수 있습니다.</p>
+  </div>
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">빔 서치 <span class="en">Beam search</span></h3>
+    <p><span class="badge b-src">원본</span> <b>2nd idea.</b> 가장 그럴듯한 <code>k</code>개의 경로(빔)를 동시에 유지하며 확장하고, <code>[EOS]</code>에서 종료합니다. 슬라이드 예시: <code>a</code>(0.2)→<code>cute</code>(0.7) 경로의 누적 확률은 0.2×0.7=0.14로 계산됩니다.</p>
+    <p><span class="badge b-syn">종합·해석</span> 마치 요리사 k명이 각자 다른 코스 요리를 동시에 만들어 보다가, 맛이 떨어지는 조합은 중간에 포기하고 유망한 조합만 끝까지 완성하는 것과 같습니다.</p>
+    <p><span class="badge b-src">원본</span> <b>한계.</b> 계산량이 늘고, 다양성·창의성이 떨어집니다.</p>
+  </div>
+  <div class="tabpane" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">샘플링 <span class="en">Sampling</span></h3>
+    <p><span class="badge b-src">원본</span> <b>3rd idea.</b> 확률 분포 그 자체에서 다음 토큰을 무작위로 뽑습니다: <code>ŵ<sub>t+1</sub> ~ P(w<sub>t+1</sub>|C)</code>.</p>
+    <p><span class="badge b-syn">종합·해석</span> 마치 주사위를 굴려 오늘의 메뉴를 정하되, 인기 있는 메뉴일수록 주사위 눈이 더 많이 배정되어 있는 것과 같습니다. 아래에서 이 주사위를 어떻게 "덜 무모하게" 굴릴지(top-k, top-p, 온도) 실습해 봅니다.</p>
+  </div>
+
+  <h3>온도(Temperature)로 대담함을 조절하기</h3>
+  <div class="eqn">P<sub>adj</sub>(w<sub>t+1</sub>=w<sub>i</sub>|C) = exp(x<sub>i</sub>/T) / Σ<sub>j=1</sub><sup>n</sup> exp(x<sub>j</sub>/T)</div>
+  <p class="eqn-note"><span class="badge b-src">원본</span> 이 수식이 측정하는 것: 원래 소프트맥스에 넣기 전, 각 로짓 <code>x<sub>i</sub></code>를 온도 <code>T</code>로 나눕니다. <span class="badge b-syn">종합·해석</span> 왜 이렇게 설계했는지 — <code>T</code>가 작으면(&lt;1) 로짓 사이의 상대적 차이가 커져 분포가 뾰족해지고(가장 그럴듯한 토큰에 확률이 몰림), <code>T</code>가 크면(&gt;1) 차이가 줄어 분포가 평평해집니다(다양한 토큰이 비슷한 확률을 가짐). 마치 매운맛 단계를 조절하는 것과 같습니다 — 온도를 낮추면(순한 맛) 항상 가장 안전한 메뉴만 나오고, 온도를 높이면(매운맛) 평소라면 안 고를 법한 의외의 메뉴도 튀어나올 확률이 커집니다.</p>
+  <div class="callout ext"><div class="h"><span class="badge b-ext">외부</span> 참고 자료</div>슬라이드가 권하는 읽을거리: <i>"Defeating Nondeterminism in LLM Inference"</i>(He et al., Thinking Machines Lab, 2025). Temperature를 0으로 설정해도, 실제 서빙 환경에서는 배치 크기가 요청마다 달라지는 등의 이유로 완전한 결정성이 보장되지 않는다는 점을 짚습니다.</div>
+
+  <h3>Top-k와 Top-p(뉴클리어스) 샘플링</h3>
+  <div class="grid g2">
+    <div class="card soft"><h4>Top-k</h4><p><span class="badge b-src">원본</span> 확률 상위 <code>k</code>개 토큰 중에서만 샘플링합니다. (슬라이드 예시: k=4)</p></div>
+    <div class="card soft"><h4>Top-p (nucleus)</h4><p><span class="badge b-src">원본</span> 누적 확률이 <code>p</code> 이상이 되는 <b>최소</b> 토큰 집합에서 샘플링합니다. (슬라이드 예시: p=90%) <span class="badge b-ext">외부</span> Holtzman et al., 2019가 제안한 nucleus sampling입니다.</p></div>
+  </div>
+
+  <h4>위젯 — 디코딩 실험실</h4>
+  <p class="muted">아래는 강의의 12개 후보 단어 예시(<code>a, airplane, fluffy, gentle, is, kind, my, poet, smart, strong, talkative, where</code>)를 <span class="badge b-syn">종합·해석</span> 합성 로짓으로 재현한 것입니다. 온도를 조절하고 Top-k / Top-p 모드를 눌러, 분포가 뾰족해지거나 평평해지는 모습과 실제로 "선택 가능한 집합"이 어떻게 바뀌는지 확인해 보세요.</p>
+  <div class="declab">
+    <div class="row">
+      <div class="field"><label for="tRange">온도 T <b id="tVal">1.0</b></label><input type="range" id="tRange" min="2" max="30" step="1" value="10" aria-describedby="tVal"></div>
+    </div>
+    <div class="modebar" id="modeBar" role="group" aria-label="선택 모드"></div>
+    <div class="row" id="kRow" style="display:none">
+      <div class="field"><label for="kRange">Top-k <b id="kVal">4</b></label><input type="range" id="kRange" min="1" max="12" step="1" value="4"></div>
+    </div>
+    <div class="row" id="pRow" style="display:none">
+      <div class="field"><label for="pRange">Top-p <b id="pVal">90%</b></label><input type="range" id="pRange" min="10" max="100" step="5" value="90"></div>
+    </div>
+    <div class="decbars" id="decBars" role="img" aria-label="온도 조정 후 12개 후보 단어의 확률 분포 막대그래프"></div>
+    <div class="decreadout">
+      <div class="box"><div class="big" id="decEnt">—</div><div class="lb">엔트로피 (bit)</div></div>
+      <div class="box"><div class="big" id="decTop">—</div><div class="lb">최고 확률 토큰</div></div>
+      <div class="box"><div class="big" id="decN">—</div><div class="lb">선택 가능 토큰 수</div></div>
+    </div>
+  </div>
+
+  <h3>출력 형식을 강제하고 싶다면? — 가이디드 디코딩</h3>
+  <p><span class="badge b-src">원본</span> <b>Motivation.</b> "Generate a description of my 33-year old teddy bear who likes reading. Do this in JSON format." 같은 요청에는 결과가 유효한 JSON이어야 합니다. <b>Idea.</b> 문법상 유효한 다음 토큰만 허용하고, 나머지는 마스킹합니다.</p>
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">다음 토큰 →</button></div>
+</div></section>
+
+<!-- ===== 04 PROMPTING ===== -->
+<section id="prompting"><div class="wrap reveal">
+  <span class="sec-no">04 — Prompting strategies</span>
+  <h2>좋은 주문서가 좋은 요리를 만든다 <span class="en">Prompting &amp; context</span></h2>
+  <p class="lead">모델을 아무리 잘 만들어도, 주문서(prompt)를 엉성하게 쓰면 원하는 요리가 나오지 않습니다.</p>
+
+  <h3>컨텍스트 길이란 무엇인가</h3>
+  <p><span class="badge b-src">원본</span> <b>컨텍스트 길이(context length)</b>는 <b>컨텍스트 크기(context size)</b>, <b>윈도우 크기(window size)</b>와 같은 뜻으로 쓰이며, 모델에 한 번에 넣을 수 있는 입력의 최대 길이를 뜻합니다. 그 자릿수는 입력 형태(글자·토큰·이미지 등)와 모델마다 크게 달라집니다.</p>
+  <div class="callout warn"><div class="h"><span class="badge b-ext">외부</span> Context rot 주의</div>슬라이드는 <i>"Context Rot: How Increasing Input Tokens Impacts LLM Performance"</i>(Hong, Troynikov &amp; Huber, Chroma, 2025)를 인용합니다. 이 보고서는 컨텍스트 윈도우 안에 들어가기만 하면 모델이 모든 토큰을 균일하게 활용한다는 가정과 달리, <b>입력 토큰이 길어질수록 (같은 정보가 담겨 있어도) 검색·복사 같은 단순 과제에서조차 신뢰도가 떨어진다</b>는 점을 여러 모델에서 확인했습니다. "컨텍스트 창에 들어간다"와 "모델이 잘 활용한다"는 다른 이야기라는 뜻입니다.</div>
+
+  <h3>프롬프트의 기본 구조</h3>
+  <p><span class="badge b-src">원본</span> 슬라이드는 좋은 프롬프트를 네 요소로 나눕니다 (영문 원문과 한글 옮김을 함께 표시합니다).</p>
+  <div class="grid g4">
+    <div class="card soft"><div class="icon">①</div><h4>Context</h4><p class="muted" style="font-style:italic">"My teddy bear had a long day and needs a bedtime story."</p><p>맥락 — 상황 설명</p></div>
+    <div class="card soft"><div class="icon">②</div><h4>Instructions</h4><p class="muted" style="font-style:italic">"Generate a bedtime story that takes place in a specific location."</p><p>지시 — 해야 할 일</p></div>
+    <div class="card soft"><div class="icon">③</div><h4>Input</h4><p class="muted" style="font-style:italic">"Location: Country of teddy bears"</p><p>입력 — 구체적 값</p></div>
+    <div class="card soft"><div class="icon">④</div><h4>Constraints</h4><p class="muted" style="font-style:italic">"The story needs to be suitable for teddy bears that are tired."</p><p>제약 — 지켜야 할 조건</p></div>
+  </div>
+
+  <h3>인컨텍스트 러닝: 예시를 몇 개나 보여줄까</h3>
+  <p><span class="badge b-src">원본</span> <b>ICL = In-Context Learning</b>(Brown et al., 2020). 프롬프트 안에 입출력 예시를 넣어주는 것만으로 모델이 패턴을 파악하게 하는 방식입니다.</p>
+  <div class="grid g2">
+    <div class="card"><h4>Zero-shot learning</h4><p><span class="badge b-src">원본</span> 예시 없이 질문만 던집니다. 성능은 사전학습된 모델 자체의 역량에 크게 좌우됩니다.</p></div>
+    <div class="card"><h4>Few-shot learning</h4><p><span class="badge b-src">원본</span> 프롬프트에 입력/출력 예시를 몇 개 포함합니다. 일반적으로 성능이 더 좋습니다.</p></div>
+  </div>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 트레이드오프</div>예시를 보여주는 편이 <i>일반적으로(generally)</i> 더 낫지만, (1) 좋은 예시를 고르는 데 노력이 들고, (2) 프롬프트가 길어져 연산 복잡도·비용이 늘며, (3) 지연 시간(latency)도 늘어납니다.</div>
+  <p><span class="badge b-syn">종합·해석</span> 마치 새 아르바이트생에게 사진 몇 장으로 플레이팅 예시를 보여주는 것과 같습니다. 예시가 있으면 빨리 감을 잡지만, 매번 사진을 준비하고 설명하는 데도 시간이 듭니다.</p>
+</div></section>
+
+<!-- ===== 05 REASONING ===== -->
+<section id="reasoning"><div class="wrap reveal">
+  <span class="sec-no">05 — Reasoning</span>
+  <h2>소리 내어 생각하고, 여러 번 생각해서 다수결로 정하기 <span class="en">Chain-of-thought &amp; self-consistency</span></h2>
+  <p class="lead">모델에게 정답만 요구하는 대신, 풀이 과정을 요구하면 무엇이 달라질까요?</p>
+
+  <h3>사고 사슬 <span class="en">Chain of thought</span></h3>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 아이디어</div>"Idea. Explaining reasoning helps in improving performance." 슬라이드 예시: "Q: How old is this bear? A: The bear was born in 2020. It is therefore 4. Q: How old will the bear be next year?"라는 맥락을 주면, 모델은 "It will be one year older than its age this year, which was 4. Hence, it will be 5."처럼 풀이 과정을 함께 생성합니다.</div>
+  <p><span class="badge b-syn">종합·해석</span> 마치 시험에서 풀이 과정을 답안지에 적어보라고 하면, 학생 스스로도 중간 실수를 알아채고 고치게 되는 것과 같습니다. <b>사고 사슬(Chain-of-Thought, CoT)</b> 프롬프팅은 모델에게 바로 답하지 말고 단계적으로 "생각을 소리 내어" 말하게 합니다.</p>
+  <p><span class="badge b-src">원본</span> <b>Discussion.</b> 장점은 해석 가능성과 설명력이 좋아진다는 것이고, 단점은 토큰 수가 늘어나 비용과 지연 시간이 함께 늘어난다는 것입니다.</p>
+
+  <h3>자기 일관성 <span class="en">Self-consistency</span></h3>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 아이디어</div>"Idea. Aggregating over reasoning paths improves performance." 같은 질문에 대해 여러 개의 사고 사슬 경로를 샘플링한 뒤, 가장 많이 나온 답을 최종 답으로 채택합니다.</div>
+  <p><span class="badge b-syn">종합·해석</span> 마치 어려운 문제를 여러 학생에게 각자 풀게 한 뒤, 가장 많은 학생이 도달한 답을 채택하는 것과 같습니다. 한 사람의 우연한 실수는 다수결 앞에서 힘을 잃습니다. <b>자기 일관성(self-consistency)</b>이 작동하려면 경로마다 <i>다른</i> 풀이가 나와야 하므로, 온도를 0보다 높여 샘플링하는 것이 전제 조건입니다 — 즉 앞서 배운 <b>샘플링 전략(sampling-strategies)</b>과 맞물려 있는 기법입니다.</p>
+
+  <h4>위젯 — Self-consistency 다수결 데모</h4>
+  <p class="muted">아래 문제에 "샘플 하나 더 뽑기"를 눌러 사고 사슬 경로를 하나씩 추가해 보세요. 표본이 하나뿐일 때와 여러 개로 늘어났을 때 다수결 답이 어떻게 달라지는지 확인할 수 있습니다.</p>
+  <div class="sc-panel">
+    <div class="sc-q"><span class="badge b-src">원본</span> <b>질문:</b> 곰인형은 2020년에 태어났고, 올해 나이는 4살입니다. 내년에는 몇 살이 될까요?</div>
+    <div class="sc-btns">
+      <button class="sc-btn" id="scAdd">샘플 하나 더 뽑기 →</button>
+      <button class="sc-btn sec" id="scReset">처음부터 ↺</button>
+    </div>
+    <div class="sc-samples" id="scSamples" aria-live="polite"></div>
+    <div class="sc-tally" id="scTally"></div>
+    <div class="sc-verdict" id="scVerdict" aria-live="polite"></div>
+  </div>
+  <p><span class="badge b-src">원본</span> <b>Discussion.</b> 성능 향상과 추가 비용(샘플 개수만큼 반복 추론) 사이의 트레이드오프가 있습니다.</p>
+</div></section>
+
+<!-- ===== QUIZ ===== -->
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">06 — Self-check</span>
+  <h2>자가 점검 <span class="en">Quick check</span></h2>
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 Sparse MoE에서 라우팅 붕괴(routing collapse)가 일어나면 어떤 문제가 생기나요?</div>
+    <button class="opt" data-correct="1">특정 전문가만 계속 선택되어 나머지 전문가는 사실상 훈련되지 않고 파라미터가 낭비된다</button>
+    <button class="opt">모든 전문가가 항상 완전히 동일한 출력을 내게 된다</button>
+    <button class="opt">게이팅 네트워크 자체가 더 이상 필요 없어진다</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 온도(temperature) T를 아주 낮게(T→0에 가깝게) 설정하면 다음 토큰 선택은 어떻게 되나요?</div>
+    <button class="opt">모든 토큰이 동일한 확률을 갖게 되어 완전히 무작위로 선택된다</button>
+    <button class="opt" data-correct="1">확률이 가장 높은 토큰에 거의 결정적으로 수렴해, 탐욕적 디코딩과 비슷해진다</button>
+    <button class="opt">top-p 값과 무관하게 선택 가능한 토큰 수가 항상 늘어난다</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== 부록: 살짝 맛보기 ===== -->
+<section id="optim"><div class="wrap reveal">
+  <span class="sec-no">부록 — A glimpse</span>
+  <h2>한 걸음 더: 서빙을 빠르게 만드는 기법들 <span class="en">Inference optimizations (brief)</span></h2>
+  <p class="lead">슬라이드 후반부는 실전 서빙 최적화도 폭넓게 다루지만, 이 3강 해설이 맡은 핵심 개념 범위(LLM·MoE·디코딩·프롬프팅·추론)를 벗어나는 인프라 주제라 여기서는 이름과 한 줄 요약만 소개합니다.</p>
+  <div class="grid g3">
+    <div class="card soft"><h4>KV 캐싱</h4><p><span class="badge b-src">원본</span> 새 토큰이 이전 토큰 전부와 다시 어텐션을 계산하지 않도록, Key·Value를 캐시에 저장해 재사용합니다.</p></div>
+    <div class="card soft"><h4>GQA / MQA</h4><p><span class="badge b-src">원본</span> Key·Value 헤드를 Query 헤드끼리 공유해 캐시 크기를 줄입니다. 2강의 <b>MQA·GQA</b> 개념과 이어집니다.</p></div>
+    <div class="card soft"><h4>PagedAttention</h4><p><span class="badge b-ext">외부</span> Kwon et al., 2023 — KV 캐시를 비연속 블록으로 저장해 메모리 낭비를 줄입니다(vLLM).</p></div>
+    <div class="card soft"><h4>잠재 어텐션(MLA)</h4><p><span class="badge b-ext">외부</span> DeepSeek-V2, 2024 — Key·Value를 저차원 잠재 벡터로 압축해 캐시를 더 줄입니다.</p></div>
+    <div class="card soft"><h4>추측 디코딩</h4><p><span class="badge b-ext">외부</span> Chen et al., 2023 — 작은 초안(draft) 모델이 여러 토큰을 미리 제안하고, 큰 목표(target) 모델이 한 번에 검증합니다.</p></div>
+    <div class="card soft"><h4>멀티토큰 예측(MTP)</h4><p><span class="badge b-ext">외부</span> Gloeckle et al., 2024 — 한 스텝에서 여러 개의 다음 토큰을 동시에 예측하는 헤드를 훈련합니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== GLOSSARY ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">07 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색…"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 (Fall 2025) 3강 슬라이드와 강의 영상의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=강의 슬라이드, <span class="badge b-ext">외부</span>=슬라이드가 인용했거나 추가로 확인한 논문/자료, <span class="badge b-syn">종합·해석</span>=작성자의 비유·재구성입니다. 디코딩 실험실과 MoE 라우팅 데모의 구체적 수치(로짓, 게이팅 점수)는 강의 예시의 형태를 재현한 <b>합성 값</b>이며, 실제 모델의 값이 아닙니다. Self-consistency 데모의 표본 순서도 교육 목적으로 미리 정해둔 것이며 실제 확률적 샘플링 결과가 아닙니다. 부록 절의 인프라 최적화 기법들은 이 해설이 다루는 핵심 개념 범위 밖이라 요약만 제공했습니다.</div>
+  <div>제작: Claude · 원저작권은 Stanford ICME 및 각 논문 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+/* esc(): ALWAYS wrap source-derived text before putting it in innerHTML — prevents HTML / script-tag injection from quotes or pasted source. Author-written markup may stay raw. */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* tabs — pointer + keyboard (arrow keys), roving tabindex + aria-selected */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* cascade — guided decoding: build a JSON value token by token, invalid branches crossed out */
+const CASC=[
+ {ic:'①',src:'원본',s:'{ 선택',stage:'스텝 1 — 시작',title:'{ 만 유효 토큰',prob:'자유 생성이면 "road", "sun" 등 임의의 단어가 나올 수 있어 JSON이 깨질 위험이 있습니다.',sol:'JSON 문법상 이 위치에서 허용되는 토큰은 <code>{</code> 뿐이므로, 그 외 후보는 전부 마스킹(✗)하고 <code>{</code> 만 남깁니다.',next:'중괄호를 열었으니, 다음은 <b>키 이름</b> 후보만 남습니다 → <b>"first_name"</b>'},
+ {ic:'②',src:'원본',s:'"first_name" 선택',stage:'스텝 2 — 키',title:'"first_name" 만 유효 토큰',prob:'"road"나 "sun" 같은 문자열도 문법적으로는 유효한 JSON 문자열이지만, teddy bear 스키마의 실제 키가 아닙니다.',sol:'허용된 키 후보(<code>"first_name"</code>) 중 하나만 선택하고 나머지는 마스킹합니다.',next:'키를 정했으니, 다음은 <b>콜론</b>만 유효합니다 → <b>:</b>'},
+ {ic:'③',src:'원본',s:': 선택',stage:'스텝 3 — 구분자',title:': 만 유효 토큰',prob:'"," 나 "to" 같은 토큰이 나오면 key-value 쌍의 문법이 깨집니다.',sol:'키 다음에 올 수 있는 문법 요소는 <code>:</code> 뿐이므로 그것만 남깁니다.',next:'콜론 다음은 <b>값(value)</b> 후보 차례입니다 → <b>"teddy"</b>'},
+ {ic:'④',src:'원본',s:'"teddy" 선택',stage:'스텝 4 — 값',title:'"teddy" 선택 (숫자 10 등은 마스킹)',prob:'first_name 필드는 문자열이어야 하는데, <code>10</code> 같은 숫자 토큰이 후보에 섞여 있습니다.',sol:'스키마상 문자열 값만 유효하므로 숫자 후보는 마스킹하고, "Jane"/"teddy" 같은 문자열 후보 중 하나를 선택합니다.',next:'이렇게 한 글자씩 유효 토큰만 허용하면, 항상 스키마에 맞는 JSON이 완성됩니다. 처음으로 ↺'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${esc(c.s)}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${esc(c.stage)} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${esc(c.title)}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 막는가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'다음 토큰 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답입니다.':'❌ 다시 확인해 보세요. 정답이 초록색으로 표시되어 있습니다.';});});
+
+/* ===================================================================
+   custom widget 1 — decoding lab (temperature + top-k / top-p)
+   =================================================================== */
+const DWORDS=['a','airplane','fluffy','gentle','is','kind','my','poet','smart','strong','talkative','where'];
+const DLOGITS=[1.2,-1.0,1.7,1.7,0.2,2.6,1.0,-0.6,2.1,1.1,1.6,-1.1];
+function softmaxT(logits,T){
+  const scaled=logits.map(x=>x/T);
+  const m=Math.max(...scaled);
+  const exps=scaled.map(x=>Math.exp(x-m));
+  const sum=exps.reduce((a,b)=>a+b,0);
+  return exps.map(e=>e/sum);
+}
+function entropyBits(p){
+  return -p.reduce((a,pi)=>a+(pi>0?pi*Math.log2(pi):0),0);
+}
+function topKIdx(p,k){
+  return p.map((v,i)=>i).sort((a,b)=>p[b]-p[a]).slice(0,k);
+}
+function topPIdx(p,pTh){
+  const order=p.map((v,i)=>i).sort((a,b)=>p[b]-p[a]);
+  let cum=0;const out=[];
+  for(const i of order){out.push(i);cum+=p[i];if(cum>=pTh)break;}
+  return out;
+}
+let decMode='none';
+const tRange=$('#tRange'),kRange=$('#kRange'),pRange=$('#pRange'),tVal=$('#tVal'),kVal=$('#kVal'),pVal=$('#pVal');
+const decBars=$('#decBars'),decEnt=$('#decEnt'),decTop=$('#decTop'),decN=$('#decN'),modeBar=$('#modeBar'),kRow=$('#kRow'),pRow=$('#pRow');
+const MODES=[['none','제한 없음 (온도만)'],['topk','Top-k'],['topp','Top-p']];
+modeBar.innerHTML=MODES.map(([id,lb])=>`<button class="modebtn ${id==='none'?'on':''}" data-mode="${id}">${lb}</button>`).join('');
+$$('.modebtn',modeBar).forEach(b=>b.onclick=()=>{decMode=b.dataset.mode;$$('.modebtn',modeBar).forEach(x=>x.classList.toggle('on',x===b));kRow.style.display=decMode==='topk'?'flex':'none';pRow.style.display=decMode==='topp'?'flex':'none';renderDecLab();});
+function renderDecLab(){
+  const T=(+tRange.value)/10;tVal.textContent=T.toFixed(1);
+  const k=+kRange.value;kVal.textContent=k;
+  const pTh=(+pRange.value)/100;pVal.textContent=Math.round(pTh*100)+'%';
+  const p=softmaxT(DLOGITS,T);
+  let selected=new Set(DWORDS.map((_,i)=>i));
+  if(decMode==='topk')selected=new Set(topKIdx(p,k));
+  else if(decMode==='topp')selected=new Set(topPIdx(p,pTh));
+  const maxP=Math.max(...p);
+  decBars.innerHTML=DWORDS.map((w,i)=>{
+    const h=Math.max(3,Math.round(p[i]/maxP*160));
+    const on=selected.has(i);
+    return `<div class="decbar"><div class="pct">${(p[i]*100).toFixed(1)}%</div><div class="fill ${on?'sel':''}" style="height:${h}px"></div><div class="wd">${esc(w)}</div></div>`;
+  }).join('');
+  decEnt.textContent=entropyBits(p).toFixed(2);
+  const topIdx=p.indexOf(maxP);
+  decTop.textContent=DWORDS[topIdx];
+  decN.textContent=decMode==='none'?DWORDS.length:selected.size;
+}
+[tRange,kRange,pRange].forEach(el=>el.addEventListener('input',renderDecLab));
+renderDecLab();
+
+/* ===================================================================
+   custom widget 2 — MoE routing demo
+   =================================================================== */
+const MOE_TOKENS=['A','cute','teddy','bear','is','kind'];
+const MOE_SCORES={
+  'A':     [0.10,0.62,0.18,0.10],
+  'cute':  [0.05,0.08,0.79,0.08],
+  'teddy': [0.72,0.09,0.11,0.08],
+  'bear':  [0.15,0.60,0.15,0.10],
+  'is':    [0.20,0.55,0.15,0.10],
+  'kind':  [0.08,0.10,0.72,0.10]
+};
+const MOE_NAMES=['E1','E2','E3','E4'];
+let moeTok='teddy',moeK=1;
+const moeTokensEl=$('#moeTokens'),moeKbarEl=$('#moeKbar'),moeExpertsEl=$('#moeExperts'),moeFormulaEl=$('#moeFormula'),moeUtilEl=$('#moeUtil');
+moeTokensEl.innerHTML=MOE_TOKENS.map(t=>`<button class="moe-token ${t===moeTok?'active':''}" data-t="${esc(t)}">${esc(t)}</button>`).join('');
+moeKbarEl.innerHTML=[1,2].map(k=>`<button class="modebtn ${k===moeK?'on':''}" data-k="${k}">Top-${k}</button>`).join('');
+$$('.moe-token',moeTokensEl).forEach(b=>b.onclick=()=>{moeTok=b.dataset.t;$$('.moe-token',moeTokensEl).forEach(x=>x.classList.toggle('active',x===b));renderMoe();});
+$$('.modebtn',moeKbarEl).forEach(b=>b.onclick=()=>{moeK=+b.dataset.k;$$('.modebtn',moeKbarEl).forEach(x=>x.classList.toggle('on',x===b));renderMoe();});
+function renderMoe(){
+  const scores=MOE_SCORES[moeTok];
+  const order=scores.map((v,i)=>i).sort((a,b)=>scores[b]-scores[a]);
+  const chosen=new Set(order.slice(0,moeK));
+  moeExpertsEl.innerHTML=MOE_NAMES.map((nm,i)=>`<div class="moe-expert ${chosen.has(i)?'on':''}"><div class="nm">${nm}</div><div class="sc">${(scores[i]*100).toFixed(0)}%</div><div class="mk">${chosen.has(i)?'✅':'✖️'}</div></div>`).join('');
+  const chosenArr=[...chosen];
+  const sumChosen=chosenArr.reduce((a,i)=>a+scores[i],0);
+  const terms=chosenArr.sort((a,b)=>a-b).map(i=>`${(scores[i]/sumChosen).toFixed(2)}·${MOE_NAMES[i]}(x)`).join(' + ');
+  moeFormulaEl.textContent=`ŷ("${moeTok}") ≈ ${terms}  (top-${moeK} 선택 후 재정규화)`;
+  const util=[0,0,0,0];
+  MOE_TOKENS.forEach(t=>{
+    const sc=MOE_SCORES[t];
+    const ord=sc.map((v,i)=>i).sort((a,b)=>sc[b]-sc[a]).slice(0,moeK);
+    ord.forEach(i=>util[i]++);
+  });
+  const maxU=Math.max(...util,1);
+  moeUtilEl.innerHTML=MOE_NAMES.map((nm,i)=>`<div class="urow"><div class="unm">${nm}</div><div class="ubarwrap"><div class="ubar" style="width:${util[i]/maxU*100}%"></div></div><div class="uct">${util[i]}</div></div>`).join('');
+}
+renderMoe();
+
+/* ===================================================================
+   custom widget 3 — self-consistency majority vote
+   =================================================================== */
+const SC_PATHS=[
+ {ans:4,txt:'"내년은 2024년이므로 곰인형은 아직 4살입니다." (연도 계산 착오)'},
+ {ans:5,txt:'"내년은 올해보다 한 살 많으므로, 4+1=5입니다."'},
+ {ans:5,txt:'"2020년생이고 올해 4살이니, 내년 기준으로는 5살이 됩니다."'},
+ {ans:3,txt:'"생일이 아직 안 지나서 3살일 것이다." (근거 부족한 추정)'},
+ {ans:5,txt:'"생일 계산: 2020+5=2025이므로 내년(2025년)에 5살."'},
+ {ans:5,txt:'"나이는 매년 1씩 증가하므로 4→5입니다."'},
+ {ans:4,txt:'"다음 생일이 아직 멀었으니 그대로 4살." (역시 계산 착오)'},
+ {ans:5,txt:'"다시 확인해도 올해 4살이므로 내년은 5살이 맞습니다."'}
+];
+let scRevealed=0;
+const scAddBtn=$('#scAdd'),scResetBtn=$('#scReset'),scSamplesEl=$('#scSamples'),scTallyEl=$('#scTally'),scVerdictEl=$('#scVerdict');
+function renderSc(){
+  scSamplesEl.innerHTML=SC_PATHS.slice(0,scRevealed).map((s,i)=>`<div class="sc-sample"><span class="idx">#${i+1}</span><span class="txt">${esc(s.txt)}</span><span class="ans ${s.ans!==5?'outlier':''}">${s.ans}살</span></div>`).join('')||'<p class="muted">"샘플 하나 더 뽑기"를 눌러 추론 경로를 하나씩 확인해 보세요.</p>';
+  const counts={};
+  SC_PATHS.slice(0,scRevealed).forEach(s=>{counts[s.ans]=(counts[s.ans]||0)+1;});
+  const keys=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  const winner=keys[0];
+  scTallyEl.innerHTML=keys.map(k=>`<div class="tbox ${k===winner?'winner':''}"><div class="big">${counts[k]}</div><div class="muted">"${k}살" 표</div></div>`).join('')||'';
+  if(scRevealed===0){
+    scVerdictEl.innerHTML='';
+  } else if(scRevealed===1){
+    scVerdictEl.innerHTML=`<span class="badge b-syn">종합·해석</span> 표본이 하나뿐이면(마치 탐욕적으로 한 경로만 본 것처럼) 다수결 답은 그대로 <b>"${winner}살"</b>입니다 — 이 경로가 틀렸다면 그대로 오답이 됩니다.`;
+  } else {
+    scVerdictEl.innerHTML=`<span class="badge b-syn">종합·해석</span> 지금까지 ${scRevealed}개 표본의 다수결 답은 <b>"${winner}살"</b>입니다. 표본이 늘어날수록 우연한 오답(빨간 배지) 하나가 전체 결론을 흔들기 어려워집니다.`;
+  }
+  scAddBtn.disabled=scRevealed>=SC_PATHS.length;
+}
+scAddBtn.onclick=()=>{if(scRevealed<SC_PATHS.length){scRevealed++;renderSc();}};
+scResetBtn.onclick=()=>{scRevealed=0;renderSc();};
+renderSc();
+
+/* glossary — replace GLOSS with real terms [영문, 한글, 정의] */
+const GLOSS=[
+ ['LLM (Large Language Model)','거대 언어 모델','토큰 시퀀스에 확률을 부여하는, 파라미터 수십억 개 이상인 디코더 전용 트랜스포머 모델.'],
+ ['Mixture of Experts (MoE)','전문가 혼합','게이팅 네트워크가 입력마다 일부 전문가 서브네트워크만 골라 쓰게 하는 구조.'],
+ ['Gating network','게이팅 네트워크','입력을 보고 각 전문가에게 얼마나 가중치를 줄지 계산하는 작은 네트워크.'],
+ ['Sparse MoE','희소 MoE','top-k로 선택된 일부 전문가만 사용해 연산량을 줄이는 MoE 방식.'],
+ ['Routing collapse','라우팅 붕괴','특정 전문가만 반복적으로 선택되어 나머지 전문가가 학습되지 않는 현상.'],
+ ['Auxiliary loss','보조 손실','전문가별 라우팅 비율을 균등하게 만들도록 유도하는 추가 손실 항.'],
+ ['Autoregressive generation','자기회귀적 생성','지금까지 생성된 토큰을 다시 입력해 다음 토큰을 한 개씩 예측하는 방식.'],
+ ['Greedy decoding','탐욕적 디코딩','매 스텝 확률이 가장 높은 토큰 하나만 선택하는 디코딩 방법.'],
+ ['Beam search','빔 서치','가장 그럴듯한 k개의 경로를 동시에 유지하며 확장하는 디코딩 방법.'],
+ ['Sampling','샘플링','확률 분포에서 다음 토큰을 무작위로 뽑는 디코딩 방법.'],
+ ['Temperature','온도','소프트맥스 이전 로짓을 나눠 확률 분포를 뾰족하게(작은 T) 또는 평평하게(큰 T) 조절하는 값.'],
+ ['Top-k sampling','Top-k 샘플링','확률 상위 k개 토큰으로 후보를 제한한 뒤 샘플링하는 방법.'],
+ ['Top-p (nucleus) sampling','Top-p(뉴클리어스) 샘플링','누적 확률이 p 이상이 되는 최소 토큰 집합에서 샘플링하는 방법.'],
+ ['Guided decoding','가이디드 디코딩','문법·스키마상 유효한 토큰만 허용해 출력 형식을 강제하는 디코딩 방법.'],
+ ['Context length','컨텍스트 길이','모델에 한 번에 넣을 수 있는 입력의 최대 길이. 컨텍스트 크기·윈도우 크기와 동의어.'],
+ ['Context rot','컨텍스트 부패','입력 토큰이 길어질수록 모델의 성능·신뢰도가 점차 떨어지는 현상.'],
+ ['Prompting','프롬프팅','맥락·지시·입력·제약을 담아 모델에게 원하는 작업을 지시하는 것.'],
+ ['Zero-shot learning','제로샷 학습','예시 없이 질문·지시만으로 작업을 수행하게 하는 방식.'],
+ ['Few-shot learning','퓨샷 학습','프롬프트 안에 입출력 예시를 몇 개 포함해 성능을 높이는 방식.'],
+ ['In-context learning (ICL)','인컨텍스트 러닝','프롬프트 안의 예시만으로 파라미터 업데이트 없이 패턴을 파악하는 능력.'],
+ ['Chain-of-thought (CoT)','사고 사슬','정답 전에 단계적 풀이 과정을 생성하게 해 추론 성능을 높이는 기법.'],
+ ['Self-consistency','자기 일관성','여러 사고 사슬 경로를 샘플링한 뒤 다수결로 최종 답을 정하는 기법.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${g[1]} <span class="en">${g[0]}</span></div><div class="gd">${g[2]}</div></div>`).join('')||`<p class="muted">"${q}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

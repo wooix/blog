@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 8강 논문 노트 — 대규모 언어 모델 평가</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1180px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.4vw,52px);margin:.1em 0 .2em;letter-spacing:-1px;line-height:1.1}
+.hero .sub{font-size:clamp(17px,2.2vw,20px);color:var(--ink2);max-width:780px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:20px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.crosslinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.crosslinks a{font-size:13px;font-weight:600;background:var(--card2);border:1px solid var(--line);padding:7px 13px;border-radius:9px;color:var(--ink2)}
+.crosslinks a:hover{color:var(--ink);border-color:var(--line2);text-decoration:none}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+section{padding:56px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:18px;color:var(--ink2);max-width:820px}
+h3{font-size:22px;margin:1.6em 0 .6em}h4{font-size:17px;margin:1.2em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.syn{border-color:var(--syn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.figure{margin:22px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.figure svg{display:block;max-width:100%;height:auto;margin:0 auto;background:var(--bg3);border-radius:8px}
+.figure figcaption{font-size:13px;color:var(--ink3);margin-top:10px;line-height:1.6}
+/* timeline */
+.tl-axis{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);border-bottom:2px solid var(--line2);padding-bottom:6px;margin-bottom:4px}
+.tl-row{display:grid;grid-template-columns:190px 1fr;gap:14px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+@media(max-width:680px){.tl-row{grid-template-columns:1fr}}
+.tl-row .lab{font-size:13.5px;font-weight:700}.tl-row .lab span{display:block;font-size:11.5px;color:var(--ink3);font-weight:500}
+.tl-bar-wrap{position:relative;height:30px;background:var(--bg3);border-radius:8px}
+.tl-bar{position:absolute;top:0;bottom:0;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-size:11.5px;font-weight:700;color:#0a0c12;white-space:nowrap}
+.tl-origin{margin-top:16px;background:var(--card2);border:1px dashed var(--line2);border-radius:12px;padding:14px 16px;font-size:13.5px;color:var(--ink2);display:flex;gap:12px;align-items:flex-start}
+.tl-origin .oi{font-size:20px}
+.tl-origin b{color:var(--ink)}
+/* tabs (reused) */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* master-detail */
+.md-wrap{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;margin-top:8px}
+@media(max-width:860px){.md-wrap{grid-template-columns:1fr}}
+.master-col{min-width:0}
+.search-box{position:relative;margin-bottom:18px}
+.search-box input{width:100%;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:12px 14px 12px 36px;border-radius:11px;font-size:14.5px}
+.search-box::before{content:"검색";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:11px;opacity:.55;font-weight:700}
+.search-box input{padding-left:52px}
+.group-h{font-size:12.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--brand2);margin:22px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.group-h:first-child{margin-top:0}
+.group-h .en{display:block;text-transform:none;font-weight:600;color:var(--ink3);letter-spacing:0;font-size:11.5px;margin-top:2px}
+.paper-list{list-style:none;margin:0 0 4px;padding:0}
+.paper-item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font:inherit;color:var(--ink)}
+.paper-item:hover{border-color:var(--line2);background:var(--card2)}
+.paper-item.active{border-color:var(--brand);background:var(--brandsoft)}
+.paper-item .pt-title{display:block;font-weight:700;font-size:14.5px;line-height:1.4;margin-bottom:4px}
+.paper-item .pt-meta{display:block;font-size:12px;color:var(--ink3);margin-bottom:5px}
+.paper-item .pt-one{display:block;font-size:12.5px;color:var(--ink2);line-height:1.5}
+.no-result{color:var(--ink3);font-size:13.5px;padding:14px 4px}
+.detail-panel{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;scrollbar-width:thin}
+@media(max-width:860px){.detail-panel{position:static;max-height:none;margin-top:6px}}
+.dp-title{font-size:21px;font-weight:800;line-height:1.4;margin:0 0 8px}
+.dp-meta{color:var(--ink3);font-size:13px;margin-bottom:14px}
+.dp-links{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.linkbtn{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:9px}
+.linkbtn:hover{background:var(--card2);text-decoration:none}
+.tldr{background:var(--brandsoft);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;font-size:15px;font-weight:700;margin-bottom:18px;line-height:1.6}
+.struct{margin:16px 0}
+.struct .sl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;margin-bottom:6px;color:var(--ink)}
+.struct p{margin:0 0 4px;color:var(--ink2);font-size:14.5px;line-height:1.7}
+.dp-role{background:var(--card2);border-left:3px solid var(--syn);border-radius:0 12px 12px 0;padding:14px 16px;margin-top:18px;font-size:14.5px;color:var(--ink2)}
+.dp-role b{color:var(--ink)}
+.chipbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:4px 10px;border-radius:999px}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>L8</b> 논문 노트</span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#library">논문 목록</a>
+    <a href="#check">자가 점검</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">CME 295 · Lecture 8 · 논문 노트</span>
+  <h1>CME 295 · 8강 논문 노트 — 대규모 언어 모델 평가</h1>
+  <p class="sub">정답이 하나로 정해지지 않는 자유형식 답을 어떻게 공정하게 채점할 것인가 — 사람의 눈에서 LLM 심사위원까지, 8강이 참조하는 논문들을 원전 초록에 근거해 정리한 자료입니다.</p>
+  <div class="metaline">
+    <span><b>강의</b> CME 295 · Lecture 8 (Afshine &amp; Shervine Amidi, Stanford ICME)</span>
+    <span><b>논문</b> 8편 · 1960–2024 (MT-Bench는 두 관점으로 2회 수록)</span>
+    <span><b>개념 그룹</b> 6개</span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#landscape">해설 시작 ↓</a>
+    <a class="cta ghost" href="../강의노트/lecture8.html" target="_blank" rel="noopener">강의 설명자 보기 ↗</a>
+    <a class="cta ghost" href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 ↗</a>
+  </div>
+  <div class="crosslinks">
+    <a href="../" target="_blank" rel="noopener">전체 발행 목록 →</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>논문에서 그대로 가져온 문구(직접 인용).</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>논문 초록·공식 자료를 근거로 정리한 <b>사실 요약</b>.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>도식·강의 연결 등 <b>작성자 재구성</b>.</span></div>
+  </div>
+</div></section>
+
+<main>
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">01 — 이 장의 논문 지형</span>
+  <h2>이 장의 논문 지형 <span class="en">Landscape of Lecture 8</span></h2>
+  <p class="lead">주관식 시험을 채점하는 선생님을 하나 떠올려 봅시다. 객관식이라면 정답표와 대조만 하면 그만이지만, 서술형 답안은 같은 뜻을 저마다 다른 문장으로 풀어 쓰기 때문에 '무엇이 정답인가'부터가 흐릿합니다. 채점자가 여럿이면 같은 답안에 서로 다른 점수를 매기기도 하지요. LLM이 내놓는 자유형식 텍스트(free-form text)를 평가하는 일이 바로 이 서술형 채점과 꼭 닮았습니다.</p>
+
+  <p>결론부터 말하면, 이 장에 실린 논문들은 '자유형식 답을 어떻게 채점할 것인가'라는 하나의 물음에 대한 <b>세 갈래의 답</b>과, 그 답들을 표준화한 <b>벤치마크(Benchmark)</b>로 이루어져 있습니다. 첫째는 사람이 직접 읽고 매기는 <b>인간 평가</b>, 둘째는 모범답안과의 단어 겹침을 기계적으로 재는 <b>규칙 기반 지표(Rule-based Metrics)</b>, 셋째는 더 똑똑한 채점자에게 채점을 위임하는 <b>LLM 심사위원(LLM-as-a-Judge)</b>입니다. 세 방법 모두 나름의 강점과 함정을 안고 있고, 논문 지형은 그 함정을 하나씩 메워 온 과정입니다.</p>
+
+  <p>이야기의 출발점은 '사람 평가가 정말 객관적인가'라는 질문입니다. <b>Cohen(1960)</b>과 <b>Fleiss(1971)</b>는 여러 채점자가 같은 답안에 매긴 점수가 우연히 일치했을 가능성까지 걷어내고 진짜 합치도만 남기는 <b>카파(κ) 계수</b>를 제안해, 인간 평가의 주관성을 숫자로 드러냈습니다. 사람 평가가 느리고 비싸며 흔들린다는 이 자각이, 한 번 만든 모범답안으로 기계가 반복 채점하는 규칙 기반 지표를 낳습니다. <b>Papineni 외(2002)</b>의 <b>BLEU</b>는 번역문과 참조문의 n-gram 겹침(정밀도)을, <b>Lin(2004)</b>의 <b>ROUGE</b>는 요약이 참조 요약의 내용을 얼마나 되살렸는지(재현율)를 재지만, 둘 다 표면적 단어 겹침만 볼 뿐 '뜻이 같은 다른 표현'을 억울하게 깎는 한계를 공유합니다.</p>
+
+  <p>여기서 연구는 한 걸음 더 나아갑니다. <b>Zheng 외(2023)</b>의 <b>MT-Bench</b>는 정답 라벨 없이도 강력한 LLM에게 채점을 맡기는 LLM 심사위원 방식이 사람 평가와 80% 넘게 일치함을 보였지만, 동시에 이 심사위원이 제시 순서·답변 길이·자기 출력에 흔들리는 <b>편향(bias)</b>을 가진다는 사실도 체계적으로 드러냈습니다. <b>Wei 외(2024)</b>의 <b>SAFE</b>는 긴 답을 개별 사실(atomic fact) 단위로 쪼개 검색으로 검증하는 <b>사실성 평가(Factuality Evaluation)</b>로 '맞다/틀리다'의 이분법을 넘어섭니다. 마지막으로 <b>Hendrycks 외(2020)</b>의 <b>MMLU</b>(지식)와 <b>Yao 외(2024)</b>의 <b>τ-bench</b>(에이전트)는 능력 축마다 표준 문제셋을 세우되, 기출이 유출되면 시험이 무의미해지듯 데이터 오염과 <i>"측정이 목표가 되면 더 이상 좋은 측정이 아니다"</i>라는 굿하트의 법칙(Goodhart's Law)이라는 함정을 함께 남깁니다.</p>
+
+  <h3>연도순 미니 타임라인</h3>
+  <p class="muted">1960·1971년 카파 논문은 나머지 논문들과 시간 척도가 크게 달라(40년 이상 차이) 아래 타임라인 축에 억지로 욱여넣는 대신 별도 origin 박스로 표시했습니다.</p>
+  <div class="tl-origin"><span class="oi">🏛️</span><div><b>합치도의 뿌리 — Cohen (1960) &amp; Fleiss (1971)</b><br>여러 채점자의 일치도를 우연 보정해 재는 카파 계수. 아래 2002~2024년 논문 전부가 '사람 평가는 흔들린다'는 이 자각 위에 서 있습니다.</div></div>
+  <div style="margin-top:18px">
+    <div class="tl-axis" id="tlAxis"></div>
+    <div id="tlRender"></div>
+  </div>
+
+  <h3>세 가지 채점 방식 — 무엇을 얻고 무엇을 잃는가</h3>
+  <p class="lead">앞서 서술형 채점 비유로 돌아가 보면, 세 방식은 각각 "선생님이 직접 읽기", "모범답안과 밑줄 긋고 대조하기", "옆 반 우등생에게 대신 채점 부탁하기"에 가깝습니다. 어느 쪽도 공짜가 아닙니다.</p>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="세 가지 LLM 평가 방식 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>인간 평가</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>규칙 기반 지표</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>LLM 심사위원</button>
+  </div>
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0">
+    <h4 style="margin-top:0">인간 평가 — 가장 정확하지만 흔들리는 잣대</h4>
+    <p>사람이 직접 읽고 평점을 매기는 방식은 품질의 미묘한 차이를 가장 잘 잡아냅니다. 그러나 채점자마다 기준이 달라 주관적이고, 느리며, 비용이 큽니다. 이 주관성이 얼마나 심한지는 Cohen·Fleiss의 카파(κ) 계수로 정량화하는데, 우연히 같은 점수를 줄 확률을 걷어낸 뒤 남는 합치도만 봅니다. 규칙 기반 지표와 LLM 심사위원은 모두 이 인간 평가를 '정답에 가까운 기준선'으로 삼아 자신과의 일치도로 검증받습니다.</p>
+  </div>
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0">
+    <h4 style="margin-top:0">규칙 기반 지표 — 빠르고 재현 가능하지만 표면만 본다</h4>
+    <p>사람이 한 번 모범답안(reference)을 작성해두면, 이후에는 단어 n-gram 겹침 같은 규칙으로 기계가 무한히 반복 채점합니다. BLEU(정밀도 중심)·ROUGE(재현율 중심)가 대표적이며 계산 비용이 거의 없다는 것이 최대 장점입니다. 대신 표면적 단어 겹침만 보기 때문에, 뜻은 같지만 표현이 다른 답을 낮게 매기고 사람 평가와의 상관관계도 제한적입니다. 애초에 사람이 만든 참조 라벨이 있어야만 작동한다는 전제도 남습니다.</p>
+  </div>
+  <div class="tabpane" data-p="2" role="tabpanel" tabindex="0">
+    <h4 style="margin-top:0">LLM 심사위원 — 라벨이 필요 없지만 편향이 따라온다</h4>
+    <p>정답 라벨 없이도 LLM에게 프롬프트·응답·채점 기준(criteria)을 함께 주고 점수와 근거(rationale)를 받아냅니다. 개별 응답에 점수를 매기는 pointwise, 두 응답 중 나은 쪽을 고르는 pairwise 방식이 있으며, 참조 라벨이 없어도 되고 판단 이유까지 얻는다는 것이 규칙 기반 지표 대비 결정적 장점입니다. 다만 제시 순서(위치 편향)·답변 길이(장황함 편향)·자기 출력 선호(자기선호 편향)에 흔들리므로, 순서 평균화·길이 지침·심사–피심사 모델 분리 같은 완화책이 반드시 따라붙어야 합니다.</p>
+  </div>
+</div></section>
+
+<section id="library"><div class="wrap reveal">
+  <span class="sec-no">02 — 논문 목록</span>
+  <h2>논문 목록 &amp; 상세 노트 <span class="en">Master–Detail Paper Notes</span></h2>
+  <p class="lead">왼쪽에서 논문 제목을 고르면 오른쪽에 상세 노트가 나타납니다. 제목·저자·개념으로 검색할 수 있고, 방향키 대신 <b>Tab</b>과 <b>Enter</b>로도 목록을 탐색할 수 있습니다.</p>
+  <div class="md-wrap">
+    <div class="master-col">
+      <div class="search-box"><input id="paperSearch" placeholder="제목·저자·개념 검색 (한/영)…" aria-label="논문 검색"></div>
+      <div id="masterList"></div>
+    </div>
+    <div class="detail-panel" id="detailPanel" aria-live="polite" tabindex="-1"></div>
+  </div>
+</div></section>
+
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">03 — 자가 점검</span>
+  <h2>자가 점검 <span class="en">Self-check</span></h2>
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 LLM 심사위원(LLM-as-a-Judge)이 BLEU·ROUGE 같은 규칙 기반 지표와 구별되는 핵심 특징은 무엇일까요?</div>
+    <button class="opt" data-correct="1">사람이 만든 참조 정답(reference) 없이도 채점할 수 있고 판단 근거까지 제시하지만, 위치·장황함·자기선호 편향에 취약하다.</button>
+    <button class="opt">규칙 기반 지표는 참조 정답이 필요 없는 반면, LLM 심사위원은 반드시 참조 정답이 있어야만 작동한다.</button>
+    <button class="opt">LLM 심사위원은 사람 평가와 상관관계가 전혀 없어, 벤치마크로만 검증할 수 있다.</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 긴 답변의 사실성 평가에서 SAFE가 취한 핵심 전략은 무엇일까요?</div>
+    <button class="opt" data-correct="1">응답을 개별 사실(atomic fact) 단위로 쪼갠 뒤 각 사실을 검색으로 검증하고, 정밀도·재현율을 함께 반영하는 F1@K로 종합한다.</button>
+    <button class="opt">답변 전체를 한 번에 '맞다/틀리다'로 판정해 이분법적으로 채점한다.</button>
+    <button class="opt">참조 요약과의 n-gram 겹침(ROUGE)만으로 사실성을 계산한다.</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">04 — 용어집</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색…"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 CME 295 8강이 참조하는 8편의 논문을 원전(arXiv abstract 및 공식 게재본)에 근거해 정리한 비공식 학습용 노트입니다.
+   <span class="badge b-src">원본</span>=논문 직접 인용, <span class="badge b-ext">외부</span>=초록·공식 자료 근거 요약, <span class="badge b-syn">종합·해석</span>=작성자 재구성(도식 포함)입니다.
+   Cohen(1960)·Fleiss(1971) 두 편은 arXiv가 없는 고전 통계 논문(각각 <i>Educational and Psychological Measurement</i>, <i>Psychological Bulletin</i> 게재)이고, BLEU(2002)·ROUGE(2004)는 ACL Anthology 공개 게재본을 근거로 삼았습니다. 각 논문 상세의 수치는 초록·본문에 명시된 것만 사용했고, 확인되지 않은 수치는 정성적 표현이나 "정성적 비교" 표기로 대체했습니다.</div>
+  <div>제작: Claude · 원저작권은 각 논문 저자에게 있습니다. · <a href="../" target="_blank" rel="noopener">전체 발행 목록</a> · <a href="../강의노트/lecture8.html" target="_blank" rel="noopener">강의 설명자</a> · <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG)</a></div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* tabs */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* quiz */
+const QUIZ_FB={
+  quiz1:{ok:'✅ 맞습니다! LLM 심사위원은 참조 라벨 없이도 점수와 근거를 함께 내주지만, 제시 순서(위치)·답변 길이(장황함)·자기 출력(자기선호)에 흔들리는 편향이 있어 순서 평균화·길이 지침·심사–피심사 모델 분리 같은 완화책이 필요합니다.',
+         no:'❌ 다시 살펴봅시다. 참조 정답이 <b>필요 없는</b> 쪽이 오히려 LLM 심사위원이고, MT-Bench에서 사람 평가와의 일치율도 80%를 넘었습니다(Zheng 외, 2023).'},
+  quiz2:{ok:'✅ 정확합니다! SAFE는 긴 응답을 atomic fact로 분해해 검색으로 하나씩 검증하고, \'얼마나 많은 사실을 담았는지\'와 \'담은 사실이 얼마나 정확한지\'를 F1@K로 함께 반영합니다(Wei 외, 2024).',
+         no:'❌ 다시 살펴봅시다. 긴 답에는 맞는 사실과 틀린 사실이 섞여 있어 한 번에 채점할 수 없다는 것이 SAFE의 출발점입니다 — 그래서 응답을 사실 단위로 쪼갭니다.'}
+};
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q),fb=QUIZ_FB[q.id]||{ok:'✅ 정답입니다.',no:'❌ 다시 살펴봅시다.'};opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?fb.ok:fb.no;});});
+
+/* timeline (연도순 미니 타임라인) */
+const Y0=2000,Y1=2026,SPAN=Y1-Y0;
+const TL=[
+ ['BLEU (Papineni 외)','n-gram 겹침 정밀도',2002,2002.9,'#7c6cff'],
+ ['ROUGE (Lin)','재현율 기반 요약 평가',2004,2004.9,'#9d8cff'],
+ ['MMLU (Hendrycks 외)','57과목 지식 벤치마크',2020,2020.9,'#f59e0b'],
+ ['MT-Bench (Zheng 외)','LLM 심사위원 + 편향 분석',2023,2023.9,'#2dd4bf'],
+ ['SAFE (Wei 외)','긴 답을 사실 단위로 검증',2024,2024.9,'#34d399'],
+ ['τ-bench (Yao 외)','에이전트 신뢰성(pass^k)',2024,2024.9,'#fbbf24']
+];
+$('#tlAxis').innerHTML=[2000,2004,2008,2012,2016,2020,2024].map(y=>`<span>${y}</span>`).join('');
+$('#tlRender').innerHTML=TL.map(r=>{const l=(r[2]-Y0)/SPAN*100,w=Math.max((r[3]-r[2])/SPAN*100,2.2);
+  return `<div class="tl-row"><div class="lab">${esc(r[0])}<span>${esc(r[1])}</span></div><div class="tl-bar-wrap"><div class="tl-bar" style="left:${l}%;width:${w}%;background:${r[4]}">${Math.floor(r[2])}</div></div></div>`;}).join('');
+
+/* ===== paper data ===== */
+const GROUPS=[
+ {id:'llm-evaluation',ko:'LLM 평가 · 사람 합치도',en:'LLM Evaluation & Human Agreement'},
+ {id:'rule-based-metrics',ko:'규칙 기반 지표',en:'Rule-based Metrics'},
+ {id:'llm-as-a-judge',ko:'LLM 심사위원',en:'LLM-as-a-Judge'},
+ {id:'judge-biases',ko:'심사위원 편향',en:'LLM Judge Biases'},
+ {id:'factuality-evaluation',ko:'사실성 평가',en:'Long-form Factuality Evaluation'},
+ {id:'benchmarks',ko:'벤치마크',en:'LLM Benchmarks'}
+];
+function glabel(id){const g=GROUPS.find(x=>x.id===id);return g?g.ko:id;}
+
+const SVG_KAPPA=`<svg viewBox="0 0 640 214" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="관측된 일치율에서 우연히 기대되는 일치율을 빼고, 1에서 우연 일치율을 뺀 값으로 나눠 보정하는 코헨 카파 계수의 구조. 관측 일치율 0.80, 우연 기대 0.50일 때 카파는 0.60이 되는 예시 막대그래프">
+<text x="320" y="26" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">κ = (Pₒ − Pₑ) / (1 − Pₑ)</text>
+<text x="320" y="45" text-anchor="middle" font-size="11" fill="var(--ink3)">우연히 일치했을 확률을 걷어낸 '진짜' 합치도</text>
+<line x1="170" y1="60" x2="170" y2="196" stroke="var(--line2)" stroke-width="1.5"/>
+<text x="160" y="64" text-anchor="end" font-size="9.5" fill="var(--ink3)">0</text>
+<text x="536" y="64" text-anchor="end" font-size="9.5" fill="var(--ink3)">1.0</text>
+<line x1="530" y1="60" x2="530" y2="196" stroke="var(--line)" stroke-dasharray="3 4"/>
+<text x="16" y="86" font-size="11.5" fill="var(--ink2)">관측 일치 Pₒ</text>
+<rect x="170" y="74" width="288" height="24" rx="5" fill="var(--brand)"/>
+<text x="468" y="91" font-size="11" font-weight="700" fill="var(--ink)">0.80</text>
+<text x="16" y="126" font-size="11.5" fill="var(--ink2)">우연 기대 Pₑ</text>
+<rect x="170" y="114" width="180" height="24" rx="5" fill="var(--ink3)" opacity="0.55"/>
+<text x="360" y="131" font-size="11" font-weight="700" fill="var(--ink2)">0.50</text>
+<text x="16" y="182" font-size="11.5" fill="var(--syn)" font-weight="700">보정된 κ</text>
+<rect x="170" y="168" width="216" height="26" rx="5" fill="var(--syn)"/>
+<text x="396" y="186" font-size="11.5" font-weight="700" fill="var(--ink)">0.60</text>
+<path d="M350,150 L350,166" stroke="var(--ink3)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<text x="356" y="160" font-size="9.5" fill="var(--ink3)">우연분(0.50)만큼 깎고 (1−0.50)로 정규화</text>
+</svg>`;
+
+const SVG_FLEISS=`<svg viewBox="0 0 640 216" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="정확히 2명의 평가자에만 적용되는 코헨 카파를, 3명 이상 여러 평가자가 같은 대상을 채점하는 경우로 일반화한 플라이스 카파. 왼쪽은 평가자 2명, 오른쪽은 항목 3개를 평가자 5명이 채점한 격자">
+<text x="115" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Cohen (1960)</text>
+<text x="115" y="45" text-anchor="middle" font-size="10" fill="var(--ink3)">평가자 정확히 2명</text>
+<circle cx="82" cy="85" r="19" fill="var(--brandsoft)" stroke="var(--brand)"/><text x="82" y="90" text-anchor="middle" font-size="11" fill="var(--ink)">R1</text>
+<circle cx="148" cy="85" r="19" fill="var(--brandsoft)" stroke="var(--brand)"/><text x="148" y="90" text-anchor="middle" font-size="11" fill="var(--ink)">R2</text>
+<rect x="75" y="132" width="80" height="32" rx="8" fill="var(--card2)" stroke="var(--line2)"/><text x="115" y="152" text-anchor="middle" font-size="10.5" fill="var(--ink2)">한 대상</text>
+<path d="M82,104 L110,132" stroke="var(--ink3)" stroke-width="1.4"/><path d="M148,104 L120,132" stroke="var(--ink3)" stroke-width="1.4"/>
+<path d="M172,100 L252,100" stroke="var(--syn)" stroke-width="2.5"/><polygon points="252,94 264,100 252,106" fill="var(--syn)"/>
+<text x="218" y="90" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--syn)">N명으로 일반화</text>
+<text x="450" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Fleiss (1971)</text>
+<text x="450" y="45" text-anchor="middle" font-size="10" fill="var(--ink3)">평가자 3명 이상 · 항목마다 합의율 집계</text>
+<g font-size="10" text-anchor="middle">
+  <text x="300" y="72" fill="var(--ink3)">항목\\평가자</text>
+  <text x="372" y="72" fill="var(--ink3)">R1</text><text x="410" y="72" fill="var(--ink3)">R2</text><text x="448" y="72" fill="var(--ink3)">R3</text><text x="486" y="72" fill="var(--ink3)">R4</text><text x="524" y="72" fill="var(--ink3)">R5</text>
+  <text x="560" y="72" fill="var(--ink3)">합의</text>
+  <text x="300" y="98" fill="var(--ink2)">A</text>
+  <circle cx="372" cy="94" r="8" fill="var(--brand)"/><circle cx="410" cy="94" r="8" fill="var(--brand)"/><circle cx="448" cy="94" r="8" fill="var(--brand)"/><circle cx="486" cy="94" r="8" fill="var(--syn)"/><circle cx="524" cy="94" r="8" fill="var(--brand)"/>
+  <text x="560" y="98" fill="var(--ok)" font-weight="700">4/5</text>
+  <text x="300" y="130" fill="var(--ink2)">B</text>
+  <circle cx="372" cy="126" r="8" fill="var(--syn)"/><circle cx="410" cy="126" r="8" fill="var(--brand)"/><circle cx="448" cy="126" r="8" fill="var(--syn)"/><circle cx="486" cy="126" r="8" fill="var(--brand)"/><circle cx="524" cy="126" r="8" fill="var(--syn)"/>
+  <text x="560" y="130" fill="var(--warn)" font-weight="700">3/5</text>
+  <text x="300" y="162" fill="var(--ink2)">C</text>
+  <circle cx="372" cy="158" r="8" fill="var(--brand)"/><circle cx="410" cy="158" r="8" fill="var(--brand)"/><circle cx="448" cy="158" r="8" fill="var(--brand)"/><circle cx="486" cy="158" r="8" fill="var(--brand)"/><circle cx="524" cy="158" r="8" fill="var(--brand)"/>
+  <text x="560" y="162" fill="var(--ok)" font-weight="700">5/5</text>
+</g>
+<text x="450" y="196" text-anchor="middle" font-size="10" fill="var(--ink3)">● 범주1 · ● 범주2 — 항목별 평가자 합의 비율을 우연 보정해 κ 산출</text>
+</svg>`;
+
+const SVG_BLEU=`<svg viewBox="0 0 640 214" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="후보 번역문과 참조 번역문의 단어 n-gram 겹침으로 정밀도를 구하고, 지나치게 짧은 번역에 벌점을 주는 brevity penalty를 곱해 하나의 BLEU 점수로 압축하는 파이프라인. 초록으로 강조된 the와 cat이 두 문장에 공통으로 등장">
+<text x="20" y="40" font-size="11.5" font-weight="700" fill="var(--ink2)">후보</text>
+<rect x="96" y="24" width="66" height="28" rx="6" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="129" y="42" text-anchor="middle" font-size="11" fill="var(--ink)">the</text>
+<rect x="166" y="24" width="66" height="28" rx="6" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="199" y="42" text-anchor="middle" font-size="11" fill="var(--ink)">cat</text>
+<rect x="236" y="24" width="66" height="28" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="269" y="42" text-anchor="middle" font-size="11" fill="var(--ink3)">sat</text>
+<text x="20" y="86" font-size="11.5" font-weight="700" fill="var(--ink2)">참조</text>
+<rect x="96" y="70" width="66" height="28" rx="6" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="129" y="88" text-anchor="middle" font-size="11" fill="var(--ink)">the</text>
+<rect x="166" y="70" width="66" height="28" rx="6" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="199" y="88" text-anchor="middle" font-size="11" fill="var(--ink)">cat</text>
+<rect x="236" y="70" width="66" height="28" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="269" y="88" text-anchor="middle" font-size="11" fill="var(--ink3)">is</text>
+<rect x="306" y="70" width="76" height="28" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="344" y="88" text-anchor="middle" font-size="10.5" fill="var(--ink3)">sitting</text>
+<text x="470" y="44" text-anchor="middle" font-size="10.5" fill="var(--ink3)">겹치는 n-gram = the · cat</text>
+<rect x="404" y="54" width="132" height="34" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/><text x="470" y="76" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">정밀도 2/3 ≈ 0.67</text>
+<line x1="130" y1="130" x2="130" y2="150" stroke="var(--ink3)" stroke-dasharray="3 3"/>
+<g transform="translate(0,8)">
+  <rect x="40" y="148" width="150" height="34" rx="8" fill="var(--card2)" stroke="var(--line2)"/><text x="115" y="170" text-anchor="middle" font-size="11" fill="var(--ink2)">n-gram 정밀도 0.67</text>
+  <path d="M190,165 L226,165" stroke="var(--brand2)" stroke-width="2"/><polygon points="226,160 236,165 226,170" fill="var(--brand2)"/>
+  <rect x="238" y="148" width="120" height="34" rx="8" fill="var(--card2)" stroke="var(--line2)"/><text x="298" y="170" text-anchor="middle" font-size="11" fill="var(--ink2)">× BP(길이 벌점)</text>
+  <path d="M358,165 L394,165" stroke="var(--brand2)" stroke-width="2"/><polygon points="394,160 404,165 394,170" fill="var(--brand2)"/>
+  <rect x="406" y="146" width="150" height="38" rx="9" fill="var(--brand)"/><text x="481" y="170" text-anchor="middle" font-size="12.5" font-weight="700" fill="#fff">BLEU 점수</text>
+</g>
+<text x="320" y="206" text-anchor="middle" font-size="9.5" fill="var(--ink3)">표면적 단어 겹침만 본다 — 뜻이 같은 다른 표현은 억울하게 낮게 채점</text>
+</svg>`;
+
+const SVG_ROUGE=`<svg viewBox="0 0 640 216" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="참조 요약의 내용이 생성 요약에 얼마나 되살아났는지를 재현율로 재는 ROUGE. 벤 다이어그램의 겹침을 참조 전체로 나눈 것이 ROUGE 재현율이고 후보 전체로 나눈 것이 BLEU 정밀도이며, 순서까지 반영하는 ROUGE-L도 함께 표시">
+<text x="215" y="28" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">ROUGE = 재현율(recall) 중심</text>
+<circle cx="175" cy="118" r="74" fill="var(--syn-bg)" stroke="var(--syn)" stroke-width="1.5" fill-opacity="0.7"/>
+<circle cx="265" cy="118" r="74" fill="var(--brandsoft)" stroke="var(--brand)" stroke-width="1.5" fill-opacity="0.55"/>
+<text x="120" y="80" text-anchor="middle" font-size="10.5" fill="var(--syn)" font-weight="700">참조 요약</text>
+<text x="320" y="80" text-anchor="middle" font-size="10.5" fill="var(--brand2)" font-weight="700">생성 요약</text>
+<text x="220" y="116" text-anchor="middle" font-size="10" fill="var(--ink)">공통</text>
+<text x="220" y="130" text-anchor="middle" font-size="10" fill="var(--ink2)">내용</text>
+<rect x="392" y="52" width="232" height="40" rx="9" fill="var(--syn-bg)" stroke="var(--syn)"/>
+<text x="508" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">ROUGE = 공통 / 참조</text>
+<text x="508" y="85" text-anchor="middle" font-size="9.5" fill="var(--ink3)">참조 내용을 얼마나 되살렸나</text>
+<rect x="392" y="102" width="232" height="40" rx="9" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="508" y="120" text-anchor="middle" font-size="11" fill="var(--ink2)">(대비) BLEU = 공통 / 후보</text>
+<text x="508" y="135" text-anchor="middle" font-size="9.5" fill="var(--ink3)">후보가 얼마나 정확했나 — 정밀도</text>
+<rect x="392" y="152" width="232" height="40" rx="9" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="508" y="170" text-anchor="middle" font-size="11" fill="var(--ink2)">ROUGE-L = 최장 공통 부분열</text>
+<text x="508" y="185" text-anchor="middle" font-size="9.5" fill="var(--ink3)">단어 순서(LCS)까지 반영</text>
+</svg>`;
+
+const SVG_JUDGE=`<svg viewBox="0 0 640 214" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="프롬프트와 응답, 채점 기준을 심사위원 LLM에 넣어 점수와 근거를 받아내는 LLM 심사위원 구조. 응답 하나에 점수를 매기는 pointwise와 두 응답 중 나은 쪽을 고르는 pairwise 두 갈래로 나뉜다">
+<rect x="16" y="62" width="152" height="92" rx="10" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="92" y="84" text-anchor="middle" font-size="11" fill="var(--ink2)">① 프롬프트</text>
+<text x="92" y="106" text-anchor="middle" font-size="11" fill="var(--ink2)">② 응답(들)</text>
+<text x="92" y="128" text-anchor="middle" font-size="11" fill="var(--ink2)">③ 채점 기준</text>
+<text x="92" y="146" text-anchor="middle" font-size="9.5" fill="var(--ink3)">(criteria 프롬프트)</text>
+<path d="M168,108 L206,108" stroke="var(--brand2)" stroke-width="2"/><polygon points="206,103 216,108 206,113" fill="var(--brand2)"/>
+<rect x="220" y="78" width="150" height="60" rx="12" fill="var(--brandsoft)" stroke="var(--brand)" stroke-width="1.5"/>
+<text x="295" y="102" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">심사위원 LLM</text>
+<text x="295" y="122" text-anchor="middle" font-size="10" fill="var(--ink3)">예: GPT-4가 판단</text>
+<path d="M370,100 Q396,100 396,72 L396,58 L430,58" stroke="var(--brand2)" stroke-width="2" fill="none"/><polygon points="430,53 440,58 430,63" fill="var(--brand2)"/>
+<path d="M370,116 Q396,116 396,150 L396,164 L430,164" stroke="var(--brand2)" stroke-width="2" fill="none"/><polygon points="430,159 440,164 430,169" fill="var(--brand2)"/>
+<rect x="442" y="34" width="182" height="48" rx="9" fill="var(--syn-bg)" stroke="var(--syn)"/>
+<text x="533" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">pointwise — 점수화</text>
+<text x="533" y="72" text-anchor="middle" font-size="10" fill="var(--ink2)">응답 → 8/10 + 근거</text>
+<rect x="442" y="140" width="182" height="48" rx="9" fill="var(--syn-bg)" stroke="var(--syn)"/>
+<text x="533" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">pairwise — 승자 고르기</text>
+<text x="533" y="178" text-anchor="middle" font-size="10" fill="var(--ink2)">A vs B → A 승 + 근거</text>
+<text x="230" y="206" text-anchor="middle" font-size="9.5" fill="var(--ink3)">정답 라벨 없이 점수와 판단 근거를 함께 얻는다</text>
+</svg>`;
+
+const SVG_BIAS=`<svg viewBox="0 0 640 218" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LLM 심사위원이 응답 내용이 아니라 제시 순서, 답변 길이, 자기 출력에 흔들리는 세 가지 편향과 각각의 완화책. 위치 편향은 순서 평균화로, 장황함 편향은 길이 지침으로, 자기선호 편향은 심사와 피심사 모델 분리로 완화한다">
+<text x="320" y="22" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">심사위원 LLM이 흔들리는 세 축 — 그리고 완화책</text>
+<g>
+  <rect x="16" y="38" width="196" height="164" rx="10" fill="var(--card)" stroke="var(--warn)" stroke-width="1.3"/>
+  <text x="114" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--warn)">① 위치 편향</text>
+  <text x="114" y="86" text-anchor="middle" font-size="11" fill="var(--ink2)">[A][B] → A 승</text>
+  <text x="114" y="106" text-anchor="middle" font-size="11" fill="var(--ink2)">[B][A] → B 승</text>
+  <text x="114" y="124" text-anchor="middle" font-size="9.5" fill="var(--ink3)">순서만 바꿔도 판정이 뒤집힘</text>
+  <line x1="34" y1="138" x2="194" y2="138" stroke="var(--line)"/>
+  <text x="114" y="160" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--syn)">완화</text>
+  <text x="114" y="180" text-anchor="middle" font-size="10.5" fill="var(--ink2)">두 순서 모두 채점해 평균</text>
+</g>
+<g>
+  <rect x="222" y="38" width="196" height="164" rx="10" fill="var(--card)" stroke="var(--warn)" stroke-width="1.3"/>
+  <text x="320" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--warn)">② 장황함 편향</text>
+  <rect x="250" y="76" width="60" height="12" rx="3" fill="var(--ink3)" opacity="0.5"/><text x="326" y="86" font-size="10" fill="var(--ink3)">짧은 답</text>
+  <rect x="250" y="96" width="130" height="12" rx="3" fill="var(--brand)"/><text x="388" y="106" font-size="11" fill="var(--ok)">✓</text>
+  <text x="320" y="126" text-anchor="middle" font-size="9.5" fill="var(--ink3)">내용과 무관하게 긴 답을 선호</text>
+  <line x1="240" y1="138" x2="400" y2="138" stroke="var(--line)"/>
+  <text x="320" y="160" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--syn)">완화</text>
+  <text x="320" y="180" text-anchor="middle" font-size="10.5" fill="var(--ink2)">채점 기준에 길이 지침 명시</text>
+</g>
+<g>
+  <rect x="428" y="38" width="196" height="164" rx="10" fill="var(--card)" stroke="var(--warn)" stroke-width="1.3"/>
+  <text x="526" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--warn)">③ 자기선호 편향</text>
+  <text x="526" y="86" text-anchor="middle" font-size="11" fill="var(--ink2)">같은 계열 모델 답</text>
+  <text x="526" y="106" text-anchor="middle" font-size="13" fill="var(--ok)">✓ 편애</text>
+  <text x="526" y="124" text-anchor="middle" font-size="9.5" fill="var(--ink3)">자기(계열)가 만든 응답을 선호</text>
+  <line x1="446" y1="138" x2="606" y2="138" stroke="var(--line)"/>
+  <text x="526" y="160" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--syn)">완화</text>
+  <text x="526" y="180" text-anchor="middle" font-size="10.5" fill="var(--ink2)">심사–피심사 모델 분리</text>
+</g>
+</svg>`;
+
+const SVG_SAFE=`<svg viewBox="0 0 640 216" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="긴 응답을 개별 사실 단위로 쪼갠 뒤 각 사실을 검색으로 지지 또는 반박 판정하고, 담은 사실 수와 맞은 사실 비율을 F1@K로 종합하는 SAFE의 사실성 평가 파이프라인">
+<rect x="14" y="82" width="100" height="52" rx="9" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="64" y="105" text-anchor="middle" font-size="11" fill="var(--ink)">긴 응답</text>
+<text x="64" y="121" text-anchor="middle" font-size="9" fill="var(--ink3)">사실·오류 혼재</text>
+<path d="M114,108 L148,108" stroke="var(--brand2)" stroke-width="2"/><polygon points="148,103 158,108 148,113" fill="var(--brand2)"/>
+<text x="131" y="98" text-anchor="middle" font-size="9" fill="var(--ink3)">분해</text>
+<rect x="160" y="34" width="132" height="30" rx="7" fill="var(--card2)" stroke="var(--line2)"/><text x="226" y="53" text-anchor="middle" font-size="10.5" fill="var(--ink2)">사실 ① atomic fact</text>
+<rect x="160" y="92" width="132" height="30" rx="7" fill="var(--card2)" stroke="var(--line2)"/><text x="226" y="111" text-anchor="middle" font-size="10.5" fill="var(--ink2)">사실 ② atomic fact</text>
+<rect x="160" y="150" width="132" height="30" rx="7" fill="var(--card2)" stroke="var(--line2)"/><text x="226" y="169" text-anchor="middle" font-size="10.5" fill="var(--ink2)">사실 ③ atomic fact</text>
+<text x="332" y="53" text-anchor="middle" font-size="10.5" fill="var(--ink3)">🔍</text><text x="392" y="53" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ok)">지지 ✓</text>
+<text x="332" y="111" text-anchor="middle" font-size="10.5" fill="var(--ink3)">🔍</text><text x="392" y="111" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--warn)">반박 ✗</text>
+<text x="332" y="169" text-anchor="middle" font-size="10.5" fill="var(--ink3)">🔍</text><text x="392" y="169" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ok)">지지 ✓</text>
+<path d="M292,49 L318,49" stroke="var(--line2)" stroke-width="1.4"/><path d="M292,107 L318,107" stroke="var(--line2)" stroke-width="1.4"/><path d="M292,165 L318,165" stroke="var(--line2)" stroke-width="1.4"/>
+<path d="M430,53 Q456,53 456,100 L456,104" stroke="var(--brand2)" stroke-width="1.6" fill="none"/>
+<path d="M430,111 L456,111" stroke="var(--brand2)" stroke-width="1.6"/>
+<path d="M430,169 Q456,169 456,120 L456,116" stroke="var(--brand2)" stroke-width="1.6" fill="none"/>
+<polygon points="456,104 461,114 466,104" fill="var(--brand2)"/>
+<rect x="470" y="82" width="154" height="54" rx="10" fill="var(--brand)"/>
+<text x="547" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">F1@K</text>
+<text x="547" y="123" text-anchor="middle" font-size="9" fill="#fff">정밀도 × 재현율</text>
+<text x="320" y="204" text-anchor="middle" font-size="9.5" fill="var(--ink3)">맞은 사실 비율(정밀도)과 K개까지 담았는지(재현율)를 함께 반영</text>
+</svg>`;
+
+const SVG_MMLU=`<svg viewBox="0 0 640 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="57개 과목의 4지선다 문제로 구성된 MMLU. 모델이 고른 보기 문자를 정답과 하드코딩 문자열 매칭으로 자동 채점하며, 지식의 깊이보다 폭을 측정한다">
+<text x="320" y="24" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">MMLU — 57개 과목 × 4지선다(A/B/C/D)</text>
+<g font-size="10" text-anchor="middle">
+  <rect x="16" y="48" width="150" height="24" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="91" y="64" fill="var(--ink2)">초등 수학</text>
+  <rect x="16" y="80" width="150" height="24" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="91" y="96" fill="var(--ink2)">미국사</text>
+  <rect x="16" y="112" width="150" height="24" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="91" y="128" fill="var(--ink2)">법학</text>
+  <rect x="16" y="144" width="150" height="24" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="91" y="160" fill="var(--ink2)">전문의학 … +54</text>
+</g>
+<rect x="196" y="48" width="196" height="120" rx="10" fill="var(--card)" stroke="var(--line)"/>
+<text x="212" y="70" font-size="10.5" fill="var(--ink2)">Q. 다음 중 옳은 것은?</text>
+<text x="212" y="92" font-size="10.5" fill="var(--ink3)">(A) …</text>
+<text x="212" y="112" font-size="10.5" fill="var(--ink3)">(B) …</text>
+<text x="212" y="132" font-size="10.5" fill="var(--ink3)">(C) …</text>
+<rect x="208" y="140" width="172" height="20" rx="5" fill="var(--syn-bg)" stroke="var(--syn)"/><text x="216" y="155" font-size="10.5" fill="var(--ink)">(D) … ← 정답</text>
+<path d="M392,108 L426,108" stroke="var(--brand2)" stroke-width="2"/><polygon points="426,103 436,108 426,113" fill="var(--brand2)"/>
+<rect x="440" y="78" width="184" height="60" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/>
+<text x="532" y="102" text-anchor="middle" font-size="11" fill="var(--ink)">모델 답 "D" = 정답 "D"</text>
+<text x="532" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok)">✓ 하드코딩 문자열 매칭</text>
+<text x="320" y="196" text-anchor="middle" font-size="9.5" fill="var(--ink3)">'깊이'보다 지식의 '폭'을 잰다 — 정답이 한 글자로 고정되어 자동 채점</text>
+</svg>`;
+
+const SVG_TAU=`<svg viewBox="0 0 640 224" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="사용자 역할 LLM과 에이전트가 여러 턴에 걸쳐 대화하며 정책 문서를 지켜 도구와 API를 호출하고, 대화 종료 시점의 데이터베이스 상태를 정답 상태와 비교해 채점하는 타우-벤치. 같은 과제를 여러 번 반복해 전부 성공한 확률을 재는 pass^k를 강조한다">
+<text x="120" y="34" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--syn)">다중 턴 대화</text>
+<rect x="20" y="44" width="140" height="46" rx="10" fill="var(--syn-bg)" stroke="var(--syn)"/>
+<text x="90" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">사용자 역할 LLM</text>
+<text x="90" y="82" text-anchor="middle" font-size="9" fill="var(--ink3)">사람 대신 대화</text>
+<rect x="250" y="44" width="140" height="46" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/>
+<text x="320" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">에이전트</text>
+<path d="M160,60 L248,60" stroke="var(--brand2)" stroke-width="1.8"/><polygon points="248,55 258,60 248,65" fill="var(--brand2)"/>
+<path d="M250,78 L162,78" stroke="var(--brand2)" stroke-width="1.8"/><polygon points="162,73 152,78 162,83" fill="var(--brand2)"/>
+<rect x="470" y="44" width="150" height="46" rx="10" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="545" y="66" text-anchor="middle" font-size="11" fill="var(--ink2)">정책 문서(policy)</text>
+<text x="545" y="82" text-anchor="middle" font-size="9" fill="var(--ink3)">규칙 준수</text>
+<path d="M390,60 L468,60" stroke="var(--ink3)" stroke-width="1.4" stroke-dasharray="4 3"/><text x="429" y="52" text-anchor="middle" font-size="9" fill="var(--ink3)">참조</text>
+<rect x="250" y="120" width="140" height="40" rx="9" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="320" y="144" text-anchor="middle" font-size="10.5" fill="var(--ink2)">도구 · API 호출</text>
+<path d="M320,90 L320,118" stroke="var(--brand2)" stroke-width="1.8"/><polygon points="315,118 320,128 325,118" fill="var(--brand2)"/>
+<rect x="470" y="118" width="150" height="44" rx="9" fill="var(--card2)" stroke="var(--line2)"/>
+<text x="545" y="144" text-anchor="middle" font-size="10.5" fill="var(--ink2)">가상 DB 상태 갱신</text>
+<path d="M390,140 L468,140" stroke="var(--brand2)" stroke-width="1.6"/><polygon points="468,135 478,140 468,145" fill="var(--brand2)"/>
+<rect x="20" y="176" width="600" height="34" rx="9" fill="var(--card)" stroke="var(--line)"/>
+<text x="34" y="197" font-size="10.5" fill="var(--ink2)">종료 시 <tspan font-weight="700" fill="var(--ink)">DB 상태 == 정답 상태</tspan> 로 채점 · <tspan font-weight="700" fill="var(--gold)">pass^k</tspan> = k회 반복해 전부 성공한 확률 (GPT-4o급도 pass^8 &lt; 25%)</text>
+</svg>`;
+
+const PAPERS=[
+{id:'cohen1960',group:'llm-evaluation',
+ title:'A Coefficient of Agreement for Nominal Scales',authors:'Jacob Cohen',year:1960,arxiv:null,
+ pdf:null,abs:'https://journals.sagepub.com/doi/10.1177/001316446002000104',
+ oneliner:'여러 평가자의 단순 일치율에서 \'우연히 맞을 확률\'을 걷어낸 카파(κ) 계수를 제안한 1960년 고전.',
+ tldr:'범주형 채점에서 단순 일치율(observed agreement)이 우연히 같은 답을 고를 확률을 반영하지 못한다는 문제를 지적하고, 우연 기대 일치율을 빼고 정규화한 카파(κ) 계수로 평가자 간 합치도를 통계적으로 보정한 논문입니다.',
+ problem:{badge:'ext',text:'여러 평가자가 같은 대상을 범주형(nominal scale)으로 채점할 때, 단순 일치율은 두 사람이 우연히 같은 범주를 고를 확률을 반영하지 못해 합치도를 부풀립니다.'},
+ idea:{badge:'ext',text:'관찰된 일치율(Pₒ)에서 우연히 기대되는 일치율(Pₑ)을 빼고 (1−Pₑ)로 정규화한 카파(κ) 계수를 제안합니다. 우연 수준이면 0, 완전 일치면 1이 되도록 설계되었습니다.'},
+ method:{badge:'ext',text:'κ = (Pₒ − Pₑ) / (1 − Pₑ)로 정의하며, Pₑ는 각 범주의 주변확률(marginal)로부터 계산합니다. 평가자가 정확히 2명인 경우를 다룹니다.'},
+ results:{badge:'ext',text:'심리측정학·의학·자연어처리 등 사람이 라벨을 매기는 거의 모든 분야에서 평가자 간 합치도를 재는 표준 지표로 자리잡았습니다.'},
+ impact:{badge:'syn',text:'8강에서는 \'인간 평가가 정말 객관적인가\'라는 질문에 답하는 근거로 인용됩니다 — 사람 평가조차 채점자 간 불일치를 우연 보정해 정량화해야 한다는 자각의 출발점입니다.'},
+ svg:SVG_KAPPA,svgCaption:'관측 일치율에서 우연 기대 일치율을 빼고 (1−우연)으로 정규화해 \'진짜\' 합치도만 남기는 카파 계수의 구조.',
+ role:'8강이 인간 평가의 주관성을 다룰 때, 그 주관성을 숫자로 만드는 도구가 바로 이 카파 계수입니다.',
+ chips:['llm-evaluation']},
+
+{id:'fleiss1971',group:'llm-evaluation',
+ title:'Measuring Nominal Scale Agreement Among Many Raters',authors:'Joseph L. Fleiss',year:1971,arxiv:null,
+ pdf:null,abs:'https://psycnet.apa.org/record/1972-05083-001',
+ oneliner:'코헨 카파를 3명 이상 다수 평가자로 일반화해, 여러 크라우드워커의 합치도까지 잴 수 있게 한 확장.',
+ tldr:'정확히 2명에만 적용되던 코헨 카파의 한계를 넘어, 3명 이상 여러 평가자가 채점할 때도 우연을 보정한 합치도를 계산하는 Fleiss\' Kappa를 제안했습니다.',
+ problem:{badge:'ext',text:'코헨의 카파 계수는 평가자가 정확히 2명일 때만 쓸 수 있어, 여러 명이 동시에 채점하는 실제 상황에는 그대로 적용할 수 없었습니다.'},
+ idea:{badge:'ext',text:'평가자가 3명 이상이어도, 각 대상에 대해 평가자들이 얼마나 같은 범주로 모였는지(합의 비율)를 집계해 우연 수준을 보정하는 방식으로 카파를 일반화합니다.'},
+ method:{badge:'ext',text:'각 대상마다 평가자들의 범주 분포로부터 관찰된 합의도를 구하고, 전체 범주 주변확률로 우연 기대치를 계산해 κ로 정규화합니다. 대상마다 평가자 조합이 달라도 됩니다.'},
+ results:{badge:'ext',text:'다수의 크라우드워커나 여러 전문가가 채점하는 상황에 잘 들어맞아, LLM 평가 파이프라인에서 인간 라벨의 신뢰도를 검증할 때 자주 쓰입니다.'},
+ impact:{badge:'syn',text:'LLM 출력을 여러 사람이 채점해 \'정답에 가까운 기준선\'을 만들 때, 그 라벨들이 서로 얼마나 믿을 만한지 재는 표준 도구입니다.'},
+ svg:SVG_FLEISS,svgCaption:'평가자 2명에 국한된 코헨 카파를, 여러 평가자가 여러 항목을 채점하는 격자로 확장한 플라이스 카파의 구조.',
+ role:'8강이 인간 평가의 신뢰도를 논할 때, 다수 채점자 환경에서 합치도를 재는 실무 도구로 코헨 카파와 짝을 이룹니다.',
+ chips:['llm-evaluation']},
+
+{id:'bleu2002',group:'rule-based-metrics',
+ title:'BLEU: a Method for Automatic Evaluation of Machine Translation',authors:'Papineni et al.',year:2002,arxiv:null,
+ pdf:'https://aclanthology.org/P02-1040.pdf',abs:'https://aclanthology.org/P02-1040/',
+ oneliner:'후보와 참조 번역의 n-gram 겹침(정밀도)에 길이 벌점을 곱해 한 점수로 압축한, 20년 표준 자동 평가 지표.',
+ tldr:'기계 번역 품질을 사람이 일일이 채점하기엔 너무 느리고 비싸다는 문제에서, 후보와 참조 번역의 n-gram 겹침(정밀도)에 brevity penalty를 곱해 자동 채점하는 BLEU를 제안했습니다.',
+ problem:{badge:'ext',text:'기계 번역 품질을 사람이 매번 평가하기에는 시간과 비용이 지나치게 크고, 개발 주기마다 반복하기 어렵습니다.'},
+ idea:{badge:'ext',text:'후보 번역문과 사람이 만든 참조 번역문 사이의 n-gram 겹침 비율(정밀도)을 재고, 지나치게 짧은 번역을 벌하는 brevity penalty를 곱해 하나의 점수로 압축합니다.'},
+ method:{badge:'ext',text:'여러 n(보통 1~4)에 대한 수정 정밀도(modified n-gram precision)를 기하평균한 뒤 brevity penalty를 곱합니다. 계산 비용이 거의 없어 대규모로 반복할 수 있습니다.'},
+ results:{badge:'ext',text:'사람 평가와 꽤 높은 상관관계를 보이면서 계산이 거의 공짜여서, 이후 20년간 기계번역·생성 모델 평가의 사실상 표준 지표가 되었습니다.'},
+ impact:{badge:'syn',text:'다만 표면적 단어 겹침만 보기 때문에 의미는 같지만 표현이 다른 문장을 낮게 채점하는 한계가 있어, 뒤의 LLM 심사위원 방식이 등장하는 배경이 됩니다.'},
+ svg:SVG_BLEU,svgCaption:'후보와 참조 문장의 n-gram 겹침(정밀도)에 길이 벌점을 곱해 하나의 BLEU 점수로 압축하는 파이프라인.',
+ role:'8강이 규칙 기반 지표를 소개할 때 \'정밀도 계열\'의 대표로 드는 지표이며, 재현율 계열인 ROUGE와 짝을 이룹니다.',
+ chips:['rule-based-metrics']},
+
+{id:'rouge2004',group:'rule-based-metrics',
+ title:'ROUGE: A Package for Automatic Evaluation of Summaries',authors:'Chin-Yew Lin',year:2004,arxiv:null,
+ pdf:'https://aclanthology.org/W04-1013.pdf',abs:'https://aclanthology.org/W04-1013/',
+ oneliner:'생성 요약이 참조 요약의 핵심 내용을 얼마나 되살렸는지(재현율)를 재는 여러 변형을 묶은 표준 평가 패키지.',
+ tldr:'자동 요약 시스템이 늘면서, 생성 요약이 사람이 쓴 참조 요약의 내용을 얼마나 재현했는지를 자동으로 재려는 목적에서 제안된 재현율 중심 지표 패키지입니다.',
+ problem:{badge:'ext',text:'자동 요약 시스템이 늘어나면서, 생성된 요약이 참조 요약의 핵심 내용을 얼마나 담았는지를 사람이 매번 평가하기 어려워졌습니다.'},
+ idea:{badge:'ext',text:'BLEU가 정밀도 중심이라면 ROUGE는 재현율(recall) 중심으로, 참조 요약에 있는 n-gram·최장 공통 부분열(LCS)이 생성 요약에 얼마나 포함되는지를 측정합니다.'},
+ method:{badge:'ext',text:'ROUGE-N(n-gram 겹침), ROUGE-L(최장 공통 부분열), ROUGE-W(가중 LCS), ROUGE-S(skip-bigram) 등 여러 변형을 하나의 패키지로 제공합니다.'},
+ results:{badge:'ext',text:'요약·생성 평가의 표준 지표로 널리 채택되어, DUC 등 요약 평가 대회의 공식 지표로 쓰였습니다.'},
+ impact:{badge:'syn',text:'BLEU와 함께 규칙 기반 지표의 양대 축을 이루지만, 둘 다 참조 라벨이 필요하고 표면적 겹침만 본다는 한계를 공유해 LLM 심사위원으로 넘어가는 동기가 됩니다.'},
+ svg:SVG_ROUGE,svgCaption:'참조 요약의 내용이 생성 요약에 얼마나 되살아났는지(재현율)를 재고, BLEU(정밀도)와 대비되며 ROUGE-L로 순서까지 반영하는 구조.',
+ role:'8강 규칙 기반 지표에서 \'재현율 계열\'의 대표로, 정밀도 계열 BLEU와 대비되는 짝입니다.',
+ chips:['rule-based-metrics']},
+
+{id:'mtbench2023-judge',group:'llm-as-a-judge',
+ title:'Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena',authors:'Zheng et al.',year:2023,arxiv:'2306.05685',
+ pdf:'https://arxiv.org/pdf/2306.05685',abs:'https://arxiv.org/abs/2306.05685',
+ oneliner:'강력한 LLM(GPT-4)을 심사위원으로 세워 다른 모델 응답을 채점하는 방식이 사람 평가와 80% 넘게 일치함을 보인 표준 참고문헌.',
+ tldr:'개방형 질문에 자유형식으로 나오는 챗봇 답변을 기존 벤치마크로는 평가하기 어렵다는 문제에서, 강력한 LLM을 심사위원으로 세우는 LLM-as-a-Judge 방식이 사람 평가와 80% 이상 일치함을 보였습니다.',
+ problem:{badge:'ext',text:'챗봇 답변은 개방형(open-ended) 질문에 자유형식으로 나오기 때문에, 정답이 고정된 기존 벤치마크로는 품질을 제대로 평가하기 어렵습니다.'},
+ idea:{badge:'ext',text:'강력한 LLM(GPT-4)을 심사위원으로 세워 다른 모델의 응답을 채점하는 LLM-as-a-Judge 방식을 제안하고, 개별 점수(pointwise)와 승자 선택(pairwise) 두 모드를 정식화합니다.'},
+ method:{badge:'ext',text:'다중 턴 대화 벤치마크 MT-Bench와 크라우드소싱 대결 플랫폼 Chatbot Arena를 함께 공개하고, LLM 심사위원의 판정을 사람 평가와 비교했습니다.'},
+ results:{badge:'ext',text:'LLM 심사위원의 판정이 사람 평가와 80% 이상 일치해, 사람들끼리의 일치율과 맞먹는 수준임을 보였습니다.'},
+ impact:{badge:'syn',text:'LLM 평가 연구 전반의 표준 참고문헌으로 자리잡아, 정답 라벨 없이 채점하고 판단 근거까지 얻는 LLM 심사위원 패러다임을 정착시켰습니다.'},
+ svg:SVG_JUDGE,svgCaption:'프롬프트·응답·채점 기준을 심사위원 LLM에 넣어 점수와 근거를 받아내고, pointwise/pairwise 두 갈래로 나뉘는 LLM 심사위원 구조.',
+ role:'8강 LLM 심사위원 개념의 핵심 출처이며, 규칙 기반 지표의 \'참조 라벨 필요\' 한계를 넘어서는 전환점입니다. (같은 논문의 편향 분석은 \'심사위원 편향\' 그룹에서 이어집니다.)',
+ chips:['llm-as-a-judge','judge-biases']},
+
+{id:'mtbench2023-bias',group:'judge-biases',
+ title:'Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena',authors:'Zheng et al.',year:2023,arxiv:'2306.05685',
+ pdf:'https://arxiv.org/pdf/2306.05685',abs:'https://arxiv.org/abs/2306.05685',
+ oneliner:'(같은 논문의 편향 분석) GPT-4 심사위원의 위치·장황함·자기선호 편향을 정량 측정하고 완화책을 제시한 파트.',
+ tldr:'같은 MT-Bench 논문에서 저자들은 GPT-4를 심사위원으로 썼을 때 나타나는 세 가지 체계적 편향 — 위치·장황함·자기선호 — 을 정량 측정하고 완화책을 제시합니다.',
+ problem:{badge:'ext',text:'LLM 심사위원이 유용하려면 응답의 \'내용\'으로 판정해야 하는데, 실제로는 내용과 무관한 부수적 특징에 흔들리는 체계적 편향이 있을 수 있습니다.'},
+ idea:{badge:'ext',text:'두 응답의 제시 순서를 바꾸면 판정이 뒤집히는 위치 편향, 더 긴 응답을 선호하는 장황함 편향, 같은 계열 모델 출력을 편애하는 자기선호 편향을 각각 실험으로 재현합니다.'},
+ method:{badge:'ext',text:'순서를 뒤바꾼 짝, 길이가 다른 응답, 심사위원과 같은/다른 계열 모델의 응답을 대조하는 통제 실험으로 세 편향을 분리 측정했습니다.'},
+ results:{badge:'ext',text:'세 편향이 모두 유의하게 나타났고, 해결책으로 두 순서 모두 채점해 평균 내기, 채점 기준에 길이 지침 명시하기, 심사위원 모델을 피평가 모델군과 분리하기를 제안했습니다.'},
+ impact:{badge:'syn',text:'이 발견들은 이후 LLM 심사위원 설계의 모범 사례(근거를 점수보다 먼저 쓰게 하기, 이진 척도 사용 등)로 이어졌습니다.'},
+ svg:SVG_BIAS,svgCaption:'심사위원 LLM이 제시 순서·답변 길이·자기 출력에 흔들리는 세 편향과, 순서 평균화·길이 지침·심사–피심사 분리라는 완화책.',
+ role:'8강이 LLM 심사위원을 쓸 때 반드시 함께 다루는 편향과 완화책의 출처로, 심사위원 방법(LLM 심사위원 그룹)과 한 논문의 두 얼굴입니다.',
+ chips:['judge-biases','llm-as-a-judge']},
+
+{id:'safe2024',group:'factuality-evaluation',
+ title:'Long-form Factuality in Large Language Models',authors:'Wei et al.',year:2024,arxiv:'2403.18802',
+ pdf:'https://arxiv.org/pdf/2403.18802',abs:'https://arxiv.org/abs/2403.18802',
+ oneliner:'긴 답을 개별 사실로 쪼개 검색으로 검증하는 SAFE와, 정밀도·재현율을 함께 재는 F1@K를 제안.',
+ tldr:'개방형 주제에 대한 LLM의 긴 답변은 사실과 오류가 뒤섞여 \'전체가 맞다/틀리다\'식 채점이 불가능하다는 문제에서, 응답을 개별 사실로 분해해 검색으로 검증하는 SAFE를 제안했습니다.',
+ problem:{badge:'ext',text:'개방형 주제에 대한 LLM의 긴 답변은 맞는 사실과 틀린 사실이 뒤섞여 있어 \'전체가 맞다/틀리다\'식 채점이 불가능합니다.'},
+ idea:{badge:'ext',text:'다양한 주제를 다루는 LongFact 벤치마크와, 응답을 개별 사실(atomic fact)로 분해한 뒤 검색 결과로 각 사실을 검증하는 자동 평가 방법 SAFE(Search-Augmented Factuality Evaluator)를 제안합니다.'},
+ method:{badge:'ext',text:'응답을 사실 단위로 쪼개고, 각 사실을 검색 질의로 확인해 지지/반박을 판정하며, 정밀도와 재현율을 함께 반영하는 F1@K 지표로 종합합니다.'},
+ results:{badge:'ext',text:'SAFE는 약 1만 6천 개 사실에 대해 크라우드워커와 72% 일치했고, 의견이 갈린 사례의 76%에서 SAFE가 더 정확해 \'초인간적\' 채점 성능을 보였습니다.'},
+ impact:{badge:'syn',text:'\'맞다/틀리다\'의 이분법을 넘어, \'얼마나 많은 사실을 담았는지\'와 \'담은 사실이 얼마나 정확한지\'를 동시에 정량화하는 사실성 평가의 대표 사례로 자리잡았습니다.'},
+ svg:SVG_SAFE,svgCaption:'긴 응답을 atomic fact로 분해해 각 사실을 검색으로 지지/반박 판정하고, 정밀도·재현율을 F1@K로 종합하는 SAFE 파이프라인.',
+ role:'8강이 태스크 성능 축(usefulness·factuality·relevance) 중 사실성을 구체화하는 대표 사례로, 규칙 기반·심사위원 채점을 사실 단위로 정밀화합니다.',
+ chips:['factuality-evaluation','llm-as-a-judge']},
+
+{id:'mmlu2020',group:'benchmarks',
+ title:'Measuring Massive Multitask Language Understanding',authors:'Hendrycks et al.',year:2020,arxiv:'2009.03300',
+ pdf:'https://arxiv.org/pdf/2009.03300',abs:'https://arxiv.org/abs/2009.03300',
+ oneliner:'57개 과목 4지선다 약 1만 6천 문항으로 모델의 지식 \'폭\'을 재는, 사실상 표준이 된 지식 벤치마크.',
+ tldr:'사전학습으로 모델이 얼마나 폭넓은 세계 지식을 습득했는지 잴 표준 도구가 없다는 문제에서, 57개 과목 4지선다 문제로 지식의 \'폭\'을 재는 MMLU를 제안했습니다.',
+ problem:{badge:'ext',text:'사전학습(pretraining)으로 모델이 실제로 얼마나 폭넓은 세계 지식을 습득했는지 측정할 표준 도구가 없었습니다.'},
+ idea:{badge:'ext',text:'초등 수학부터 미국사·법학·전문의학까지 57개 과목, 약 1만 6천 개의 4지선다 문제로 구성된 MMLU를 제안합니다.'},
+ method:{badge:'ext',text:'정답이 A/B/C/D 중 하나로 고정되어 있어 하드코딩된 문자열 매칭만으로 자동 채점할 수 있으며, 지식의 \'깊이\'보다 \'폭\'을 재도록 설계되었습니다.'},
+ results:{badge:'ext',text:'공개 이후 지식 벤치마크의 사실상 표준이 되어, 모델 발표 시 거의 예외 없이 함께 보고되는 지표가 되었습니다.'},
+ impact:{badge:'syn',text:'자동 채점이 쉬운 만큼 데이터 오염(contamination)에 취약해, 기출 유출이 시험을 무의미하게 만들듯 벤치마크 점수만으로 능력을 판단하는 위험을 함께 남깁니다.'},
+ svg:SVG_MMLU,svgCaption:'57개 과목 4지선다 문제에서 모델이 고른 보기 문자를 정답과 하드코딩 매칭으로 자동 채점하며, 깊이보다 폭을 재는 MMLU 구조.',
+ role:'8강이 능력 축별 벤치마크를 소개할 때 \'지식\' 축의 대표로 드는 표준 문제셋입니다.',
+ chips:['benchmarks']},
+
+{id:'taubench2024',group:'benchmarks',
+ title:'τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains',authors:'Yao et al.',year:2024,arxiv:'2406.12045',
+ pdf:'https://arxiv.org/pdf/2406.12045',abs:'https://arxiv.org/abs/2406.12045',
+ oneliner:'사용자 역할 LLM과 대화하며 정책을 지켜 도구를 호출하는 에이전트를, 종료 시 DB 상태로 채점하고 pass^k로 신뢰성을 재는 벤치마크.',
+ tldr:'정적인 질문-답변만 다루던 기존 벤치마크의 한계에서, 에이전트가 사용자와 여러 턴 대화하며 정책을 지켜 도구를 호출하는 상황을 검증하는 τ-bench를 제안했습니다.',
+ problem:{badge:'ext',text:'기존 벤치마크들은 정적인 질문-답변만 다룰 뿐, 실제 서비스처럼 에이전트가 사용자와 여러 턴에 걸쳐 대화하며 도메인 규칙(policy)을 지켜 도구를 호출하는 상황은 검증하지 못했습니다.'},
+ idea:{badge:'ext',text:'항공사·소매 두 도메인에서 데이터베이스·API·정책 문서를 갖춘 가상 환경을 만들고, 사용자 역할도 LLM이 맡아 에이전트와 대화하게 합니다.'},
+ method:{badge:'ext',text:'대화 종료 시점의 데이터베이스 상태를 정답 상태와 비교해 채점하고, 동일 과제를 여러 번 반복했을 때 \'전부\' 성공할 확률을 재는 pass^k 지표를 함께 제안했습니다.'},
+ results:{badge:'ext',text:'GPT-4o급 모델도 절반 이하의 과제만 성공했고, 반복 시도 간 일관성(pass^8)은 25% 아래로 떨어져 에이전트의 신뢰성이 능력 자체보다 더 큰 병목임을 보였습니다.'},
+ impact:{badge:'syn',text:'벤치마크가 정적 정답 맞히기를 넘어 \'여러 번 시켜도 매번 제대로 해내는가\'라는 신뢰성 축을 재도록 시야를 넓혔습니다.'},
+ svg:SVG_TAU,svgCaption:'사용자 역할 LLM과 에이전트가 정책을 지켜 도구를 호출하며 다중 턴 대화하고, 종료 시 DB 상태를 정답과 비교하며 pass^k로 반복 일관성을 재는 구조.',
+ role:'8강이 능력 축별 벤치마크를 소개할 때 \'에이전트\' 축의 대표로, pass^k라는 신뢰성 지표를 통해 능력과 신뢰성의 간극을 드러냅니다.',
+ chips:['benchmarks']}
+];
+
+/* ===== render master-detail ===== */
+const masterList=$('#masterList'),detailPanel=$('#detailPanel');
+let curId='mtbench2023-judge';
+
+function matchesQuery(p,q){
+  if(!q) return true;
+  const hay=(p.title+' '+p.authors+' '+glabel(p.group)+' '+p.chips.map(glabel).join(' ')).toLowerCase();
+  return hay.includes(q);
+}
+function paperItemHTML(p){
+  return `<li><button class="paper-item ${p.id===curId?'active':''}" data-id="${p.id}" tabindex="0" aria-pressed="${p.id===curId}">
+    <span class="pt-title">${esc(p.title)}</span>
+    <span class="pt-meta">${esc(p.authors)} · ${p.year}</span>
+    <span class="pt-one">${esc(p.oneliner)}</span>
+  </button></li>`;
+}
+function renderMaster(filter){
+  const q=(filter||'').trim().toLowerCase();
+  let html='',any=false;
+  GROUPS.forEach(g=>{
+    const items=PAPERS.filter(p=>p.group===g.id && matchesQuery(p,q));
+    if(items.length){
+      any=true;
+      html+=`<div class="group-h">${esc(g.ko)}<span class="en">${esc(g.en)}</span></div>`;
+      html+=`<ul class="paper-list">${items.map(paperItemHTML).join('')}</ul>`;
+    }
+  });
+  masterList.innerHTML = any?html:`<p class="no-result">"${esc(filter)}"에 해당하는 논문이 없습니다.</p>`;
+  bindItems();
+}
+function bindItems(){
+  $$('.paper-item',masterList).forEach(b=>{
+    b.onclick=()=>selectPaper(b.dataset.id);
+    b.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();selectPaper(b.dataset.id);}};
+  });
+}
+function badgeHTML(b){return b==='ext'?'<span class="badge b-ext">외부</span>':b==='src'?'<span class="badge b-src">원본</span>':'<span class="badge b-syn">종합·해석</span>';}
+function selectPaper(id){
+  curId=id;
+  $$('.paper-item',masterList).forEach(b=>{const on=b.dataset.id===id;b.classList.toggle('active',on);b.setAttribute('aria-pressed',on);});
+  renderDetail(id);
+  if(matchMedia('(max-width:860px)').matches){
+    detailPanel.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+function renderDetail(id){
+  const p=PAPERS.find(x=>x.id===id); if(!p) return;
+  const links=[];
+  if(p.pdf) links.push(`<a class="linkbtn" href="${p.pdf}" target="_blank" rel="noopener">📄 PDF</a>`);
+  if(p.abs && p.abs!==p.pdf) links.push(`<a class="linkbtn" href="${p.abs}" target="_blank" rel="noopener">${p.arxiv?'🔗 arXiv':'🔗 원문'}</a>`);
+  const linksHTML = links.length?links.join(''):'<span class="muted">공개 링크 없음</span>';
+  const row=(label,f)=>`<div class="struct"><div class="sl">${badgeHTML(f.badge)} ${esc(label)}</div><p>${f.text}</p></div>`;
+  detailPanel.innerHTML=`
+    <h3 class="dp-title">${esc(p.title)}</h3>
+    <div class="dp-meta">${esc(p.authors)} · ${p.year}${p.arxiv?' · arXiv:'+esc(p.arxiv):''}</div>
+    <div class="dp-links">${linksHTML}</div>
+    <div class="tldr">TL;DR — ${p.tldr}</div>
+    ${row('문제의식',p.problem)}
+    ${row('핵심 아이디어',p.idea)}
+    ${row('방법',p.method)}
+    ${row('주요 결과',p.results)}
+    ${row('영향·후속 연구',p.impact)}
+    <div class="figure dp-svgfig">
+      ${p.svg}
+      <figcaption><span class="badge b-syn">종합·해석</span> ${esc(p.svgCaption)}</figcaption>
+    </div>
+    <div class="dp-role"><b>이 강의에서의 역할.</b> ${p.role}
+      <div class="chipbar">${p.chips.map(c=>`<span class="chip">${esc(glabel(c))}</span>`).join('')}</div>
+    </div>
+  `;
+}
+$('#paperSearch').addEventListener('input',e=>renderMaster(e.target.value));
+renderMaster('');
+selectPaper(curId);
+
+/* Esc: return focus from detail panel back to the selected master item */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const active=document.activeElement;
+    if(active && detailPanel.contains(active)){
+      const btn=$(`.paper-item[data-id="${curId}"]`,masterList);
+      if(btn) btn.focus();
+      if(matchMedia('(max-width:860px)').matches){ $('#library').scrollIntoView({behavior:'smooth',block:'start'}); }
+    }
+  }
+});
+
+/* glossary */
+const GLOSS=[
+ ['Free-form text','자유형식 텍스트','정답이 하나로 정해지지 않아 채점 기준을 세우기 어려운 LLM의 개방형 출력.'],
+ ['Cohen\'s Kappa','코헨 카파','두 평가자의 일치율에서 우연히 기대되는 일치율을 걷어내 보정한 합치도 지표(κ).'],
+ ['Fleiss\' Kappa','플라이스 카파','코헨 카파를 3명 이상 다수 평가자로 일반화한 합치도 지표.'],
+ ['Observed agreement','관측 일치율','우연 보정 전, 평가자들이 실제로 같은 범주로 채점한 비율(Pₒ).'],
+ ['Rule-based Metrics','규칙 기반 지표','참조 라벨과 단어 n-gram 겹침 같은 규칙으로 기계적으로 채점하는 평가 지표.'],
+ ['BLEU','블루','후보와 참조 번역의 n-gram 겹침(정밀도)에 길이 벌점을 곱한 자동 번역 평가 지표.'],
+ ['ROUGE','루지','참조 요약의 내용이 생성 요약에 얼마나 되살아났는지(재현율)를 재는 요약 평가 지표 패키지.'],
+ ['Brevity Penalty','길이 벌점','지나치게 짧은 번역·생성에 벌점을 주어 정밀도가 부풀지 않게 하는 BLEU의 보정항.'],
+ ['LLM-as-a-Judge','LLM 심사위원','정답 라벨 없이 LLM에게 응답을 채점하게 해 점수와 근거(rationale)를 받는 평가 방식.'],
+ ['Pointwise / Pairwise','점수화 / 쌍대비교','응답 하나에 점수를 매기는 방식(pointwise)과 두 응답 중 나은 쪽을 고르는 방식(pairwise).'],
+ ['Position Bias','위치 편향','응답의 제시 순서에 따라 심사위원 LLM의 판정이 뒤집히는 편향.'],
+ ['Verbosity Bias','장황함 편향','내용과 무관하게 더 긴 응답을 선호하는 심사위원 LLM의 편향.'],
+ ['Self-enhancement Bias','자기선호 편향','심사위원과 같은 계열 모델의 응답을 더 후하게 평가하는 편향.'],
+ ['Atomic Fact','원자적 사실','긴 응답을 검증 가능한 최소 단위로 쪼갠 개별 사실. SAFE가 사실성 평가의 단위로 삼는다.'],
+ ['SAFE','세이프','응답을 사실 단위로 분해해 검색으로 검증하는 자동 사실성 평가 방법(Search-Augmented Factuality Evaluator).'],
+ ['F1@K','에프원 앳 케이','담은 사실 수(재현율)와 맞은 사실 비율(정밀도)을 함께 반영하는 사실성 평가 지표.'],
+ ['MMLU','엠엠엘유','57개 과목 4지선다로 모델의 지식 폭을 재는 벤치마크(Massive Multitask Language Understanding).'],
+ ['τ-bench','타우 벤치','사용자·에이전트·도구 상호작용을 종료 시 데이터베이스 상태로 채점하는 에이전트 벤치마크.'],
+ ['pass^k','패스 케이','같은 과제를 k번 반복해 전부 성공한 확률로, 에이전트의 반복 신뢰성을 재는 지표.'],
+ ['Goodhart\'s Law','굿하트의 법칙','\'측정이 목표가 되면 더 이상 좋은 측정이 아니다\' — 벤치마크 점수 자체를 최적화 대상으로 삼을 때의 왜곡.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${esc(g[1])} <span class="en">${esc(g[0])}</span></div><div class="gd">${esc(g[2])}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 9강 논문 노트 — 최신 트렌드</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1180px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+#topnav nav a.ext{color:var(--brand2)}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:980px){#topnav nav{display:none}}
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.4vw,54px);margin:.1em 0 .2em;letter-spacing:-1.2px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:800px;margin:0 0 22px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+section{padding:60px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:18.5px;color:var(--ink2);max-width:800px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+/* timeline */
+.timeline-wrap{margin:30px 0 10px;overflow-x:auto}
+.tline-svg{min-width:640px;width:100%;height:auto;display:block}
+.tl-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--ink2)}
+.tl-legend span{display:inline-flex;align-items:center;gap:6px}
+.tl-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* master-detail */
+.md-grid{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start;margin-top:26px}
+@media(max-width:768px){.md-grid{grid-template-columns:1fr}}
+.md-search{width:100%;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:12px 15px;border-radius:11px;font-size:15px;margin-bottom:8px}
+.md-count{font-size:12.5px;color:var(--ink3);margin-bottom:14px}
+.grp-head{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);margin:20px 0 8px;padding-left:10px;border-left:3px solid var(--brand2);display:flex;align-items:center;gap:8px}
+.grp-head:first-of-type{margin-top:0}
+.grp-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.paper-item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:8px;cursor:pointer;font:inherit;color:var(--ink)}
+.paper-item:hover{border-color:var(--line2);background:var(--card2)}
+.paper-item.active{border-color:var(--brand);background:var(--brandsoft)}
+.paper-item .pt{font-weight:700;font-size:14.5px;line-height:1.4}
+.paper-item .pm{font-size:12px;color:var(--ink3);margin-top:3px}
+.paper-item .ps{font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.55}
+.md-empty{padding:16px;color:var(--ink3);font-size:14px;display:none}
+.md-detail{position:sticky;top:70px;max-height:calc(100vh - 90px);overflow:auto;padding-right:2px}
+.paper-detail{display:none}
+.paper-detail.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pd-title{font-size:21px;font-weight:800;line-height:1.4;margin:0 0 6px}
+.pd-meta{font-size:13.5px;color:var(--ink3);margin-bottom:6px}
+.pd-note{font-size:12.5px;color:var(--ink3);background:var(--bg3);border-radius:8px;padding:8px 12px;margin:0 0 14px}
+.pd-links{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.pd-links a{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);padding:8px 13px;border-radius:9px;font-size:13.5px;font-weight:600}
+.pd-links a:hover{background:var(--brandsoft);text-decoration:none}
+.pd-tldr{font-size:16px;font-weight:700;background:var(--card2);border-left:3px solid var(--brand);border-radius:0 12px 12px 0;padding:14px 18px;margin:0 0 20px}
+.pd-block{margin:16px 0}
+.pd-block h4{font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--brand2);margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.pd-figure{margin:20px 0;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.pd-figure svg{width:100%;height:auto;display:block}
+.pd-figure figcaption{font-size:13px;color:var(--ink3);margin-top:10px;line-height:1.65}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:4px 11px;border-radius:999px}
+.md-closer{display:none;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:10px;border-radius:10px;font-weight:700;font-size:14px;margin-bottom:14px;cursor:pointer}
+.md-backdrop{display:none}
+@media(max-width:768px){
+  .md-detail{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:86vh;background:var(--card);border:1px solid var(--line);border-top:2px solid var(--brand2);border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.4);transform:translateY(110%);transition:transform .3s ease;z-index:200;padding:16px 20px 26px;max-width:var(--maxw);margin:0 auto}
+  .md-detail.open{transform:translateY(0)}
+  .md-closer{display:flex}
+  .md-backdrop.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:190}
+}
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px;font:inherit}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">9강 · 논문 노트</span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#master">논문 목록</a>
+    <a href="#check">자가점검</a>
+    <a href="#gloss">용어집</a>
+    <a class="ext" href="../강의노트/lecture9.html" target="_blank" rel="noopener">강의 설명자 ↗</a>
+    <a class="ext" href="../dag.html" target="_blank" rel="noopener">개념 지도 ↗</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · 9강 · 논문 노트</span>
+  <h1>CME 295 · 9강 논문 노트 — 최신 트렌드</h1>
+  <p class="sub">9강 슬라이드가 다루는 7편의 논문을 마스터-디테일 구조로 정리합니다. 왼쪽에서 논문을 고르면 오른쪽에 상세 요약과 개념도가 뜹니다.</p>
+  <div class="metaline">
+    <span><b>범위</b> Stanford CME 295 · 9강 참조 논문 7편</span>
+    <span><b>연도</b> 2020–2025</span>
+    <span><b>원 강의자료</b> lecture9.pdf (슬라이드 원본, 로컬 강의자료)</span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#master">논문 목록 보기 ↓</a>
+    <a class="cta ghost" href="../강의노트/lecture9.html" target="_blank" rel="noopener">강의 설명자 보기 ↗</a>
+    <a class="cta ghost" href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>논문 초록·본문에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>초록·논문 근거로 <b>확장 요약</b>한 내용. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 내용을 엮은 <b>작성자 재구성</b>(원 논문의 직접 주장이 아님) · 개념도 전부 해당.</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== 이 장의 논문 지형 ===== -->
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">01 — Landscape</span>
+  <h2>이 장의 논문 지형 <span class="en">Where these 7 papers sit</span></h2>
+  <p class="lead">학기 내내 우리는 <b>트랜스포머(Transformer)</b>라는 기차 한 대를 타고 텍스트라는 노선만 달려왔습니다. 9강은 그 기차가 갑자기 낯선 노선들로 갈아타는 <b>환승역</b>입니다 — 이미지 노선, 이미지 생성 노선, 그리고 회로 기판이라는 노선까지.</p>
+
+  <div class="callout"><div class="h"><span class="badge b-syn">종합·해석</span> 결론부터 말하면</div>
+  이 강의가 다루는 7편의 논문은 결국 하나의 이야기로 모입니다. <b>트랜스포머 인코더 하나가 텍스트를 벗어나 이미지 인식(ViT)으로, 이미지와 언어를 함께 다루는 결합(VLM: LLaVA·Llama 3)으로, 이미지 생성(DDPM → DiT)으로, 심지어 텍스트 생성의 새로운 방식(확산 LLM)과 회로 설계(아날로그 인메모리 컴퓨팅)로까지 '환승'해 갔다</b>는 것입니다. 아키텍처는 하나인데 올라타는 노선이 계속 늘어난 셈입니다.
+  </div>
+
+  <p>먼저 <b>비전 트랜스포머(Vision Transformer, ViT)</b>가 CNN 없이도 이미지를 다룰 수 있음을 보였고, 이 아이디어는 곧 이미지와 언어를 한 모델에 묶는 <b>비전-언어 모델(Vision-Language Model, VLM)</b>로 이어졌습니다 — LLaVA는 비전 인코더 출력을 선형 투영만으로 언어모델에 밀어 넣는 가벼운 방식을, Llama 3는 크로스어텐션 층으로 나중에 연결하는 방식을 택해 같은 목적지에 다른 노선으로 도착합니다. 한편 이미지 생성 쪽에서는 <b>확산 모델(Diffusion Model)</b>(DDPM)이 노이즈를 점진적으로 더하고 걷어내는 방식으로 등장했고, 이 수학은 두 갈래로 갈라집니다 — 이미지 쪽에서는 U-Net 백본을 트랜스포머로 통째로 바꾼 <b>확산 트랜스포머(Diffusion Transformer, DiT)</b>가, 텍스트 쪽에서는 노이즈 대신 <b>마스킹(Masking)</b>을 쓰는 <b>확산 LLM(Diffusion LLM)</b>(LLaDA)이 자기회귀 생성의 대안으로 도전장을 내밉니다. 마지막 노선은 소프트웨어가 아니라 하드웨어입니다 — 이 모든 연산을 떠받치는 GPU의 진짜 병목이 연산이 아니라 KV 캐시를 메모리 사이로 실어 나르는 데 있다는 것을 짚고, <b>아날로그 인메모리 컴퓨팅(Analog In-Memory Computing)</b>이라는 완전히 다른 회로로 답합니다.
+  </p>
+
+  <p class="muted">지형도를 읽는 법 — 아래 타임라인은 7편이 2020~2025년 사이 어느 시점에, 어떤 갈래(색상)로 등장했는지 보여줍니다. <a href="#master">§02 논문 목록</a>에서 왼쪽 목록을 검색하거나 클릭하면 오른쪽에 해당 논문의 상세 요약과 개념도가 나타납니다.</p>
+
+  <div class="timeline-wrap">
+    <svg class="tline-svg" viewBox="0 0 900 190" role="img" aria-label="2020년부터 2025년까지 7편의 논문이 등장한 순서를 보여주는 타임라인. 2020년 ViT와 DDPM, 2022년 DiT, 2023년 LLaVA, 2024년 Llama 3와 아날로그 인메모리 컴퓨팅 논문, 2025년 LLaDA 순서로 이어집니다.">
+      <title>9강 논문 7편의 연도별 타임라인</title>
+      <line x1="40" y1="110" x2="860" y2="110" style="stroke:var(--line2);stroke-width:2"/>
+      <!-- year ticks 2020..2025 -->
+      <g style="font-size:12px;fill:var(--ink3)">
+        <text x="40" y="140">2020</text>
+        <text x="204" y="140">2021</text>
+        <text x="368" y="140">2022</text>
+        <text x="532" y="140">2023</text>
+        <text x="696" y="140">2024</text>
+        <text x="860" y="140" text-anchor="end">2025</text>
+      </g>
+      <g style="stroke:var(--line2);stroke-width:1">
+        <line x1="40" y1="104" x2="40" y2="116"/><line x1="204" y1="104" x2="204" y2="116"/>
+        <line x1="368" y1="104" x2="368" y2="116"/><line x1="532" y1="104" x2="532" y2="116"/>
+        <line x1="696" y1="104" x2="696" y2="116"/><line x1="860" y1="104" x2="860" y2="116"/>
+      </g>
+      <!-- points: x = 40 + (year-2020)/5.5*820 approx, alternating up/down for label room -->
+      <!-- ViT 2020.83 -->
+      <circle cx="67" cy="110" r="7" style="fill:var(--gold)"/>
+      <line x1="67" y1="103" x2="67" y2="70" style="stroke:var(--gold);stroke-width:1.5"/>
+      <text x="67" y="58" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">ViT</text>
+      <!-- DDPM 2020.46 -->
+      <circle cx="55" cy="110" r="7" style="fill:var(--syn)"/>
+      <line x1="55" y1="117" x2="55" y2="156" style="stroke:var(--syn);stroke-width:1.5"/>
+      <text x="55" y="172" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">DDPM</text>
+      <!-- DiT 2022.96 -->
+      <circle cx="404" cy="110" r="7" style="fill:var(--src)"/>
+      <line x1="404" y1="103" x2="404" y2="70" style="stroke:var(--src);stroke-width:1.5"/>
+      <text x="404" y="58" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">DiT</text>
+      <!-- LLaVA 2023.29 -->
+      <circle cx="470" cy="110" r="7" style="fill:var(--brand2)"/>
+      <line x1="470" y1="117" x2="470" y2="156" style="stroke:var(--brand2);stroke-width:1.5"/>
+      <text x="470" y="172" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">LLaVA</text>
+      <!-- Llama3 2024.58 -->
+      <circle cx="786" cy="110" r="7" style="fill:var(--brand2)"/>
+      <line x1="786" y1="103" x2="786" y2="70" style="stroke:var(--brand2);stroke-width:1.5"/>
+      <text x="786" y="58" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">Llama 3</text>
+      <!-- Analog IMC 2024.74 -->
+      <circle cx="816" cy="110" r="7" style="fill:var(--warn)"/>
+      <line x1="816" y1="117" x2="816" y2="156" style="stroke:var(--warn);stroke-width:1.5"/>
+      <text x="816" y="172" text-anchor="middle" style="font-size:11.5px;font-weight:700;fill:var(--ink)">아날로그 IMC</text>
+      <!-- LLaDA 2025.12 -->
+      <circle cx="860" cy="110" r="7" style="fill:var(--syn)"/>
+      <line x1="860" y1="103" x2="843" y2="70" style="stroke:var(--syn);stroke-width:1.5"/>
+      <text x="843" y="58" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">LLaDA</text>
+    </svg>
+    <div class="tl-legend">
+      <span><i class="tl-dot" style="background:var(--gold)"></i>비전 트랜스포머(ViT)</span>
+      <span><i class="tl-dot" style="background:var(--brand2)"></i>비전-언어 모델(VLM)</span>
+      <span><i class="tl-dot" style="background:var(--syn)"></i>확산 LLM</span>
+      <span><i class="tl-dot" style="background:var(--src)"></i>확산 트랜스포머(DiT)</span>
+      <span><i class="tl-dot" style="background:var(--warn)"></i>아날로그 인메모리 컴퓨팅</span>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===== 마스터-디테일 논문 목록 ===== -->
+<section id="master"><div class="wrap reveal">
+  <span class="sec-no">02 — Papers</span>
+  <h2>논문 목록 <span class="en">Master–detail paper notes</span></h2>
+  <p class="lead">왼쪽에서 논문을 검색하거나 클릭해 보세요. 오른쪽(모바일에서는 하단 시트)에 그 논문의 TL;DR·구조화 요약·개념도가 나타납니다. 처음에는 이 강의의 출발점인 <b>ViT</b> 논문이 선택되어 있습니다.</p>
+
+  <div class="md-grid">
+    <div class="md-list">
+      <input class="md-search" id="mdSearch" type="text" placeholder="제목·저자·개념으로 검색 (한/영)…" aria-label="논문 검색">
+      <div class="md-count" id="mdCount">7편 전체 표시 중</div>
+      <p class="md-empty" id="mdEmpty">검색 결과가 없습니다.</p>
+
+      <div class="grp-head"><i class="grp-dot" style="background:var(--gold)"></i>비전 트랜스포머(Vision Transformer, ViT)</div>
+      <button class="paper-item active" type="button" data-id="vit" data-search="an image is worth 16x16 words transformers for image recognition at scale dosovitskiy 비전 트랜스포머 vision transformer vit">
+        <div class="pt">An Image is Worth 16x16 Words</div>
+        <div class="pm">Dosovitskiy et al. · 2020 · arXiv:2010.11929</div>
+        <div class="ps">이미지를 패치로 잘라 '단어'처럼 다루는 순수 트랜스포머 이미지 인식.</div>
+      </button>
+
+      <div class="grp-head"><i class="grp-dot" style="background:var(--brand2)"></i>비전-언어 모델(Vision-Language Model, VLM)</div>
+      <button class="paper-item" type="button" data-id="llava" data-search="visual instruction tuning llava liu 비전 언어 모델 vision language model 선형 투영">
+        <div class="pt">Visual Instruction Tuning</div>
+        <div class="pm">Liu et al. · 2023 · arXiv:2304.08485</div>
+        <div class="ps">GPT-4로 이미지-지시 데이터를 생성하고, 선형 투영만으로 LLM에 이미지를 연결.</div>
+      </button>
+      <button class="paper-item" type="button" data-id="llama3" data-search="the llama 3 herd of models meta 라마 비전 언어 모델 vision language model 크로스어텐션 cross-attention">
+        <div class="pt">The Llama 3 Herd of Models</div>
+        <div class="pm">Llama Team, Meta AI · 2024 · arXiv:2407.21783</div>
+        <div class="ps">크로스어텐션 층으로 비전·비디오·음성을 나중에 연결하는 합성적 멀티모달 확장.</div>
+      </button>
+
+      <div class="grp-head"><i class="grp-dot" style="background:var(--syn)"></i>확산 LLM(Diffusion LLM, 마스킹 확산 모델)</div>
+      <button class="paper-item" type="button" data-id="ddpm" data-search="denoising diffusion probabilistic models ddpm ho jain abbeel 확산 확률 모델 diffusion model">
+        <div class="pt">Denoising Diffusion Probabilistic Models</div>
+        <div class="pm">Ho, Jain &amp; Abbeel · 2020 · arXiv:2006.11239</div>
+        <div class="ps">노이즈를 점진적으로 더하고 걷어내는 과정을 학습하는 확산 확률 모델의 원조.</div>
+      </button>
+      <button class="paper-item" type="button" data-id="llada" data-search="large language diffusion models llada nie zhu you 확산 llm 마스킹 확산 모델 masked diffusion model">
+        <div class="pt">Large Language Diffusion Models</div>
+        <div class="pm">Nie, Zhu, You et al. · 2025 · arXiv:2502.09992</div>
+        <div class="ps">사전학습·SFT 전체를 확산 방식으로 학습해 자기회귀의 대안을 보인 LLaDA.</div>
+      </button>
+
+      <div class="grp-head"><i class="grp-dot" style="background:var(--src)"></i>확산 트랜스포머(Diffusion Transformer, DiT)</div>
+      <button class="paper-item" type="button" data-id="dit" data-search="scalable diffusion models with transformers dit peebles xie 확산 트랜스포머 diffusion transformer u-net">
+        <div class="pt">Scalable Diffusion Models with Transformers</div>
+        <div class="pm">Peebles &amp; Xie · 2022 · arXiv:2212.09748</div>
+        <div class="ps">확산 모델의 U-Net 백본을 트랜스포머로 교체, 스케일링 법칙을 그대로 확인.</div>
+      </button>
+
+      <div class="grp-head"><i class="grp-dot" style="background:var(--warn)"></i>아날로그 인메모리 컴퓨팅 어텐션(Analog In-Memory Computing Attention)</div>
+      <button class="paper-item" type="button" data-id="analog" data-search="analog in-memory computing attention mechanism fast energy-efficient large language models leroux 아날로그 인메모리 컴퓨팅 게인 셀 gain cell kv 캐시">
+        <div class="pt">Analog In-Memory Computing Attention Mechanism …</div>
+        <div class="pm">Leroux et al. · 2024 · arXiv:2409.19315</div>
+        <div class="ps">게인 셀 아날로그 회로에 KV 캐시를 저장해 어텐션을 광속·저전력으로.</div>
+      </button>
+    </div>
+
+    <aside class="md-detail" id="mdDetail" role="region" aria-label="논문 상세">
+      <button class="md-closer" id="mdCloser" type="button">✕ 목록으로 닫기</button>
+      <div class="md-detail-inner">
+
+      <!-- ===== ViT ===== -->
+      <article class="paper-detail active" id="d-vit">
+        <h3 class="pd-title">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</h3>
+        <div class="pd-meta">Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov 외 9인 (Google Research) · 2020 (개정 2021) · arXiv:2010.11929</div>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2010.11929" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>이미지를 16×16 패치로 잘라 '단어'처럼 다루면, 합성곱 없이 순수 트랜스포머만으로도 최고 수준의 이미지 분류가 가능합니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p>합성곱 신경망(Convolutional Neural Network, CNN)이 이미지 인식의 사실상 표준이던 시기, 셀프어텐션(Self-Attention — 시퀀스 내 모든 위치가 서로를 직접 참조해 관련도를 계산하는 연산)은 기껏해야 CNN을 보조하는 역할에 머물러 있었습니다. 트랜스포머를 이미지에 곧바로, CNN 없이 적용해도 통할지가 열린 질문이었습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p>이미지를 16×16 픽셀 패치로 잘라 각 패치를 문장 속 단어처럼 하나의 토큰으로 취급합니다. <span class="quote" style="font-size:16px;padding:2px 0 2px 14px">"a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks"</span></p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>패치를 평탄화(flatten)해 선형 투영(linear projection)으로 임베딩 벡터로 바꾸고, 학습 가능한 위치 임베딩(positional embedding)을 더한 뒤, 문장 분류에 쓰이던 클래스 토큰([CLS])과 함께 표준 트랜스포머 인코더에 통과시킵니다. 인코더 출력의 [CLS] 표현을 MLP 헤드로 분류합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>대규모 데이터로 사전학습(pre-training)한 뒤 ImageNet·CIFAR-100·VTAB 등으로 전이했을 때, ViT는 기존 CNN 기반 최고 모델과 대등하거나 더 나은 성능을, 훈련 연산량은 오히려 적게 쓰면서 달성했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>이 결과는 트랜스포머가 텍스트 전용 아키텍처가 아니라 범용 시퀀스 처리 아키텍처임을 입증한 전환점이 되었습니다. 이후 LLaVA 같은 비전-언어 모델의 비전 인코더로, DiT처럼 이미지 생성 모델의 백본으로 재활용되는 등, 이번 강의에서 만날 여러 논문의 공통 출발점입니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 210" role="img" aria-label="ViT 파이프라인 개념도: 원본 이미지를 패치로 분할해 선형 투영과 위치 임베딩을 더한 뒤 클래스 토큰과 함께 트랜스포머 인코더를 거쳐 MLP 분류 헤드로 클래스를 출력합니다.">
+            <title>ViT 처리 파이프라인</title>
+            <defs><marker id="arrow-vit" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink3)"/></marker></defs>
+            <!-- image with patch grid -->
+            <rect x="14" y="55" width="100" height="100" rx="6" style="fill:var(--card2);stroke:var(--line2)"/>
+            <g style="stroke:var(--line2);stroke-width:1">
+              <line x1="39" y1="55" x2="39" y2="155"/><line x1="64" y1="55" x2="64" y2="155"/><line x1="89" y1="55" x2="89" y2="155"/>
+              <line x1="14" y1="80" x2="114" y2="80"/><line x1="14" y1="105" x2="114" y2="105"/><line x1="14" y1="130" x2="114" y2="130"/>
+            </g>
+            <text x="64" y="178" text-anchor="middle" style="font-size:12px;fill:var(--ink2)">원본 이미지 → 패치 분할</text>
+            <line x1="118" y1="105" x2="158" y2="105" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-vit)"/>
+            <!-- linear projection -->
+            <rect x="160" y="72" width="118" height="66" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="219" y="100" text-anchor="middle" style="font-size:12px;font-weight:700;fill:var(--ink)">평탄화 +</text>
+            <text x="219" y="116" text-anchor="middle" style="font-size:12px;font-weight:700;fill:var(--ink)">선형 투영</text>
+            <text x="219" y="132" text-anchor="middle" style="font-size:10.5px;fill:var(--ink3)">패치 → 토큰 벡터</text>
+            <line x1="280" y1="105" x2="306" y2="105" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-vit)"/>
+            <text x="293" y="95" text-anchor="middle" style="font-size:16px;fill:var(--ink3)">+</text>
+            <!-- position embedding -->
+            <rect x="308" y="80" width="70" height="50" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="343" y="101" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">위치</text>
+            <text x="343" y="116" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">임베딩</text>
+            <line x1="380" y1="105" x2="404" y2="105" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-vit)"/>
+            <!-- encoder -->
+            <rect x="406" y="34" width="180" height="142" rx="10" style="fill:var(--brandsoft);stroke:var(--brand)"/>
+            <rect x="420" y="48" width="26" height="20" rx="4" style="fill:var(--gold);stroke:none"/>
+            <text x="433" y="63" text-anchor="middle" style="font-size:9.5px;font-weight:800;fill:#3a2c00">CLS</text>
+            <g>
+              <rect x="452" y="48" width="20" height="20" rx="4" style="fill:var(--card);stroke:var(--line2)"/>
+              <rect x="476" y="48" width="20" height="20" rx="4" style="fill:var(--card);stroke:var(--line2)"/>
+              <rect x="500" y="48" width="20" height="20" rx="4" style="fill:var(--card);stroke:var(--line2)"/>
+              <rect x="524" y="48" width="20" height="20" rx="4" style="fill:var(--card);stroke:var(--line2)"/>
+              <rect x="548" y="48" width="20" height="20" rx="4" style="fill:var(--card);stroke:var(--line2)"/>
+            </g>
+            <text x="496" y="100" text-anchor="middle" style="font-size:12.5px;font-weight:700;fill:var(--ink)">트랜스포머 인코더 ×L</text>
+            <text x="496" y="118" text-anchor="middle" style="font-size:11px;fill:var(--ink2)">(셀프어텐션 + MLP)</text>
+            <text x="496" y="160" text-anchor="middle" style="font-size:10.5px;fill:var(--ink3)">토큰들이 서로를 참조</text>
+            <line x1="586" y1="105" x2="612" y2="105" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-vit)"/>
+            <!-- head -->
+            <rect x="614" y="80" width="76" height="50" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="652" y="101" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">MLP</text>
+            <text x="652" y="116" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">분류 헤드</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> [CLS] 토큰(금색)이 이미지 패치 토큰들과 함께 인코더를 거치며 전체 이미지 정보를 압축하고, 이 표현이 최종 클래스 예측에 쓰입니다. — <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arXiv:2010.11929</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>이 논문은 이 강의의 "비전 트랜스포머(ViT)" 개념 그 자체의 원 논문입니다. 슬라이드가 보여주는 패치화 → 선형 투영 → 위치 임베딩 → [CLS]+인코더 → 분류 헤드 파이프라인이 정확히 이 논문의 구조입니다.</p>
+        <div class="chip-row"><span class="chip">비전 트랜스포머(ViT)</span><span class="chip">셀프어텐션</span><span class="chip">트랜스포머</span></div></div>
+      </article>
+
+      <!-- ===== LLaVA ===== -->
+      <article class="paper-detail" id="d-llava">
+        <h3 class="pd-title">Visual Instruction Tuning</h3>
+        <div class="pd-meta">Haotian Liu, Chunyuan Li, Qingyang Wu, Yong Jae Lee · 2023 (NeurIPS 2023 Oral) · arXiv:2304.08485</div>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2304.08485" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2304.08485" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>언어 전용 GPT-4로 이미지-질문-답변 지시 데이터를 자동 생성하고, 비전 인코더 출력을 선형 투영만으로 LLM에 밀어 넣는 '가벼운 결합' 방식의 VLM을 학습시켰습니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p>지시문 미세조정(Instruction Tuning — 지시-응답 쌍으로 모델을 미세조정해 지시 따르기 능력을 끌어올리는 학습 단계)이 언어모델의 제로샷 능력을 크게 끌어올렸지만, 이미지와 언어를 함께 다루는 멀티모달 영역에는 이런 지시 데이터 자체가 부족했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p>사람이 일일이 이미지-질문-답변 쌍을 만드는 대신, 언어 전용(language-only) GPT-4에게 이미지에 대한 텍스트 설명(캡션·바운딩 박스 등)만 주고 그럴듯한 질문-답변 대화를 생성하도록 시켜, 이미지-언어 지시 데이터셋을 기계적으로 만들어냅니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>사전학습된 비전 인코더(CLIP ViT)의 출력을 학습 가능한 선형 투영 한 층으로 언어모델의 임베딩 공간에 맞춰 넣고, 이렇게 만들어진 '이미지 토큰'을 텍스트 토큰과 같은 시퀀스로 취급해 디코더 전용 LLM에 통과시킵니다. 별도의 크로스어텐션(Cross-Attention — 한 시퀀스의 표현이 다른 시퀀스를 참조하도록 하는 어텐션 층) 층을 새로 두지 않는 것이 특징입니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>합성 멀티모달 지시 데이터셋에서 GPT-4 대비 85.1%의 상대 점수를 기록했고, ScienceQA에서 GPT-4와 결합해 92.53%로 당시 최고 수준의 정확도를 달성했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>슬라이드가 소개하는 '디코더 전용 아키텍처 재활용' VLM 결합 방식의 대표 사례가 되었고, 모델·코드·데이터를 공개해 이후 다수 오픈소스 VLM의 표준 레시피로 자리잡았습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 190" role="img" aria-label="LLaVA 개념도: 이미지를 비전 인코더에 통과시켜 얻은 표현을 선형 투영으로 변환한 뒤, 텍스트 토큰과 함께 하나의 시퀀스로 이어붙여 디코더 전용 언어모델에 입력해 답변을 생성합니다.">
+            <title>LLaVA 아키텍처: 선형 투영 결합</title>
+            <defs><marker id="arrow-llava" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink3)"/></marker></defs>
+            <rect x="16" y="65" width="80" height="60" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="56" y="99" text-anchor="middle" style="font-size:12px;font-weight:700;fill:var(--ink)">이미지</text>
+            <line x1="98" y1="95" x2="126" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-llava)"/>
+            <rect x="128" y="65" width="110" height="60" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="183" y="91" text-anchor="middle" style="font-size:11.5px;font-weight:700;fill:var(--ink)">비전 인코더</text>
+            <text x="183" y="107" text-anchor="middle" style="font-size:10px;fill:var(--ink3)">(CLIP ViT)</text>
+            <line x1="238" y1="95" x2="264" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-llava)"/>
+            <rect x="266" y="65" width="90" height="60" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="311" y="91" text-anchor="middle" style="font-size:11.5px;font-weight:700;fill:var(--ink)">선형 투영</text>
+            <text x="311" y="107" text-anchor="middle" style="font-size:10px;fill:var(--ink3)">W</text>
+            <line x1="356" y1="95" x2="382" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-llava)"/>
+            <!-- token sequence -->
+            <g>
+              <rect x="384" y="76" width="18" height="18" rx="3" style="fill:var(--gold)"/>
+              <rect x="404" y="76" width="18" height="18" rx="3" style="fill:var(--gold)"/>
+              <rect x="424" y="76" width="18" height="18" rx="3" style="fill:var(--gold)"/>
+              <rect x="446" y="76" width="18" height="18" rx="3" style="fill:var(--brand2)"/>
+              <rect x="466" y="76" width="18" height="18" rx="3" style="fill:var(--brand2)"/>
+              <rect x="486" y="76" width="18" height="18" rx="3" style="fill:var(--brand2)"/>
+            </g>
+            <text x="403" y="112" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">이미지 토큰</text>
+            <text x="466" y="112" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">텍스트 토큰</text>
+            <text x="435" y="60" text-anchor="middle" style="font-size:10.5px;fill:var(--ink2)">하나의 시퀀스로 결합</text>
+            <line x1="504" y1="86" x2="530" y2="86" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-llava)"/>
+            <rect x="532" y="60" width="140" height="70" rx="10" style="fill:var(--brandsoft);stroke:var(--brand)"/>
+            <text x="602" y="90" text-anchor="middle" style="font-size:12px;font-weight:700;fill:var(--ink)">디코더 전용 LLM</text>
+            <text x="602" y="106" text-anchor="middle" style="font-size:10px;fill:var(--ink2)">크로스어텐션 층 없음</text>
+            <text x="602" y="150" text-anchor="middle" style="font-size:11px;fill:var(--ink3)">→ 답변 생성</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 이미지 토큰(금색)과 텍스트 토큰(보라)이 구분 없이 한 시퀀스로 들어간다는 점이 Llama 3의 크로스어텐션 방식과 대비되는 LLaVA의 핵심입니다. — <a href="https://arxiv.org/abs/2304.08485" target="_blank" rel="noopener">arXiv:2304.08485</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>슬라이드가 소개하는 두 가지 VLM 결합 방식 중 '선형 투영으로 이미지 토큰을 밀어 넣는' 쪽의 실제 사례입니다. 다음 논문 Llama 3의 '크로스어텐션' 방식과 나란히 비교해보면 좋습니다.</p>
+        <div class="chip-row"><span class="chip">비전-언어 모델(VLM)</span><span class="chip">비전 트랜스포머(ViT)</span></div></div>
+      </article>
+
+      <!-- ===== Llama 3 ===== -->
+      <article class="paper-detail" id="d-llama3">
+        <h3 class="pd-title">The Llama 3 Herd of Models</h3>
+        <div class="pd-meta">Llama Team, Meta AI (559인 공동 저자) · 2024 · arXiv:2407.21783</div>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2407.21783" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2407.21783" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>최대 405B 파라미터의 밀집 트랜스포머 언어모델을 기반으로, 이미지·비디오·음성 인코더를 크로스어텐션 어댑터로 나중에 붙이는 '합성적' 멀티모달 확장 전략을 취했습니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p>하나의 파운데이션 모델을 언어를 넘어 이미지·비디오·음성까지 다루게 하려 할 때, 처음부터 다시 학습하지 않고도 기존 언어모델의 순수 텍스트 능력을 훼손하지 않는 방법이 필요했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p>언어모델 본체(최대 405B 파라미터, 컨텍스트 최대 128K 토큰의 밀집 트랜스포머)는 사전학습된 상태를 유지한 채, 비전·비디오·음성 인코더의 표현을 언어모델 내부에 주기적으로 삽입한 크로스어텐션 층으로 '나중에 연결'하는 합성적(compositional) 접근을 취합니다. 논문은 이를 <span class="quote" style="font-size:16px;padding:2px 0 2px 14px">"a compositional approach"</span>라고 표현합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>비전·음성 인코더가 만든 표현을 별도의 어댑터 파라미터가 학습하는 크로스어텐션 층에서 참조하게 하고, 언어모델 본체의 가중치는 이 단계에서 대체로 고정(frozen)한 채 단계적으로 학습합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>언어·코딩·추론·도구 사용을 기본으로 지원하는 대규모 파운데이션 모델군을 공개했으며, 멀티모달(이미지·비디오·음성) 확장은 이 보고서 시점에는 아직 폭넓게 공개되지 않은 개발 중 상태임을 명시하고 있습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>슬라이드가 대비하는 '크로스어텐션 활용' VLM 결합 방식의 실제 사례로, LLaVA의 '선형 투영' 방식과 함께 VLM을 만드는 두 갈래 길을 보여줍니다. 언어모델의 텍스트 능력을 해치지 않으면서 멀티모달을 덧붙일 수 있음을 대규모로 입증했습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 210" role="img" aria-label="Llama 3 개념도: 고정된 언어모델 트랜스포머 층 사이사이에 크로스어텐션 어댑터 층이 주기적으로 삽입되어, 비전·비디오·음성 인코더의 표현을 참조합니다.">
+            <title>Llama 3 아키텍처: 크로스어텐션 결합</title>
+            <defs><marker id="arrow-llama3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink3)"/></marker></defs>
+            <rect x="16" y="20" width="90" height="46" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="61" y="40" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">비전</text>
+            <text x="61" y="54" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">인코더</text>
+            <rect x="16" y="80" width="90" height="46" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="61" y="100" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">비디오</text>
+            <text x="61" y="114" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">인코더</text>
+            <rect x="16" y="140" width="90" height="46" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="61" y="160" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">음성</text>
+            <text x="61" y="174" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">인코더</text>
+            <line x1="108" y1="43" x2="150" y2="90" style="stroke:var(--ink3);stroke-width:1.5" marker-end="url(#arrow-llama3)"/>
+            <line x1="108" y1="103" x2="150" y2="103" style="stroke:var(--ink3);stroke-width:1.5" marker-end="url(#arrow-llama3)"/>
+            <line x1="108" y1="163" x2="150" y2="116" style="stroke:var(--ink3);stroke-width:1.5" marker-end="url(#arrow-llama3)"/>
+            <!-- frozen LLM stack with adapters -->
+            <rect x="152" y="16" width="150" height="178" rx="10" style="fill:var(--bg3);stroke:var(--line2);stroke-dasharray:4 3"/>
+            <text x="227" y="12" text-anchor="middle" style="font-size:10px;fill:var(--ink3)">고정(frozen) LLM 본체</text>
+            <rect x="166" y="30" width="122" height="26" rx="6" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="227" y="47" text-anchor="middle" style="font-size:10px;fill:var(--ink2)">트랜스포머 층</text>
+            <rect x="166" y="66" width="122" height="26" rx="6" style="fill:var(--brandsoft);stroke:var(--brand)"/>
+            <text x="227" y="83" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--ink)">크로스어텐션 어댑터</text>
+            <rect x="166" y="102" width="122" height="26" rx="6" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="227" y="119" text-anchor="middle" style="font-size:10px;fill:var(--ink2)">트랜스포머 층</text>
+            <rect x="166" y="138" width="122" height="26" rx="6" style="fill:var(--brandsoft);stroke:var(--brand)"/>
+            <text x="227" y="155" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--ink)">크로스어텐션 어댑터</text>
+            <text x="227" y="182" text-anchor="middle" style="font-size:9px;fill:var(--ink3)">…× 반복</text>
+            <line x1="304" y1="103" x2="330" y2="103" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-llama3)"/>
+            <rect x="332" y="76" width="90" height="54" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="377" y="107" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">통합 출력</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 언어모델 본체(점선 박스)는 고정한 채, 보라색으로 표시한 크로스어텐션 어댑터 층만 새로 학습해 멀티모달 표현을 끌어옵니다. LLaVA의 '토큰 결합' 방식과 대비됩니다. — <a href="https://arxiv.org/abs/2407.21783" target="_blank" rel="noopener">arXiv:2407.21783</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>"비전-언어 모델(VLM)" 개념에서 '크로스어텐션 활용' 결합 방식의 실제 사례입니다. LLaVA와 짝을 이뤄 VLM을 만드는 두 갈래 길을 완성합니다.</p>
+        <div class="chip-row"><span class="chip">비전-언어 모델(VLM)</span><span class="chip">크로스어텐션</span></div></div>
+      </article>
+
+      <!-- ===== DDPM ===== -->
+      <article class="paper-detail" id="d-ddpm">
+        <h3 class="pd-title">Denoising Diffusion Probabilistic Models</h3>
+        <div class="pd-meta">Jonathan Ho, Ajay Jain, Pieter Abbeel · 2020 · arXiv:2006.11239</div>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2006.11239" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2006.11239" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>데이터에 노이즈를 점진적으로 더하는 순방향 과정과, 그 노이즈를 한 단계씩 걷어내는 역방향 과정을 학습해 복잡한 이미지 분포를 단순한 단계들의 연쇄로 쪼갠 확산 확률 모델(DDPM)입니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p>생성 모델이 복잡한 데이터 분포를 한 번에 직접 모델링하기는 어렵습니다. 비평형 열역학에서 영감을 받아, 이 어려운 문제를 여러 개의 쉬운 문제로 쪼갤 수 없을지가 출발점입니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p>노이즈는 샘플링하기 쉽고 수학적으로 잘 정의되어 있다는 점을 이용합니다. 데이터에 점진적으로 가우시안 노이즈를 더해가는 순방향 과정과, 신경망이 그 노이즈를 한 단계씩 제거하도록 학습하는 역방향 과정을 정의해, 복잡한 데이터 생성을 수백 개의 단순한 노이즈 제거 단계로 바꿉니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>확산 모델과 랑주뱅 역학(Langevin dynamics)을 이용한 노이즈 제거 스코어 매칭(denoising score matching) 사이의 연결고리에 따라 설계된 가중 변분 하한(weighted variational bound)을 최적화하도록 학습합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>CIFAR-10에서 Inception Score 9.46, FID(Fréchet Inception Distance — 생성 이미지와 실제 이미지 분포 사이 거리를 재는 품질 지표) 3.17을 기록해 당대 최고 수준을 달성했고, 256×256 LSUN에서도 ProgressiveGAN에 필적하는 샘플 품질을 보였습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>이 프레임워크는 이미지 생성의 표준이 되었습니다. 슬라이드가 설명하듯 '노이즈-이미지' 관계를 '마스킹-텍스트' 관계로 바꿔치기해 확산 LLM(LLaDA)을 설계하는 수학적 토대가 되었고, U-Net 백본을 트랜스포머로 바꾼 DiT의 출발점이기도 합니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 200" role="img" aria-label="DDPM 개념도: 위쪽 순방향 과정은 원본 이미지에 노이즈를 단계마다 더해 완전한 노이즈로 만들고, 아래쪽 역방향 과정은 신경망이 그 노이즈를 한 단계씩 걷어내며 원본을 복원합니다.">
+            <title>DDPM 순방향·역방향 확산 과정</title>
+            <defs><marker id="arrow-ddpm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink3)"/></marker></defs>
+            <text x="16" y="24" style="font-size:11.5px;font-weight:700;fill:var(--ext)">순방향 과정 q(x_t | x_t-1) — 노이즈를 더함</text>
+            <g>
+              <circle cx="40" cy="55" r="20" style="fill:var(--card2);stroke:var(--line2)"/>
+              <circle cx="180" cy="55" r="20" style="fill:var(--card2);stroke:var(--line2);opacity:.8"/>
+              <circle cx="320" cy="55" r="20" style="fill:var(--card2);stroke:var(--line2);opacity:.55"/>
+              <circle cx="460" cy="55" r="20" style="fill:var(--card2);stroke:var(--line2);opacity:.3"/>
+              <circle cx="600" cy="55" r="20" style="fill:var(--card2);stroke:var(--line2);opacity:.15"/>
+            </g>
+            <text x="40" y="59" text-anchor="middle" style="font-size:10px;fill:var(--ink)">x₀</text>
+            <text x="180" y="59" text-anchor="middle" style="font-size:10px;fill:var(--ink)">x₁</text>
+            <text x="320" y="59" text-anchor="middle" style="font-size:10px;fill:var(--ink)">x_t</text>
+            <text x="460" y="59" text-anchor="middle" style="font-size:10px;fill:var(--ink)">…</text>
+            <text x="600" y="59" text-anchor="middle" style="font-size:10px;fill:var(--ink)">x_T</text>
+            <line x1="62" y1="55" x2="158" y2="55" style="stroke:var(--ext);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <line x1="202" y1="55" x2="298" y2="55" style="stroke:var(--ext);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <line x1="342" y1="55" x2="438" y2="55" style="stroke:var(--ext);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <line x1="482" y1="55" x2="578" y2="55" style="stroke:var(--ext);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <text x="320" y="95" text-anchor="middle" style="font-size:10px;fill:var(--ink3)">노이즈 점진적 추가 → 완전한 노이즈(x_T)</text>
+            <line x1="600" y1="115" x2="600" y2="140" style="stroke:var(--ink3);stroke-width:1.5"/>
+            <text x="320" y="150" style="font-size:11.5px;font-weight:700;fill:var(--syn)">역방향 과정 p_θ(x_t-1 | x_t) — 신경망이 노이즈를 걷어냄</text>
+            <line x1="578" y1="175" x2="482" y2="175" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <line x1="438" y1="175" x2="342" y2="175" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <line x1="298" y1="175" x2="202" y2="175" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+            <line x1="158" y1="175" x2="62" y2="175" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-ddpm)"/>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 원처럼 표시한 이미지의 투명도가 오른쪽으로 갈수록 옅어지는 것은 노이즈가 쌓여가는 모습을, 아래쪽 역방향 화살표는 신경망이 그 과정을 거꾸로 되짚어 원본을 복원하는 것을 나타냅니다. — <a href="https://arxiv.org/abs/2006.11239" target="_blank" rel="noopener">arXiv:2006.11239</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>확산 LLM 계보의 뿌리가 되는 논문으로, 슬라이드가 이미지 확산의 노이즈-복원 과정을 텍스트의 마스킹-복원 과정으로 유비할 때 참조하는 원형입니다.</p>
+        <div class="chip-row"><span class="chip">확산 LLM</span><span class="chip">확산 트랜스포머(DiT)</span></div></div>
+      </article>
+
+      <!-- ===== LLaDA ===== -->
+      <article class="paper-detail" id="d-llada">
+        <h3 class="pd-title">Large Language Diffusion Models</h3>
+        <div class="pd-meta">Shen Nie, Fengqi Zhu, Zebin You 외 7인 · 2025 · arXiv:2502.09992</div>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2502.09992" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2502.09992" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>LLM의 능력이 반드시 자기회귀 방식에서만 나온다는 통념에 도전해, 사전학습과 SFT 전체를 확산 방식으로 처음부터 학습한 LLaDA를 제시합니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p><span class="quote" style="font-size:16px;padding:2px 0 2px 14px">"The capabilities of large language models (LLMs) are widely regarded as relying on autoregressive models (ARMs)"</span> — 자기회귀 모델(Autoregressive Model, ARM — 토큰을 왼쪽에서 오른쪽으로 하나씩 순서대로 생성하는 모델)이 아니면 안 되는가를 저자들은 되묻습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p>DDPM의 노이즈-복원 과정을 텍스트에 옮겨, 노이즈 대신 마스킹(masking)을 씁니다. 문장 전체를 다양한 비율로 마스킹하는 순방향 과정과, 트랜스포머가 마스킹된 토큰들을 동시에 예측해 복원하는 역방향 과정으로 우도(likelihood)의 하한을 최적화합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>사전학습과 지도 미세조정(SFT, Supervised Fine-Tuning — 정답 예시를 모방해 학습하는 단계) 전 과정을 처음부터 확산 방식으로 학습시켜, 기존 자기회귀 모델을 뒤늦게 개조하는 것이 아니라 원점에서부터 다른 패러다임으로 학습했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>LLaDA 8B는 문맥 내 학습(in-context learning)에서 LLaMA3 8B와 견줄 만한 성능을 보였고, SFT 이후 지시 따르기 능력도 확인되었습니다. 특히 자기회귀 모델이 취약한 역순 문장 완성 과제에서 GPT-4o를 능가했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>추론 시 여러 토큰을 동시에 언마스킹할 수 있어 병렬 생성이 가능해집니다. 슬라이드는 이 덕분에 ARM 대비 최대 10배의 초당 출력 토큰 수를 기대할 수 있다고 소개하며, 확산 방식이 언어모델링의 진지한 대안이 될 수 있음을 대규모로 보인 사례입니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 220" role="img" aria-label="자기회귀 모델과 확산 LLM 비교 개념도: 위쪽 자기회귀 모델은 토큰을 한 번에 하나씩 순서대로 생성하고, 아래쪽 확산 LLM은 전부 마스킹된 문장에서 출발해 여러 토큰을 동시에 병렬로 언마스킹하며 점진적으로 문장을 완성합니다.">
+            <title>자기회귀 생성 vs 확산 LLM 병렬 생성</title>
+            <text x="16" y="22" style="font-size:11.5px;font-weight:700;fill:var(--ink2)">자기회귀 모델(ARM) — 한 번에 한 토큰씩, 왼쪽 → 오른쪽</text>
+            <g style="font-size:11px;fill:var(--ink)">
+              <rect x="16" y="34" width="46" height="26" rx="4" style="fill:var(--brand2)"/><text x="39" y="52" text-anchor="middle">나는</text>
+              <rect x="66" y="34" width="46" height="26" rx="4" style="fill:var(--brand2)"/><text x="89" y="52" text-anchor="middle">밥을</text>
+              <rect x="116" y="34" width="46" height="26" rx="4" style="fill:var(--brand2)"/><text x="139" y="52" text-anchor="middle">먹었다</text>
+              <rect x="166" y="34" width="46" height="26" rx="4" style="fill:var(--bg3);stroke:var(--line2);stroke-dasharray:3 2"/><text x="189" y="52" text-anchor="middle" style="fill:var(--ink3)">?</text>
+            </g>
+            <text x="230" y="52" style="font-size:10.5px;fill:var(--ink3)">← 다음 한 토큰만 예측, 스텝마다 반복</text>
+
+            <text x="16" y="100" style="font-size:11.5px;font-weight:700;fill:var(--syn)">확산 LLM(LLaDA) — 전체를 마스킹한 뒤 여러 토큰을 동시에 언마스킹</text>
+            <g style="font-size:10.5px">
+              <rect x="16" y="112" width="40" height="24" rx="4" style="fill:var(--bg3);stroke:var(--line2)"/><text x="36" y="128" text-anchor="middle" style="fill:var(--ink3)">[M]</text>
+              <rect x="60" y="112" width="40" height="24" rx="4" style="fill:var(--bg3);stroke:var(--line2)"/><text x="80" y="128" text-anchor="middle" style="fill:var(--ink3)">[M]</text>
+              <rect x="104" y="112" width="40" height="24" rx="4" style="fill:var(--bg3);stroke:var(--line2)"/><text x="124" y="128" text-anchor="middle" style="fill:var(--ink3)">[M]</text>
+              <rect x="148" y="112" width="40" height="24" rx="4" style="fill:var(--bg3);stroke:var(--line2)"/><text x="168" y="128" text-anchor="middle" style="fill:var(--ink3)">[M]</text>
+            </g>
+            <text x="105" y="152" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">스텝 0 (전부 마스킹)</text>
+            <line x1="200" y1="124" x2="228" y2="124" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-llada)"/>
+            <defs><marker id="arrow-llada" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--syn)"/></marker></defs>
+            <g style="font-size:10.5px">
+              <rect x="230" y="112" width="40" height="24" rx="4" style="fill:var(--syn-bg);stroke:var(--syn)"/><text x="250" y="128" text-anchor="middle" style="fill:var(--ink)">나는</text>
+              <rect x="274" y="112" width="40" height="24" rx="4" style="fill:var(--bg3);stroke:var(--line2)"/><text x="294" y="128" text-anchor="middle" style="fill:var(--ink3)">[M]</text>
+              <rect x="318" y="112" width="40" height="24" rx="4" style="fill:var(--syn-bg);stroke:var(--syn)"/><text x="338" y="128" text-anchor="middle" style="fill:var(--ink)">먹었다</text>
+              <rect x="362" y="112" width="40" height="24" rx="4" style="fill:var(--bg3);stroke:var(--line2)"/><text x="382" y="128" text-anchor="middle" style="fill:var(--ink3)">[M]</text>
+            </g>
+            <text x="316" y="152" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">스텝 1 (일부 동시 복원)</text>
+            <line x1="414" y1="124" x2="442" y2="124" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-llada)"/>
+            <g style="font-size:10.5px">
+              <rect x="444" y="112" width="40" height="24" rx="4" style="fill:var(--syn-bg);stroke:var(--syn)"/><text x="464" y="128" text-anchor="middle" style="fill:var(--ink)">나는</text>
+              <rect x="488" y="112" width="40" height="24" rx="4" style="fill:var(--syn-bg);stroke:var(--syn)"/><text x="508" y="128" text-anchor="middle" style="fill:var(--ink)">밥을</text>
+              <rect x="532" y="112" width="40" height="24" rx="4" style="fill:var(--syn-bg);stroke:var(--syn)"/><text x="552" y="128" text-anchor="middle" style="fill:var(--ink)">먹었다</text>
+            </g>
+            <text x="507" y="152" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">스텝 N (전부 복원 완료)</text>
+            <text x="350" y="196" text-anchor="middle" style="font-size:10.5px;fill:var(--ink2)">→ 여러 토큰을 병렬로 언마스킹 → 추론 시 초당 출력 토큰 수 개선</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 위쪽 자기회귀 흐름은 한 스텝에 토큰 하나만 확정되는 반면, 아래쪽 확산 LLM은 마스킹된 문장(회색)에서 출발해 한 스텝에 여러 토큰(초록)을 동시에 확정해 갑니다. — <a href="https://arxiv.org/abs/2502.09992" target="_blank" rel="noopener">arXiv:2502.09992</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>이 강의의 "확산 LLM" 개념 그 자체의 핵심 사례 논문으로, DDPM의 노이즈-복원 수학을 마스킹-복원으로 옮긴 실제 구현체입니다.</p>
+        <div class="chip-row"><span class="chip">확산 LLM</span></div></div>
+      </article>
+
+      <!-- ===== DiT ===== -->
+      <article class="paper-detail" id="d-dit">
+        <h3 class="pd-title">Scalable Diffusion Models with Transformers</h3>
+        <div class="pd-meta">William Peebles, Saining Xie · 2022 (개정 2023) · arXiv:2212.09748</div>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2212.09748" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2212.09748" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>확산 기반 이미지 생성 모델의 U-Net 백본을 트랜스포머로 통째로 교체했더니, 연산량(Gflops)을 늘릴수록 이미지 품질(FID)이 꾸준히 좋아지는 트랜스포머 특유의 스케일링 법칙이 그대로 나타났습니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p>확산 기반 이미지 생성 모델은 거의 예외 없이 U-Net 백본을 써왔습니다. 트랜스포머로 완전히 대체해도 통할지가 검증 대상이었습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p>잠재 공간(Latent Space — 오토인코더 등으로 압축된, 원본보다 차원이 낮은 표현 공간)의 패치에 대해 동작하는 확산 트랜스포머(DiT)를 제안합니다. 트랜스포머의 깊이·너비나 입력 토큰 수를 늘려 순전파 연산량(Gflops)을 키우면, 그만큼 이미지 품질도 예측 가능하게 좋아지는지를 스케일링 관점에서 분석합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>VAE로 이미지를 잠재 공간으로 압축한 뒤 패치로 나누고, 타임스텝·클래스 조건을 적응형 레이어 정규화(adaLN)로 주입하는 트랜스포머 블록(DiT 블록)을 여러 층 쌓아 노이즈를 예측하게 학습시킵니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>더 높은 Gflops(깊이·너비·토큰 수 증가)를 가진 DiT일수록 FID가 꾸준히 낮아지는(품질이 좋아지는) 경향을 확인했고, 가장 큰 모델 DiT-XL/2는 ImageNet 256×256에서 FID 2.27이라는 당대 최고 성능을 기록했습니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>원래 텍스트를 위해 설계된 트랜스포머가 이미지 생성에도 스케일링 이점을 그대로 가져온다는 것을 보여, 슬라이드가 강조하는 '모달리티 간 아이디어 교차수분'의 핵심 근거가 되었습니다. 이후 다수의 대규모 이미지·비디오 생성 모델이 U-Net 대신 DiT 계열 백본을 채택했습니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 210" role="img" aria-label="DiT 개념도: 이미지를 VAE로 잠재 공간에 압축해 패치로 나눈 뒤, 타임스텝과 클래스 조건을 적응형 레이어 정규화로 주입하는 DiT 블록을 여러 층 쌓아 노이즈를 예측하고, 다시 VAE로 복원합니다.">
+            <title>DiT 아키텍처: U-Net 대신 트랜스포머 블록</title>
+            <defs><marker id="arrow-dit" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink3)"/></marker></defs>
+            <rect x="14" y="70" width="70" height="50" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="49" y="99" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">이미지</text>
+            <line x1="86" y1="95" x2="112" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-dit)"/>
+            <rect x="114" y="70" width="80" height="50" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="154" y="91" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">VAE 인코더</text>
+            <text x="154" y="106" text-anchor="middle" style="font-size:9px;fill:var(--ink3)">→ 잠재 패치</text>
+            <line x1="196" y1="95" x2="222" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-dit)"/>
+            <!-- DiT block stack -->
+            <rect x="224" y="26" width="230" height="140" rx="10" style="fill:var(--brandsoft);stroke:var(--brand)"/>
+            <text x="339" y="20" text-anchor="middle" style="font-size:10px;fill:var(--ink3)">DiT 블록 ×L</text>
+            <rect x="238" y="40" width="202" height="34" rx="6" style="fill:var(--card);stroke:var(--line2)"/>
+            <text x="339" y="61" text-anchor="middle" style="font-size:10.5px;fill:var(--ink)">adaLN(타임스텝, 클래스 조건)</text>
+            <rect x="238" y="80" width="202" height="34" rx="6" style="fill:var(--card);stroke:var(--line2)"/>
+            <text x="339" y="101" text-anchor="middle" style="font-size:10.5px;fill:var(--ink)">셀프어텐션 + MLP</text>
+            <text x="339" y="150" text-anchor="middle" style="font-size:9.5px;fill:var(--ink3)">깊이·너비·토큰 수 ↑ → Gflops ↑ → FID ↓</text>
+            <line x1="454" y1="95" x2="480" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-dit)"/>
+            <rect x="482" y="70" width="90" height="50" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="527" y="91" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">VAE 디코더</text>
+            <text x="527" y="106" text-anchor="middle" style="font-size:9px;fill:var(--ink3)">→ 복원 이미지</text>
+            <line x1="572" y1="95" x2="598" y2="95" style="stroke:var(--ink3);stroke-width:2" marker-end="url(#arrow-dit)"/>
+            <text x="640" y="99" text-anchor="middle" style="font-size:10.5px;fill:var(--ink2)">FID 2.27</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> DDPM의 U-Net 자리를 트랜스포머 블록(보라색 큰 박스)이 대신하고, 노이즈 제거의 시점·조건 정보는 adaLN을 통해 각 블록에 주입됩니다. — <a href="https://arxiv.org/abs/2212.09748" target="_blank" rel="noopener">arXiv:2212.09748</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>"확산 트랜스포머(DiT)" 개념 그 자체의 원 논문으로, DDPM이 놓은 확산 수학 위에 트랜스포머 백본을 얹어 슬라이드가 강조하는 '모달리티 간 교차수분'을 보여줍니다.</p>
+        <div class="chip-row"><span class="chip">확산 트랜스포머(DiT)</span><span class="chip">확산 LLM</span></div></div>
+      </article>
+
+      <!-- ===== Analog IMC ===== -->
+      <article class="paper-detail" id="d-analog">
+        <h3 class="pd-title">Analog In-Memory Computing Attention Mechanism for Fast and Energy-Efficient Large Language Models</h3>
+        <div class="pd-meta">Nathan Leroux, Paul-Philipp Manea, Chirag Sudarshan, Jan Finkbeiner, Sebastian Siegel, John Paul Strachan, Emre Neftci · 2024 · arXiv:2409.19315</div>
+        <p class="pd-note">특이사항 — 입력 자료는 연도를 2025로 표기했으나, arXiv 제출일(2024-09-28)·최종 개정일(2024-11-25) 및 arXiv ID 접두어(2409 = 2024년 9월)를 근거로 <b>2024년</b>으로 정정했습니다.</p>
+        <div class="pd-links">
+          <a href="https://arxiv.org/pdf/2409.19315" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2409.19315" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <p class="pd-tldr">TL;DR — <b>어텐션의 진짜 병목은 연산이 아니라 KV 캐시를 GPU 메모리 계층 사이로 실어 나르는 데 있다고 보고, 이를 게인 셀이라는 아날로그 회로에 저장해 내적 연산을 전기 신호로 직접 수행하는 인메모리 컴퓨팅 어텐션을 설계했습니다.</b></p>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>문제의식</h4>
+        <p>현재 GPU는 행렬 연산 자체보다, 매 생성 스텝마다 KV 캐시(Key-Value Cache — 이전 토큰들의 키·값 벡터를 저장해 재계산을 피하는 캐시)를 메모리에서 읽고 쓰는 데 드는 지연시간과 에너지가 병목이 됩니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>핵심 아이디어</h4>
+        <p><span class="quote" style="font-size:16px;padding:2px 0 2px 14px">"GPU-stored projections must be loaded into SRAM for each new generation step, causing latency and energy bottlenecks"</span> — 저자들은 이 이동 자체를 없애고자, 전하 기반의 아날로그 메모리 회로인 게인 셀(Gain Cell — 전하를 저장해 아날로그 신호로 곱셈·덧셈을 수행할 수 있는 커패시터 기반 메모리 회로)에 KV 캐시를 저장해 새 토큰이 들어올 때마다 효율적으로 덮어쓰고, 내적(dot-product) 연산 자체를 아날로그 신호로 병렬 수행하는 회로를 설계합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>방법</h4>
+        <p>아날로그 게인 셀 회로 특유의 비이상성(소자 편차·누설전류 등) 때문에 이미 학습된 모델의 가중치를 그대로 옮겨 쓸 수 없다는 문제에 부딪히자, 처음부터 다시 학습하지 않고도 GPT-2 수준의 텍스트 처리 성능을 재현하는 전용 초기화 알고리즘을 함께 제안합니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-ext">외부</span>주요 결과</h4>
+        <p>어텐션 지연시간을 GPU 대비 최대 2자리 수(최대 100배), 에너지 소비를 최대 5자리 수(최대 100,000배) 절감했다고 초록에서 보고합니다. 슬라이드 자료가 인용하는 15억 파라미터 모델 실험 수치로는 약 70,000배의 에너지 절감이 언급됩니다.</p></div>
+
+        <div class="pd-block"><h4><span class="badge b-syn">종합·해석</span>영향·후속 연구</h4>
+        <p>트랜스포머 연산을 범용 GPU가 아니라 어텐션 전용 아날로그 회로로 옮기는 하드웨어-알고리즘 공동 설계(hardware-algorithm co-design)의 가능성을 보여줍니다. 슬라이드가 소개하는 '메모리 이동이 진짜 병목'이라는 관점을 뒷받침하는 실증 사례입니다.</p></div>
+
+        <figure class="pd-figure">
+          <svg viewBox="0 0 700 220" role="img" aria-label="GPU 디지털 어텐션과 아날로그 인메모리 컴퓨팅 어텐션 비교 개념도: 위쪽 GPU 경로는 KV 캐시를 HBM에서 SRAM으로 옮긴 뒤 디지털 행렬곱을 수행해 메모리 이동 병목이 발생하고, 아래쪽 아날로그 경로는 게인 셀에 저장된 전하로 곧바로 아날로그 내적을 계산해 이동 없이 결과를 얻습니다.">
+            <title>GPU 디지털 어텐션 vs 아날로그 인메모리 컴퓨팅 어텐션</title>
+            <defs><marker id="arrow-analog" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink3)"/></marker></defs>
+            <text x="16" y="20" style="font-size:11.5px;font-weight:700;fill:var(--warn)">GPU 경로 — 매 스텝 KV 캐시를 이동시켜야 함</text>
+            <rect x="16" y="30" width="86" height="44" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="59" y="56" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">HBM</text>
+            <text x="59" y="68" text-anchor="middle" style="font-size:8.5px;fill:var(--ink3)">KV 캐시 저장</text>
+            <line x1="102" y1="52" x2="128" y2="52" style="stroke:var(--warn);stroke-width:2" marker-end="url(#arrow-analog)"/>
+            <text x="115" y="44" text-anchor="middle" style="font-size:8.5px;fill:var(--warn)">이동</text>
+            <rect x="130" y="30" width="86" height="44" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="173" y="56" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">SRAM</text>
+            <line x1="216" y1="52" x2="242" y2="52" style="stroke:var(--warn);stroke-width:2" marker-end="url(#arrow-analog)"/>
+            <rect x="244" y="30" width="100" height="44" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="294" y="52" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">디지털 행렬곱</text>
+            <text x="294" y="65" text-anchor="middle" style="font-size:8.5px;fill:var(--ink3)">(내적)</text>
+            <rect x="356" y="24" width="140" height="56" rx="8" style="fill:rgba(248,113,113,.12);stroke:var(--warn)"/>
+            <text x="426" y="46" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--warn)">병목: 지연시간↑</text>
+            <text x="426" y="60" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--warn)">에너지↑</text>
+
+            <text x="16" y="118" style="font-size:11.5px;font-weight:700;fill:var(--syn)">아날로그 인메모리 컴퓨팅 경로 — 저장한 자리에서 곧바로 계산</text>
+            <rect x="16" y="130" width="140" height="60" rx="8" style="fill:var(--syn-bg);stroke:var(--syn)"/>
+            <text x="86" y="154" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--ink)">게인 셀 배열</text>
+            <text x="86" y="168" text-anchor="middle" style="font-size:9px;fill:var(--ink2)">전하로 K·V 저장</text>
+            <text x="86" y="181" text-anchor="middle" style="font-size:9px;fill:var(--ink2)">+ 병렬 아날로그 내적</text>
+            <line x1="156" y1="160" x2="182" y2="160" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-analog)"/>
+            <rect x="184" y="138" width="90" height="44" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="229" y="164" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--ink)">ADC 변환</text>
+            <line x1="274" y1="160" x2="300" y2="160" style="stroke:var(--syn);stroke-width:2" marker-end="url(#arrow-analog)"/>
+            <rect x="302" y="138" width="90" height="44" rx="8" style="fill:var(--card2);stroke:var(--line2)"/>
+            <text x="347" y="164" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--ink)">어텐션 출력</text>
+            <rect x="410" y="130" width="160" height="60" rx="8" style="fill:rgba(45,212,191,.12);stroke:var(--syn)"/>
+            <text x="490" y="152" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--syn)">지연 최대 100배 ↓</text>
+            <text x="490" y="167" text-anchor="middle" style="font-size:10px;font-weight:700;fill:var(--syn)">에너지 최대 100,000배 ↓</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> GPU 경로(위)는 저장 장치와 연산 장치가 분리돼 있어 이동이 병목이 되지만, 아날로그 경로(아래)는 저장한 바로 그 자리(게인 셀)에서 연산까지 끝내 이동 자체가 사라집니다. — <a href="https://arxiv.org/abs/2409.19315" target="_blank" rel="noopener">arXiv:2409.19315</a></figcaption>
+        </figure>
+
+        <div class="pd-block"><h4>이 강의에서의 역할</h4>
+        <p>"아날로그 인메모리 컴퓨팅 어텐션" 개념 그 자체의 원 논문으로, 이 강의가 소프트웨어 트렌드(비전·생성 확장)에 이어 마지막으로 짚는 하드웨어 트렌드의 실증 사례입니다.</p>
+        <div class="chip-row"><span class="chip">아날로그 인메모리 컴퓨팅</span><span class="chip">어텐션</span><span class="chip">KV 캐시</span></div></div>
+      </article>
+
+      </div>
+    </aside>
+    <div class="md-backdrop" id="mdBackdrop"></div>
+  </div>
+</div></section>
+
+<!-- ===== 자가 점검 ===== -->
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">03 — Self-check</span>
+  <h2>자가 점검 <span class="en">Quick recall check</span></h2>
+  <p class="lead">7편의 논문이 어떻게 갈라지고 다시 모이는지, 세 질문으로 확인해 봅시다.</p>
+
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 LLaVA와 Llama 3의 VLM 결합 방식 중, 비전 인코더 출력을 별도의 크로스어텐션 층 없이 선형 투영만으로 언어모델에 밀어넣는 쪽은?</div>
+    <button class="opt" data-correct="1">LLaVA — 이미지 토큰을 텍스트 토큰과 같은 시퀀스로 취급</button>
+    <button class="opt">Llama 3 — 크로스어텐션 어댑터로 연결</button>
+    <button class="opt">둘 다 크로스어텐션만 사용한다</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 확산 LLM(LLaDA)이 자기회귀 모델과 근본적으로 다른 점은?</div>
+    <button class="opt" data-correct="1">노이즈 대신 마스킹을 이용해 여러 토큰을 동시에 예측·복원한다</button>
+    <button class="opt">여전히 왼쪽에서 오른쪽으로 한 토큰씩 생성한다</button>
+    <button class="opt">트랜스포머를 전혀 쓰지 않는다</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" id="quiz3">
+    <div class="q">🧩 아날로그 인메모리 컴퓨팅 어텐션 논문이 지목한 GPU의 진짜 병목은?</div>
+    <button class="opt" data-correct="1">KV 캐시를 메모리 계층 사이로 옮기는 데 드는 지연시간·에너지</button>
+    <button class="opt">행렬곱 자체의 연산 속도</button>
+    <button class="opt">모델 파라미터 수의 한계</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== 용어집 ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">04 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색…"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 9강이 참조하는 논문 7편의 비공식 교육용 해설 노트입니다.
+   <span class="badge b-src">원본</span>=논문 인용문, <span class="badge b-ext">외부</span>=arXiv 초록 근거 확장 요약, <span class="badge b-syn">종합·해석</span>=작성자 재구성(개념도 전부 해당)입니다.
+   아날로그 인메모리 컴퓨팅 논문은 입력 자료의 연도 표기(2025)를 arXiv 제출·개정 시점(2024) 기준으로 정정했습니다. 그 외 수치·인용은 각 논문의 arXiv 초록을 직접 조회해 확인한 내용입니다.</div>
+  <div>
+    <a href="../강의노트/lecture9.html" target="_blank" rel="noopener">강의 설명자 보기 →</a>
+    ·
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a>
+    ·
+    <a href="../" target="_blank" rel="noopener">전체 목록 →</a>
+  </div>
+  <div style="margin-top:8px">제작: Claude · 원저작권은 각 논문 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* chrome: progress bar, back-to-top, reveal-on-scroll, theme toggle */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* ===== master–detail ===== */
+const mdDetail=$('#mdDetail'),mdBackdrop=$('#mdBackdrop'),mdCloser=$('#mdCloser');
+const isMobileView=()=>window.innerWidth<=768;
+let lastTrigger=null;
+
+function openDetail(id,trigger){
+  $$('.paper-detail').forEach(p=>p.classList.toggle('active',p.id==='d-'+id));
+  $$('.paper-item').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
+  if(isMobileView()){
+    lastTrigger=trigger;
+    mdDetail.classList.add('open');
+    mdBackdrop.classList.add('show');
+  }
+}
+function closeSheet(){
+  mdDetail.classList.remove('open');
+  mdBackdrop.classList.remove('show');
+  if(lastTrigger){lastTrigger.focus();lastTrigger=null;}
+}
+$$('.paper-item').forEach(btn=>{btn.addEventListener('click',()=>openDetail(btn.dataset.id,btn));});
+mdCloser.addEventListener('click',closeSheet);
+mdBackdrop.addEventListener('click',closeSheet);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mdDetail.classList.contains('open'))closeSheet();});
+
+/* master–detail search filter (title/authors/concept, ko/en) */
+const mdSearch=$('#mdSearch'),mdCount=$('#mdCount'),mdEmpty=$('#mdEmpty');
+mdSearch.addEventListener('input',()=>{
+  const q=mdSearch.value.trim().toLowerCase();
+  let shown=0;
+  $$('.paper-item').forEach(btn=>{
+    const hay=(btn.dataset.search||'').toLowerCase();
+    const match=!q||hay.includes(q);
+    btn.style.display=match?'':'none';
+    if(match)shown++;
+  });
+  $$('.grp-head').forEach(h=>{
+    let anyVisible=false,el=h.nextElementSibling;
+    while(el&&!el.classList.contains('grp-head')){
+      if(el.classList.contains('paper-item')&&el.style.display!=='none')anyVisible=true;
+      el=el.nextElementSibling;
+    }
+    h.style.display=anyVisible?'':'none';
+  });
+  mdCount.textContent=q?`${shown}편 일치`:'7편 전체 표시 중';
+  mdEmpty.style.display=shown===0?'block':'none';
+});
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답입니다! 이 강의는 트랜스포머 하나가 여러 노선(비전·생성·하드웨어)으로 환승해 간 이야기입니다.':'❌ 다시 살펴보세요 — 각 논문의 "핵심 아이디어" 항목을 확인해 보세요.';});});
+
+/* glossary */
+const GLOSS=[
+ ['Vision Transformer (ViT)','비전 트랜스포머','이미지를 패치 단위로 잘라 트랜스포머 인코더에 입력하는 이미지 인식 아키텍처'],
+ ['Self-Attention','셀프어텐션','시퀀스 내 모든 위치가 서로를 직접 참조해 관련도를 계산하는 연산'],
+ ['Vision-Language Model (VLM)','비전-언어 모델','이미지와 텍스트를 함께 입력받아 답을 생성하는 멀티모달 모델'],
+ ['Cross-Attention','크로스어텐션','한 시퀀스의 표현이 다른 시퀀스(예: 이미지 인코더 출력)를 참조하도록 하는 어텐션 층'],
+ ['Instruction Tuning','지시문 미세조정','지시-응답 쌍으로 모델을 미세조정해 지시 따르기 능력을 끌어올리는 학습 단계'],
+ ['Diffusion Model','확산 모델','데이터에 노이즈를 점진적으로 더하고 되돌리는 과정을 학습하는 생성 모델'],
+ ['Masked Diffusion Model (MDM)','마스킹 확산 모델','노이즈 대신 토큰 마스킹으로 확산 과정을 구현한 언어모델'],
+ ['Autoregressive Model (ARM)','자기회귀 모델','토큰을 왼쪽에서 오른쪽으로 하나씩 순서대로 생성하는 모델'],
+ ['Diffusion Transformer (DiT)','확산 트랜스포머','확산 모델의 U-Net 백본을 트랜스포머로 교체한 아키텍처'],
+ ['Fréchet Inception Distance (FID)','FID 스코어','생성된 이미지 분포와 실제 이미지 분포 사이의 거리를 재는 이미지 생성 품질 지표'],
+ ['Latent Space','잠재 공간','오토인코더 등으로 압축된, 원본보다 차원이 낮은 표현 공간'],
+ ['KV Cache','KV 캐시','어텐션 재계산을 피하려고 이전 토큰들의 키·값 벡터를 저장해두는 캐시'],
+ ['Gain Cell','게인 셀','전하를 저장해 아날로그 신호로 곱셈·덧셈을 수행할 수 있는 커패시터 기반 메모리 회로'],
+ ['Analog In-Memory Computing (AIMC)','아날로그 인메모리 컴퓨팅','데이터를 저장한 바로 그 자리에서 아날로그 신호로 연산까지 수행해 메모리 이동을 없애는 컴퓨팅 방식']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${esc(g[1])} <span class="en">${esc(g[0])}</span></div><div class="gd">${esc(g[2])}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

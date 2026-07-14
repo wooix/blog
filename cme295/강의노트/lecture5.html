@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 5강 — 선호 튜닝과 RLHF — 인터랙티브 설명자료</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:980px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,6vw,58px);margin:.1em 0 .2em;letter-spacing:-1.2px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:760px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.48em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+/* equations */
+.eqn{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:16px 0;font-family:var(--serif);font-size:16.5px;overflow-x:auto;text-align:center;line-height:1.9}
+.eqn .lbl{display:block;font-family:var(--sans);font-size:11.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;text-align:left}
+.eqn-note{font-size:13.5px;color:var(--ink3);margin-top:6px}
+/* flow diagram (CSS, no images) */
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0}
+.flow .fb{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:13.5px;min-width:130px;text-align:center;line-height:1.4}
+.flow .fb.dim{opacity:.4}
+.flow .fb b{display:block;margin-bottom:2px;font-size:14px}
+.flow .arrow{color:var(--ink3);font-size:19px;flex-shrink:0}
+@media(max-width:700px){.flow{flex-direction:column;align-items:stretch}.flow .arrow{transform:rotate(90deg);align-self:center}}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* cascade */
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:22px;margin:.2em 0 .1em}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden;background:var(--card)}
+.acc summary{padding:15px 18px;cursor:pointer;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .ar{margin-left:auto;transition:.2s;color:var(--ink3)}.acc[open] summary .ar{transform:rotate(90deg)}
+.acc .body{padding:0 18px 18px;color:var(--ink2)}
+/* calculator */
+.calc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+.calc .row{display:flex;gap:18px;flex-wrap:wrap}.field{flex:1 1 220px}
+.field label{font-size:13px;color:var(--ink2);font-weight:600;display:flex;justify-content:space-between}.field label b{color:var(--brand2)}
+input[type=range]{width:100%;accent-color:var(--brand);height:6px;margin-top:14px}
+.calc-out{margin-top:22px;display:grid;grid-template-columns:1fr;gap:14px}
+.calc-out .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:18px;text-align:center}
+.calc-out .box .big{font-size:34px;font-weight:800;color:var(--gold)}
+.pbar-wrap{height:22px;background:var(--bg3);border-radius:999px;overflow:hidden;margin-top:14px;border:1px solid var(--line)}
+.pbar{height:100%;background:linear-gradient(90deg,var(--brand),var(--syn));transition:width .15s;border-radius:999px}
+.calc-quickset{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.calc-quickset button{background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.calc-quickset button:hover{background:var(--brandsoft);color:var(--ink)}
+/* canvas chart */
+.chart-ctrls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.chart-ctrls button{font:inherit;font-size:13px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);border-radius:9px;padding:8px 14px;cursor:pointer}
+.chart-ctrls button.on{background:var(--brand);color:#fff;border-color:var(--brand2)}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+/* footer + misc */
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ol.steps{padding-left:0;list-style:none;counter-reset:step;margin:20px 0}
+ol.steps li{counter-increment:step;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px 14px 54px;margin:10px 0;position:relative}
+ol.steps li::before{content:counter(step);position:absolute;left:14px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--brandsoft);border:1px solid var(--brand);color:var(--brand2);font-weight:800;font-size:13px;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>5강</b></span>
+  <nav>
+    <a href="#s1">개요</a>
+    <a href="#s2">왜 필요한가</a>
+    <a href="#s3">선호 데이터</a>
+    <a href="#cascade">RLHF</a>
+    <a href="#rm">보상 모델</a>
+    <a href="#ppo">PPO</a>
+    <a href="#dpo">DPO</a>
+    <a href="#compare">비교</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">CME 295 · Lecture 5 · 인터랙티브 해설</span>
+  <h1>CME 295 · 5강 — 선호 튜닝과 RLHF</h1>
+  <p class="sub">SFT를 마친 모델이 왜 또 손을 봐야 하는지, 그리고 그 손질을 보상 모델·PPO로 할지 DPO로 할지를 스스로 설명할 수 있게 되는 것이 이 자료의 목표입니다.</p>
+  <div class="metaline">
+    <span><b>강연</b> Afshine Amidi &amp; Shervine Amidi (Stanford ICME)</span>
+    <span><b>일자</b> 2025-10-31</span>
+    <span><b>슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture5.pdf" target="_blank" rel="noopener">PDF ↗</a></span>
+    <span><b>영상</b> <a href="https://www.youtube.com/watch?v=PmW_TMQ3l0I" target="_blank" rel="noopener">YouTube ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#s1">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://www.youtube.com/watch?v=PmW_TMQ3l0I" target="_blank" rel="noopener">원 강의 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>강의 슬라이드에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>슬라이드가 인용했거나 추가로 확인한 <b>외부 논문</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 슬라이드를 엮거나 시각화를 다시 그린 <b>작성자 재구성</b>.</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== SECTION 1: OVERVIEW ===== -->
+<section id="s1"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>선호 튜닝(Preference Tuning): 정답이 아니라 '더 나은 쪽'을 가르치다 <span class="en">Why SFT alone isn't enough</span></h2>
+  <p class="lead">누구나 요리를 배워본 경험이 있을 것입니다. 처음에는 레시피북을 그대로 따라 하며 기본기를 익히지만, 정말 맛있는 한 그릇을 내놓으려면 그 다음부터는 다릅니다 — 두 접시를 나란히 놓고 어느 쪽이 더 입에 맞는지 계속 비교하며 손맛을 조율해야 합니다. 이번 5강이 다루는 <b>선호 튜닝(Preference Tuning)</b>도 정확히 이 두 번째 단계에 해당합니다.</p>
+
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 결론부터 말하면</div>
+  지도 미세조정(SFT, Supervised Fine-Tuning — 정답 예시를 모방해 학습하는 단계)까지 마친 모델은 '그럴듯한' 답은 낼 수 있지만 '더 나은' 답을 스스로 고르지는 못합니다. 이 간극을 메우는 것이 선호 튜닝이며, 크게 두 갈래 길이 있습니다 — 보상 모델을 세우고 강화학습(RLHF/PPO)으로 조율하는 무거운 길과, 선호 데이터를 지도학습으로 직접 흡수하는 가벼운 길(DPO)입니다. 흥미로운 점은, 이 두 갈래 길이 사실 같은 수학에서 갈라져 나왔다는 것입니다 — 이 자료 전체가 그 갈림길을 하나씩 따라가 봅니다.</div>
+
+  <h3>지금까지의 여정</h3>
+  <p>강의 시리즈는 모델을 세 단계로 다듬어 왔습니다. 각 단계는 이전 단계의 결과물을 입력으로 받습니다.</p>
+  <div class="flow">
+    <div class="fb"><b>초기화된 모델</b>언어에 대한 지식이 없는 상태</div>
+    <span class="arrow">→</span>
+    <div class="fb"><b>사전학습(Pretraining)</b>언어·코드의 '기초 지식'을 갖춘 모델</div>
+    <span class="arrow">→</span>
+    <div class="fb"><b>미세조정(Finetuning, SFT)</b>특정 작업에 맞춰진 모델</div>
+    <span class="arrow">→</span>
+    <div class="fb" style="border-color:var(--brand);background:var(--brandsoft)"><b>선호 튜닝(오늘)</b>사람의 선호에 맞춰진 모델</div>
+  </div>
+  <p class="muted"><span class="badge b-src">원본</span> 슬라이드의 "Recap of last episodes…" 다이어그램을 재구성.</p>
+
+  <h3>SFT 모델은 여전히 엉뚱한 답을 낼 수 있습니다</h3>
+  <p>예를 들어 "테디베어와 함께 할 새로운 활동을 추천해줘"라는 요청에, SFT를 마친 모델(LLM<sub>SFT</sub>)이 <i>"테디베어와는 시간을 보내지 않는 게 좋겠습니다"</i>처럼 맥락에 맞지 않는 답을 내놓을 수 있습니다. <span class="badge b-src">원본</span> 문제는 이 답이 문법적으로 틀리지 않았다는 점입니다 — SFT는 '있음직한' 문장을 만들도록 학습됐을 뿐, '더 도움이 되는' 문장을 고르도록 학습되지는 않았기 때문입니다.</p>
+
+  <div class="callout syn"><div class="h"><span class="badge b-src">원본</span> 아이디어</div>
+  이런 부정적 신호를 모델에 주입하려면, 같은 질문에 대한 두 응답을 놓고 "이쪽이 더 낫다"는 <b>선호 쌍(preference pair)</b>을 모아 학습에 반영하면 됩니다. 마치 시식 평가단이 "A 접시가 B 접시보다 낫다"고만 말해줘도 요리사가 다음 요리를 조율할 수 있는 것과 같습니다.</div>
+
+  <div class="grid g3">
+    <div class="card"><div class="icon">①</div><h4>선호 데이터</h4><p>같은 프롬프트에 대한 두 응답 중 어느 쪽이 더 나은지를 기록한 데이터입니다. 이번 자료의 재료입니다.</p></div>
+    <div class="card"><div class="icon">②</div><h4>보상 모델(RM)</h4><p>이 선호를 점수로 환산하는 심사위원 역할의 모델입니다. RLHF의 1단계입니다.</p></div>
+    <div class="card"><div class="icon">③</div><h4>정책 최적화</h4><p>그 점수(혹은 선호 자체)를 이용해 모델의 가중치를 바꾸는 단계입니다. PPO 또는 DPO로 수행합니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 2: WHY ===== -->
+<section id="s2"><div class="wrap reveal">
+  <span class="sec-no">02 — Motivation</span>
+  <h2>왜 굳이 '비교'로 가르칠까? <span class="en">Compare, don't generate</span></h2>
+  <p class="lead">요리 초보에게 "이 두 접시 중 어느 게 더 낫나요?"라고 묻는 것은, "미슐랭 3스타 요리를 만들어보세요"라고 요구하는 것보다 훨씬 쉬운 과제입니다. 슬라이드는 선호 튜닝을 선택하는 이유를 이 비대칭성에서 시작합니다.</p>
+
+  <div class="grid g2">
+    <div class="card"><div class="icon">⚖️</div><h4>비교가 생성보다 쉽습니다</h4><p><span class="badge b-src">원본</span> A가 B보다 낫다고 <b>비교</b>하는 것이, A를 처음부터 <b>생성</b>하는 것보다 사람에게 훨씬 쉬운 과제입니다. 정답을 새로 써 내려가는 것보다, 이미 나온 두 결과 중 하나를 고르는 편이 인지적으로 가볍기 때문입니다.</p></div>
+    <div class="card"><div class="icon">📐</div><h4>SFT는 분포에 예민합니다</h4><p><span class="badge b-src">원본</span> SFT는 학습 데이터의 <b>분포(distribution)</b>가 조금만 틀어져도 "망가지기(mess up)" 쉽습니다. 정답 예시 하나하나를 그대로 모방하기 때문에, 예시가 편향되면 그 편향까지 그대로 배웁니다.</p></div>
+    <div class="card"><div class="icon">📉</div><h4>확장이 어렵습니다</h4><p><span class="badge b-src">원본</span> SFT용 고품질 정답 데이터를 계속 확보하는 일은 <b>확장성(scalability)</b>이 떨어집니다. 데이터 품질이 매우 중요한데, 그런 데이터를 대량으로 구하기는 어렵습니다.</p></div>
+    <div class="card soft"><div class="icon">🔔</div><h4>그런데, 반전이 하나 있습니다</h4><p><span class="badge b-src">원본</span> "모델이 misbehave한다"는 신호는 사실 <b>SFT 데이터 품질을 점검하라는 좋은 경고음</b>이 될 수도 있습니다. 선호 튜닝이 만능 해결책은 아니라는 뜻입니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 3: PREFERENCE DATA ===== -->
+<section id="s3"><div class="wrap reveal">
+  <span class="sec-no">03 — Data collection</span>
+  <h2>선호 데이터, 어떻게 담을까: 점수·비교·순위 <span class="en">Pointwise, pairwise, listwise</span></h2>
+  <p class="lead">관측치는 언제나 (프롬프트 <i>x</i>, 응답 <i>ŷ</i>) 쌍입니다. <span class="badge b-src">원본</span> 이 관측치에 선호 신호를 붙이는 방식은 세 갈래로 나뉩니다.</p>
+
+  <div class="grid g3">
+    <div class="card"><div class="icon">🔢</div><h4>점수형(Pointwise)</h4><p><span class="badge b-src">원본</span> 각 응답에 절대적인 점수(예: 0.4, 0.9)를 매깁니다. 응답끼리 직접 비교하지 않아도 되지만, 채점 기준을 일관되게 유지하기가 어렵습니다.</p></div>
+    <div class="card" style="border-color:var(--brand)"><div class="icon">⚖️</div><h4>쌍대비교형(Pairwise)</h4><p><span class="badge b-src">원본</span> "응답 1 &gt; 응답 3"처럼 두 응답의 우열만 기록합니다. 이번 강의(보상 모델·DPO)가 다루는 핵심 형식입니다 — 절대 점수보다 훨씬 신뢰도 높게 수집할 수 있습니다.</p></div>
+    <div class="card"><div class="icon">🏅</div><h4>순위형(Listwise)</h4><p><span class="badge b-src">원본</span> 여러 응답을 통째로 순서대로 나열합니다. 정보량은 가장 많지만, 사람이 한 번에 여러 응답을 견주어야 해서 수집 비용이 큽니다.</p></div>
+  </div>
+
+  <h3>(쌍대비교) 선호 데이터를 얻는 절차</h3>
+  <ol class="steps">
+    <li><b>응답 쌍 생성.</b> <span class="badge b-src">원본</span> 같은 프롬프트 <i>x</i>에 대해 응답 쌍 (ŷ₁, ŷ₂)를 만듭니다. 프롬프트는 로그(logs)나 기준 분포(reference distribution)에서, 응답은 온도(T)를 높인 SFT 모델·합성 데이터·재작성(rewrite) 등으로 확보합니다.</li>
+    <li><b>레이블링.</b> <span class="badge b-src">원본</span> (x, ŷ₁)과 (x, ŷ₂) 각각에 사람이 직접 등급을 매기거나(human rating), LLM-as-a-judge·BLEU·ROUGE 같은 <b>대리 지표(proxy)</b>를 씁니다. 이때 이진 척도("A가 낫다/아니다")로 할지, 정도를 담은 "뉘앙스 있는" 척도로 할지도 설계 선택입니다.</li>
+  </ol>
+</div></section>
+
+<!-- ===== SECTION 4: RLHF CASCADE ===== -->
+<section id="cascade"><div class="wrap reveal">
+  <span class="sec-no">04 — The RLHF cascade</span>
+  <h2>RLHF 파이프라인, 한 단계씩 풀어보기 <span class="en">SFT → Reward Modeling → RL</span></h2>
+  <p class="lead"><b>RLHF</b>(Reinforcement Learning from Human Feedback, 인간 피드백 기반 강화학습)는 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">Ouyang et al., 2022</a>가 InstructGPT에서 대중화한 이름으로, <span class="badge b-src">원본</span> 슬라이드는 이를 '보상 모델링'과 '강화학습' 두 단계로 나눕니다. 「해결 →」 버튼을 눌러 SFT 복습에서 시작해 두 단계를 차례로 따라가 보겠습니다.</p>
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">해결 →</button></div>
+
+  <h3>LLM을 강화학습 언어로 옮기면</h3>
+  <p><span class="badge b-src">원본</span> 강화학습의 표준 틀(에이전트-환경-상태-행동-보상-정책)에 LLM을 그대로 대입할 수 있습니다. 마치 체스 기사가 매 수(action)를 둘 때마다 현재 판(state)을 보고 다음 수의 확률(policy)을 가늠하는 것과 같습니다.</p>
+  <div class="grid g2">
+    <div class="card soft"><h4>일반 RL</h4><p>에이전트(Agent) · 환경(Environment) · 상태 <i>s<sub>t</sub></i> · 행동 <i>a<sub>t</sub></i> · 보상 <i>r<sub>t</sub></i> · 정책 π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)</p></div>
+    <div class="card" style="border-color:var(--brand)"><h4>LLM에 대응</h4><p>LLM = 에이전트 · 토큰 = 환경 · <b>지금까지의 입력</b> = 상태 <i>s<sub>t</sub></i> · <b>다음 토큰</b> = 행동 <i>a<sub>t</sub></i> · <b>사람의 선호</b> = 보상 <i>r<sub>t</sub></i> · <b>다음 토큰 확률</b> π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)</p></div>
+  </div>
+  <p class="muted">아이디어. θ를 학습해 π<sub>θ</sub>가 사람의 선호에 맞춰지도록 하는 것 — 이것이 RLHF 전체의 목표입니다. <span class="badge b-src">원본</span></p>
+</div></section>
+
+<!-- ===== SECTION 5: REWARD MODELING + CALCULATOR ===== -->
+<section id="rm"><div class="wrap reveal">
+  <span class="sec-no">05 — Step 1: Reward modeling</span>
+  <h2>브래들리-테리(Bradley-Terry) 모델: 점수 차이가 곧 승리 확률 <span class="en">From scores to win probability</span></h2>
+  <p class="lead">마치 스포츠의 Elo 레이팅이 두 선수의 실력 차이를 승률로 바꿔주는 것과 같습니다. 보상 모델(RM)도 두 응답의 점수 차이를 '어느 쪽이 더 선호될 확률'로 바꾸는 동일한 수학을 씁니다.</p>
+
+  <div class="eqn"><span class="lbl">Bradley-Terry 공식 <span class="badge b-ext">외부</span></span>
+  p(y<sub>i</sub> ≻ y<sub>j</sub>) = e<sup>r<sub>i</sub></sup> ⁄ (e<sup>r<sub>i</sub></sup> + e<sup>r<sub>j</sub></sup>) = σ(r<sub>i</sub> − r<sub>j</sub>)
+  </div>
+  <p>이 식이 <b>측정하는 것</b>은 응답 i가 응답 j보다 선호될 확률입니다. <b>왜 이렇게 설계했는지</b>가 핵심인데, 두 점수의 절댓값이 아니라 <i>차이</i>만 결과에 영향을 준다는 점입니다 — 그래야 점수의 기준(원점)이 어디에 있든 같은 승률을 예측할 수 있습니다. 여기서 σ는 표준 시그모이드 σ(x) = 1 ⁄ (1 + e<sup>−x</sup>)로, 어떤 실수든 0~1 사이 확률로 눌러 담는 함수입니다. <span class="badge b-ext">외부</span> 이 공식은 <a href="https://www.jstor.org/stable/2334029" target="_blank" rel="noopener">Bradley &amp; Terry, 1952</a>가 쌍대비교 순위 문제를 풀기 위해 제안한 고전 통계 모델입니다.</p>
+
+  <h3>계산기로 직접 확인해 보기</h3>
+  <p class="muted">두 응답의 보상 점수 r<sub>i</sub>, r<sub>j</sub>를 슬라이더로 움직이며, 위 공식이 계산하는 선호 확률이 어떻게 바뀌는지 살펴보세요.</p>
+  <div class="calc">
+    <div class="row">
+      <div class="field"><label>응답 i의 보상 r<sub>i</sub> <b id="riLab">0.8</b></label><input type="range" id="riIn" min="-5" max="5" step="0.1" value="0.8"></div>
+      <div class="field"><label>응답 j의 보상 r<sub>j</sub> <b id="rjLab">-2.0</b></label><input type="range" id="rjIn" min="-5" max="5" step="0.1" value="-2"></div>
+    </div>
+    <div class="calc-out">
+      <div class="box"><div class="big" id="pOut">—</div><div class="muted">p(y<sub>i</sub> ≻ y<sub>j</sub>) = σ(r<sub>i</sub> − r<sub>j</sub>)</div>
+      <div class="pbar-wrap"><div class="pbar" id="pBar" style="width:0%"></div></div></div>
+    </div>
+    <div class="calc-quickset">
+      <button id="qsTeddyGood">슬라이드 예시: 좋은 답(0.8) vs 나쁜 답(-2)</button>
+      <button id="qsTeddyPicnic">슬라이드 예시: 좋은 답(0.8) vs 소소한 답(0.2)</button>
+      <button id="qsTie">두 응답이 동점(0 vs 0)</button>
+    </div>
+    <p class="muted" id="calcNote" style="margin-top:14px"></p>
+  </div>
+
+  <h3>보상 모델은 이 확률을 거꾸로 학습합니다</h3>
+  <p><span class="badge b-src">원본</span> 사람이 "ŷ<sub>w</sub>(승자)가 ŷ<sub>l</sub>(패자)보다 낫다"고 표시한 데이터로, RM이 r(x, ŷ<sub>w</sub>) &gt; r(x, ŷ<sub>l</sub>)이 되도록 다음 손실을 최소화합니다.</p>
+  <div class="eqn"><span class="lbl">RM 훈련 손실 <span class="badge b-src">원본</span></span>
+  ℒ(θ) = −𝔼[ log σ( r(x, ŷ<sub>w</sub>) − r(x, ŷ<sub>l</sub>) ) ]
+  </div>
+  <p>이 손실이 <b>측정하는 것</b>은 방금 계산기에서 본 선호 확률의 음의 로그우도(negative log-likelihood)입니다. <b>왜 이렇게 설계했는지</b>는 간단합니다 — 이 값을 최소화하면 자연스럽게 σ(r(x,ŷ<sub>w</sub>) − r(x,ŷ<sub>l</sub>))이 1에 가까워지도록, 즉 승자의 점수가 패자보다 확실히 높아지도록 RM이 학습되기 때문입니다.</p>
+
+  <div class="grid g2">
+    <div class="card soft"><h4>데이터</h4><p><span class="badge b-src">원본</span> 대략 O(10,000)개 관측치. 레이블은 사람의 등급(human rating)입니다 — RLHF의 "HF"가 바로 여기서 나옵니다.</p></div>
+    <div class="card soft"><h4>모델</h4><p><span class="badge b-src">원본</span> 사전학습 LLM에 (다음 토큰 예측 대신) 분류 헤드를 얹습니다. BERT류 인코더 전용 모델이면 [CLS] 토큰을 투영해 점수를 냅니다. <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2403.13787" target="_blank" rel="noopener">Lambert et al., 2024</a>(RewardBench)는 이런 보상 모델들의 실제 품질을 벤치마크로 검증했습니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 6: PPO ===== -->
+<section id="ppo"><div class="wrap reveal">
+  <span class="sec-no">06 — Step 2: Reinforcement learning</span>
+  <h2>PPO: 보상은 키우고 궤도는 지키다 <span class="en">Proximal Policy Optimization</span></h2>
+  <p class="lead">마치 목줄을 맨 강아지가 마당을 자유롭게 탐색하되 주인(기준 모델)에게서 너무 멀리 벗어나지는 못하는 것과 같습니다. RM이 매기는 점수를 <b>최대화</b>하면서도, 원래 모델(base model)에서 <b>너무 벗어나지 않도록</b> 붙잡아 두는 것이 2단계 강화학습의 목적입니다.</p>
+
+  <div class="grid g2">
+    <div class="card soft"><h4>학습 대상</h4><p><span class="badge b-src">원본</span> SFT 모델로 초기화한 '훈련 대상' 정책(🔥)이 프롬프트 x를 받아 응답 ŷ을 생성하면, '고정된' 보상 모델(❄️)이 점수를 매깁니다. 이 점수를 강화학습으로 되먹임합니다.</p></div>
+    <div class="card soft"><h4>데이터</h4><p><span class="badge b-src">원본</span> 대략 O(100,000)개 관측치. 레이블은 보상 모델이 매긴 점수입니다. 왜 이걸 피해야 하냐면, 정책을 너무 자유롭게 두면 <b>보상 해킹(reward hacking)</b>과 <b>훈련 불안정</b>이 생기기 때문입니다.</p></div>
+  </div>
+
+  <div class="eqn"><span class="lbl">PPO 목적함수 <span class="badge b-src">원본</span> · Schulman et al., 2017</span>
+  ℒ(θ) = −[ r(x, ŷ) − λ·KL( π<sub>θ</sub>(ŷ|x) ‖ π<sub>ref</sub>(ŷ|x) ) ]
+  </div>
+  <p>이 식이 <b>측정하는 것</b>은 "보상은 높이되(첫 항), 기준 모델 π<sub>ref</sub>의 답변 분포에서 너무 멀어지면 벌점을 준다(둘째 항)"는 절충입니다. KL 발산은 KL(P‖Q) = Σ p<sub>i</sub>·log(p<sub>i</sub>⁄q<sub>i</sub>)로 정의되며, 두 확률분포가 얼마나 다른지를 재는 지표입니다. <b>왜 이렇게 설계했는지</b> — 제약이 없으면 정책이 RM의 허점을 악용해 보상만 높이고 실제로는 엉뚱한 텍스트를 뱉는 "보상 해킹"에 빠지기 쉽기 때문입니다. <span class="badge b-src">원본</span></p>
+
+  <h3>사실 PPO는 '보상'이 아니라 '어드밴티지'를 최적화합니다</h3>
+  <p><span class="badge b-src">원본</span> 어드밴티지(Advantage) ≈ 보상 − 베이스라인(가치 함수). 가치 함수(Value function)는 토큰 단위로 "지금 정책을 계속 따르면 앞으로 받을 것으로 기대되는 보상"을 추정하며, 정책과 함께 훈련됩니다 — 레이블은 실제 보상입니다. <span class="badge b-ext">외부</span> 이 추정에는 흔히 <a href="https://arxiv.org/abs/1506.02438" target="_blank" rel="noopener">Schulman et al., 2015</a>의 GAE(Generalized Advantage Estimation) 기법이 쓰입니다.</p>
+  <p class="muted">마치 매 시험 점수(보상)만 보지 않고 "내 평소 실력(베이스라인)보다 이번에 얼마나 더 잘했는가"를 기준으로 칭찬하는 것과 같습니다 — 그래야 원래 쉬운 문제에서 높은 점수를 받은 것과, 어려운 문제에서 분투한 것을 공정하게 비교할 수 있습니다.</p>
+
+  <h3>PPO의 두 가지 변형</h3>
+  <details class="acc" open>
+    <summary>변형 1 — PPO-Clip: 확률비를 잘라내 과격한 업데이트를 막기 <span class="ar">▸</span></summary>
+    <div class="body">
+      <div class="eqn"><span class="lbl">PPO-Clip <span class="badge b-src">원본</span></span>
+      L<sup>CLIP</sup>(θ) = 𝔼<sub>t</sub>[ min( r<sub>t</sub>(θ)·Â<sub>t</sub>, clip(r<sub>t</sub>(θ), 1−ε, 1+ε)·Â<sub>t</sub> ) ], 여기서 r<sub>t</sub>(θ) = π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) ⁄ π<sub>θold</sub>(a<sub>t</sub>|s<sub>t</sub>)
+      </div>
+      <p><span class="badge b-src">원본</span> 용어가 헷갈리기 쉬운데, L<sup>CLIP</sup>는 <b>목적함수(최대화 대상)</b>이지 손실(loss)이 아니며, r<sub>t</sub>(θ)는 여기서 <b>확률비(ratio)</b>를 뜻하지 보상(reward)이 아닙니다. 이 식이 하는 일은 새 정책과 이전 정책의 확률비가 [1−ε, 1+ε] 구간을 벗어나면 이득(min을 통해)을 더는 늘려주지 않는 것입니다 — 그래야 한 번의 업데이트가 정책을 너무 멀리 이동시키지 못합니다. 아래 07절의 그래프에서 직접 확인할 수 있습니다.</p>
+    </div>
+  </details>
+  <details class="acc">
+    <summary>변형 2 — PPO-KL Penalty: 정책 분포 차이에 직접 페널티 <span class="ar">▸</span></summary>
+    <div class="body">
+      <div class="eqn"><span class="lbl">PPO-KL Penalty <span class="badge b-src">원본</span></span>
+      L<sup>KLPEN</sup>(θ) = 𝔼<sub>t</sub>[ (π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) ⁄ π<sub>θold</sub>(a<sub>t</sub>|s<sub>t</sub>))·Â<sub>t</sub> − β·KL[ π<sub>ref</sub>(·|s<sub>t</sub>), π<sub>θ</sub>(·|s<sub>t</sub>) ] ]
+      </div>
+      <p><span class="badge b-src">원본</span> 여기서도 용어 정리가 필요합니다 — <b>old</b>는 "직전 RL 이터레이션의 모델"이고, <b>ref</b>는 "기준(base) 모델"입니다. 원 PPO 논문은 KL 항을 old 기준으로 썼지만, 오늘날 실무에서는 KL 발산을 ref(기준 모델) 기준으로 계산하는 경우가 많습니다 — 그래야 여러 이터레이션이 누적돼도 처음 SFT 모델의 스타일에서 크게 벗어나지 않습니다.</p>
+    </div>
+  </details>
+
+  <h4>목적함수 곡선을 직접 살펴보기</h4>
+  <p class="muted">L<sup>CLIP</sup>(θ)가 확률비 r에 따라 어떻게 변하는지, 어드밴티지 Â의 부호(A&gt;0: 좋은 행동이었음 / A&lt;0: 나쁜 행동이었음)에 따라 어떻게 달라지는지 토글로 비교해 보세요. (ε=0.2로 고정한 예시입니다.)</p>
+  <div class="card"><div class="chart-ctrls" id="clipCtrls">
+    <button data-c="pos" class="on">A &gt; 0 (좋은 행동)</button><button data-c="neg">A &lt; 0 (나쁜 행동)</button><button data-c="all">겹쳐보기</button>
+  </div>
+  <canvas id="clipChart" width="980" height="360" style="width:100%;background:var(--bg3);border-radius:12px" role="img" aria-label="PPO-Clip 목적함수 그래프. A가 양수일 때는 확률비 r이 1+epsilon을 넘으면 목적함수가 더 이상 증가하지 않고 평평해지고, A가 음수일 때는 r이 1-epsilon 아래에서 평평하다가 그 이후로 계속 감소합니다."></canvas>
+  <table class="sr-only"><caption>PPO-Clip 곡선 주요 좌표(ε=0.2, A=±1)</caption>
+    <tr><th>r</th><th>A&gt;0일 때 L&#x1D6CA;</th><th>A&lt;0일 때 L&#x1D6CA;</th></tr>
+    <tr><td>0.5</td><td>0.5</td><td>-0.8</td></tr>
+    <tr><td>1.0</td><td>1.0</td><td>-1.0</td></tr>
+    <tr><td>1.2(=1+ε)</td><td>1.2 (이후 평평)</td><td>-1.2</td></tr>
+    <tr><td>1.5</td><td>1.2 (평평 유지)</td><td>-1.5 (계속 감소)</td></tr>
+  </table>
+  <p class="muted" id="clipNote" style="margin-top:12px"></p></div>
+  <p class="eqn-note"><span class="badge b-syn">종합·해석</span> 이 차트는 슬라이드의 수식 L<sup>CLIP</sup> = min(r·Â, clip(r,1−ε,1+ε)·Â)을 그대로 계산해 그린 것이며, ε=0.2는 시각화를 위해 임의로 고른 예시값입니다(실제로는 튜닝하는 하이퍼파라미터입니다).</p>
+</div></section>
+
+<!-- ===== SECTION 7: LIMITS + BON ===== -->
+<section id="limits"><div class="wrap reveal">
+  <span class="sec-no">07 — Limits &amp; a lighter alternative</span>
+  <h2>PPO의 무게, 그리고 RL 없이 가는 두 가지 길</h2>
+  <p class="lead">지금까지 본 파이프라인은 튼튼하지만 무겁습니다. 슬라이드는 이 무게를 다섯 가지로 짚습니다.</p>
+  <div class="grid g2">
+    <div class="card"><p><span class="badge b-src">원본</span> 보상 모델을 먼저 훈련해야 하는 <b>2단계 과정</b>이 필요합니다.</p></div>
+    <div class="card"><p><span class="badge b-src">원본</span> 튜닝해야 할 <b>하이퍼파라미터가 많습니다</b>(λ, ε, 학습률…).</p></div>
+    <div class="card"><p><span class="badge b-src">원본</span> 강화학습 특유의 <b>훈련 불안정성</b>이 있습니다.</p></div>
+    <div class="card"><p><span class="badge b-src">원본</span> 훈련이 잘 되고 있는지 볼 <b>모니터링 지표</b>가 마땅치 않습니다.</p></div>
+    <div class="card"><p><span class="badge b-src">원본</span> 생성된 응답들 사이에 <b>다양성</b>이 필요합니다 — 그래야 탐색이 됩니다.</p></div>
+    <div class="card soft"><p><span class="badge b-src">원본</span> 그리고 근본적으로: <b>선호 튜닝이 꼭 RL이어야 하는지도 명확하지 않습니다.</b></p></div>
+  </div>
+
+  <h3>RL 없이 가는 첫 번째 길: Best-of-N(BoN)</h3>
+  <p><span class="badge b-src">원본</span> 아이디어는 단순합니다 — RL 단계를 건너뛰고, 보상 모델의 점수만 추론 시점에 활용하는 것입니다. SFT 모델로 여러 응답을 생성한 뒤, RM으로 순위를 매겨 최고점만 취합니다.</p>
+  <div class="flow">
+    <div class="fb"><b>프롬프트</b>"테디베어와 할 활동 추천해줘"</div>
+    <span class="arrow">→</span>
+    <div class="fb"><b>LLM<sub>SFT</sub></b>응답 3개 생성</div>
+    <span class="arrow">→</span>
+    <div class="fb" style="border-color:var(--ok)"><b>RM 점수: 0.8</b>1위 ✅</div>
+  </div>
+  <p class="muted">(나머지 두 응답은 각각 −2점, 0.2점으로 채택되지 않습니다.) <span class="badge b-src">원본</span></p>
+
+  <h3>그런데 BoN도 완전한 해법은 아닙니다</h3>
+  <p><span class="badge b-src">원본</span> Best-of-N은 <b>추론 시점 비용</b>이 큽니다 — 매 요청마다 N개를 생성하고 채점해야 하기 때문입니다. 그렇다면 "왜 아예 지도학습 방식으로 훈련해버리지 않을까?"라는 질문이 자연스럽게 따라옵니다. <span class="badge b-src">원본</span> 이 질문이 바로 다음 절의 DPO로 이어집니다.</p>
+</div></section>
+
+<!-- ===== SECTION 8: DPO ===== -->
+<section id="dpo"><div class="wrap reveal">
+  <span class="sec-no">08 — A supervised alternative</span>
+  <h2>DPO: 심사위원 없이 셰프가 직접 배우는 법 <span class="en">Direct Preference Optimization</span></h2>
+  <p class="lead">마치 시식 평가단의 비교 기록을 심사위원(RM)에게 따로 맡기지 않고, 요리사가 그 기록을 직접 펼쳐놓고 스스로 "이런 스타일이 더 선호되는구나"를 체득하는 것과 같습니다. <b>DPO</b>(Direct Preference Optimization, 직접 선호 최적화)는 손실 함수를 지도학습 형태로 다시 써서, 보상 모델과 강화학습 단계를 모두 건너뜁니다.</p>
+
+  <div class="eqn"><span class="lbl">DPO 손실 <span class="badge b-ext">외부</span> · Rafailov et al., 2023</span>
+  ℒ<sub>DPO</sub>(π<sub>θ</sub>; π<sub>ref</sub>) = −𝔼<sub>(x,y<sub>w</sub>,y<sub>l</sub>)~D</sub>[ log σ( β·log <sup>π<sub>θ</sub>(y<sub>w</sub>|x)</sup>⁄<sub>π<sub>ref</sub>(y<sub>w</sub>|x)</sub> − β·log <sup>π<sub>θ</sub>(y<sub>l</sub>|x)</sup>⁄<sub>π<sub>ref</sub>(y<sub>l</sub>|x)</sub> ) ]
+  </div>
+  <ul>
+    <li><span class="badge b-src">원본</span> 이 식 어디에도 별도의 보상 모델 r(x,ŷ)이 등장하지 않습니다 — 보상 모델을 따로 훈련할 필요가 없습니다.</li>
+    <li><span class="badge b-src">원본</span> 선호 데이터 (x, y<sub>w</sub>, y<sub>l</sub>)에 <b>직접</b> 작동합니다 — 롤아웃(rollout)이나 샘플링이 필요 없습니다.</li>
+    <li><span class="badge b-src">원본</span> 브래들리-테리 공식과 형태가 같습니다. 다만 "보상"이 r<sub>θ</sub>(x,y) = β·log(π<sub>θ</sub>(y|x) ⁄ π<sub>ref</sub>(y|x))라는 <b>암묵적 보상(implicit reward)</b>으로 대체됩니다 — 즉 ℒ<sub>DPO</sub> = −𝔼[log σ(r<sub>θ</sub>(x,y<sub>w</sub>) − r<sub>θ</sub>(x,y<sub>l</sub>))]로 다시 쓸 수 있습니다.</li>
+  </ul>
+  <p>이 식이 <b>측정하는 것</b>은 05절의 RM 손실과 똑같이 "승자 쪽 (암묵적) 점수가 패자보다 높을 로그우도"입니다. <b>왜 이렇게 설계할 수 있었는지</b>가 DPO의 통찰인데, 정책 자체의 로그확률비가 사실은 보상 함수 역할을 이미 하고 있었다는 것을 수학적으로 보였기 때문입니다 — <i>"당신의 언어 모델은 사실 은밀히 보상 모델이었다(Your Language Model is Secretly a Reward Model)"</i>는 원 논문 제목이 이를 그대로 요약합니다.</p>
+
+  <h3>이 공식은 어디서 나왔을까: 5단계 유도</h3>
+  <p class="muted"><span class="badge b-src">원본</span> 슬라이드가 제시한 유도 과정을 그대로 따라가 보겠습니다.</p>
+  <ol class="steps">
+    <li><b>PPO 목적함수에서 출발.</b> max<sub>π<sub>θ</sub></sub> 𝔼[r<sub>φ</sub>(x,y)] − β·𝔻<sub>KL</sub>[π<sub>θ</sub>(y|x) ‖ π<sub>ref</sub>(y|x)]</li>
+    <li><b>최적 정책을 대수적으로 유도.</b> π*(y|x) = (1⁄Z(x))·π<sub>ref</sub>(y|x)·exp((1⁄β)·r*(x,y))</li>
+    <li><b>이 식에서 "보상" 항을 역으로 뽑아낸다.</b> r*(x,y) = β·log(π*(y|x) ⁄ π<sub>ref</sub>(y|x)) + β·log Z(x)</li>
+    <li><b>이 "보상"으로 브래들리-테리 확률을 쓴다.</b> p*(y<sub>w</sub> ≻ y<sub>l</sub>|x) = 1 ⁄ (1 + exp(β·log(π*(y<sub>l</sub>|x)⁄π<sub>ref</sub>(y<sub>l</sub>|x)) − β·log(π*(y<sub>w</sub>|x)⁄π<sub>ref</sub>(y<sub>w</sub>|x))))</li>
+    <li><b>DPO 손실을 "역산"한다.</b> 위 확률의 음의 로그우도를 최소화하는 지도학습 손실이 바로 앞서 본 ℒ<sub>DPO</sub>입니다.</li>
+  </ol>
+  <p class="muted">Z(x)는 모든 가능한 응답에 대한 정규화 상수(partition function)로, 두 항의 차를 취하는 4단계에서 서로 상쇄되어 사라집니다 — 그래서 최종 손실에는 등장하지 않습니다. <span class="badge b-syn">종합·해석</span></p>
+</div></section>
+
+<!-- ===== SECTION 9: PPO vs DPO TABS ===== -->
+<section id="compare"><div class="wrap reveal">
+  <span class="sec-no">09 — Which one to use?</span>
+  <h2>PPO 기반 RLHF냐 DPO냐: 실무자의 선택 <span class="en">Pipeline, stability, data</span></h2>
+  <p class="lead">두 갈래 길을 나란히 놓고, 구현 복잡도와 안정성·데이터 요구 관점에서 비교해 보겠습니다.</p>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="PPO 대 DPO 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>PPO 기반 RLHF</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>DPO</button>
+  </div>
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">PPO 기반 RLHF</h3>
+    <p><span class="badge b-src">원본</span> <b>파이프라인 복잡도.</b> 다단계 훈련(멀티스테이지)입니다 — SFT → 보상 모델링 → 강화학습 순서로 진행하며, 각 단계가 앞 단계의 결과물에 의존합니다.</p>
+    <p><span class="badge b-src">원본</span> <b>모델 요구.</b> 정책·가치 함수·보상 모델·기준(base) 모델까지 최대 <b>4개의 모델</b>을 동시에 GPU 메모리에 올려야 합니다.</p>
+    <p><span class="badge b-src">원본</span> <b>안정성.</b> 07절에서 본 대로 하이퍼파라미터가 많고 훈련이 불안정해지기 쉬우며, 진행 상황을 모니터링할 지표를 따로 챙겨야 합니다.</p>
+    <p><span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2404.10719" target="_blank" rel="noopener">Xu et al., 2024</a>는 올바르게 튜닝된 PPO가 코드 생성처럼 어려운 과제에서 오히려 DPO를 포함한 다른 방법들을 일관되게 앞선다고 보고합니다 — "무겁다"는 것이 곧 "성능이 낮다"는 뜻은 아닙니다.</p>
+  </div>
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">DPO</h3>
+    <p><span class="badge b-src">원본</span> <b>파이프라인 복잡도.</b> 지도학습(supervised learning) 한 단계로 끝납니다 — 선호 쌍 데이터에 손실 함수 하나만 적용하면 됩니다.</p>
+    <p><span class="badge b-src">원본</span> <b>모델 요구.</b> 훈련할 정책 모델 외에 <b>기준 모델(π<sub>ref</sub>) 하나만</b> 추가로 필요합니다 — 별도 보상 모델도, 가치 함수도, 롤아웃 샘플링도 없습니다.</p>
+    <p><span class="badge b-src">원본</span> <b>안정성.</b> RL 특유의 불안정성에서는 자유롭지만, 이론적으로는 학습 데이터 분포를 벗어난 응답에 취약할 수 있다는 한계가 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2404.10719" target="_blank" rel="noopener">Xu et al., 2024</a>에서 지적됩니다.</p>
+    <p><span class="badge b-src">원본</span> <b>성능.</b> 슬라이드는 "공통된 절대적 합의는 없다 — 과제와 구현 세부사항에 따라 달라진다"고 명시적으로 못박습니다.</p>
+  </div>
+
+  <div class="callout warn" style="margin-top:26px"><div class="h"><span class="badge b-src">원본</span> 실제 행동 변화</div>
+  "테디베어를 세탁기에 넣어도 될까요?"라는 질문에, SFT까지만 마친 모델은 <i>"안 됩니다. 손상될 수 있어요. 손세탁을 해보세요."</i>처럼 다소 딱딱하게 답합니다. 선호 튜닝까지 마친 모델은 같은 결론이지만 <i>"안 하시는 게 좋아요. 테디베어가 다칠 수 있거든요! 살살 손세탁하는 게 더 안전해요."</i>처럼 더 공감적인 어조로 답합니다 — 내용은 비슷해도 <b>전달 방식</b>이 사람의 선호에 맞춰 달라진 것입니다.</div>
+</div></section>
+
+<!-- ===== SECTION 10: QUIZ ===== -->
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">10 — Self-check</span>
+  <h2>자가 점검</h2>
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 보상 모델(RM)의 브래들리-테리 손실 ℒ(θ) = −𝔼[log σ(r(x,ŷ_w) − r(x,ŷ_l))]이 최소화될 때, 실제로 벌어지는 일은 무엇일까요?</div>
+    <button class="opt" data-correct="1">승자 응답 ŷ_w의 점수가 패자 응답 ŷ_l의 점수보다 확실히 높아지도록 RM이 조정된다</button>
+    <button class="opt">두 응답의 점수가 정확히 같아지도록 RM이 조정된다</button>
+    <button class="opt">RM이 정책 모델 π_θ와 기준 모델 π_ref의 KL 발산을 최대화한다</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 DPO가 PPO 기반 RLHF와 비교해 훈련 과정에서 별도로 필요하지 않은 것은 무엇일까요?</div>
+    <button class="opt" data-correct="1">별도의 보상 모델과 가치 함수, 그리고 롤아웃 샘플링</button>
+    <button class="opt">기준 정책 π_ref</button>
+    <button class="opt">선호 쌍 데이터 (x, y_w, y_l)</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== GLOSSARY ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">11 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색… (예: PPO, KL, 보상)"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 5강("LLM Tuning" — 선호 튜닝·RLHF·보상 모델링·PPO·DPO) 슬라이드의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=슬라이드에서 직접 가져온 내용, <span class="badge b-ext">외부</span>=슬라이드가 인용했거나 추가로 확인한 논문(링크 포함), <span class="badge b-syn">종합·해석</span>=작성자가 다시 그리거나 재구성한 내용입니다.
+   RLHF 캐스케이드의 단계 순서, PPO-Clip 차트 시각화, 요리 시식회 비유는 모두 종합·해석이며 슬라이드의 원문 표현이 아닙니다. 논문 요약은 슬라이드 밖 정보를 포함하므로 <span class="badge b-ext">외부</span>로 표시했고, 각 arXiv ID는 발행 시점 기준으로 확인했습니다. 06절 클립 차트의 ε=0.2는 시각화를 위한 예시값이며 슬라이드가 특정 수치를 명시하지는 않았습니다.</div>
+  <div>제작: Claude · 원저작권은 각 출처(Stanford CME 295, Afshine &amp; Shervine Amidi, 각 인용 논문 저자)에 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* tabs — pointer + keyboard */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* cascade: SFT -> Reward Modeling -> RL */
+const CASC=[
+ {ic:'①',src:'원본',s:'SFT 복습',stage:'복습',title:'SFT — 지시를 따르는 법을 배우다',
+  prob:'사전학습 모델은 언어의 기초는 알지만, 사용자 요청에 딱 맞춰 답하지 못합니다.',
+  sol:'지도 미세조정(SFT)으로 정답 예시를 모방하게 학습시켜, 특정 작업에 맞춰진 모델을 얻습니다.',
+  next:'그런데 SFT만으로는 "더 나은" 답과 "더 나쁜" 답을 구분할 기준이 없습니다 → <b>Step 1. 보상 모델링</b>으로'},
+ {ic:'②',src:'원본',s:'Step 1',stage:'Step 1 — Reward modeling',title:'보상 모델링 — 좋고 나쁨을 점수로 배우다',
+  prob:'SFT 모델은 여전히 부적절하거나 무성의한 답을 낼 수 있습니다 (예: 테디베어 활동 추천 요청에 엉뚱한 답).',
+  sol:'선호 쌍으로 보상 모델(RM)을 훈련해, 프롬프트-응답 쌍에 점수 r(x,ŷ)를 매기게 합니다. 브래들리-테리 손실로 승자의 점수가 패자보다 높아지도록 학습합니다.',
+  next:'이제 점수를 매길 심사위원은 생겼지만, 이 점수로 실제 모델의 답변 습관을 어떻게 바꿀까요? → <b>Step 2. 강화학습</b>으로'},
+ {ic:'③',src:'원본',s:'Step 2',stage:'Step 2 — Reinforcement learning',title:'강화학습 — 점수를 보고 스스로 다듬다',
+  prob:'SFT 모델의 가중치를 어떻게 바꿔야 RM 점수를 높이면서도 원래 능력과 스타일을 잃지 않을까요?',
+  sol:'PPO 같은 RL 알고리즘으로 "보상은 최대화하되 기준 모델에서 너무 벗어나지 않기"라는 목적함수를 최적화합니다.',
+  next:'하지만 이 3단계 파이프라인은 무겁습니다 — 뒤에서 살펴볼 DPO는 Step 1과 Step 2를 하나의 지도학습 스텝으로 압축합니다.'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${c.s}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${c.stage} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${c.title}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 묶는가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'해결 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* Bradley-Terry calculator */
+const riIn=$('#riIn'),rjIn=$('#rjIn'),riLab=$('#riLab'),rjLab=$('#rjLab'),pOut=$('#pOut'),pBar=$('#pBar'),calcNote=$('#calcNote');
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+function calcBT(){
+  const ri=+riIn.value, rj=+rjIn.value;
+  riLab.textContent=ri.toFixed(1); rjLab.textContent=rj.toFixed(1);
+  const p=sigmoid(ri-rj);
+  const pct=(p*100).toFixed(1);
+  pOut.textContent=pct+'%';
+  pBar.style.width=pct+'%';
+  let verdict;
+  if(p>0.8) verdict='응답 i가 압도적으로 선호됩니다.';
+  else if(p>0.55) verdict='응답 i가 다소 우세합니다.';
+  else if(p>0.45) verdict='두 응답이 거의 대등합니다.';
+  else if(p>0.2) verdict='응답 j가 다소 우세합니다.';
+  else verdict='응답 j가 압도적으로 선호됩니다.';
+  calcNote.innerHTML=`σ(${ri.toFixed(1)} − (${rj.toFixed(1)})) = σ(${(ri-rj).toFixed(1)}) = ${(p).toFixed(4)} → ${verdict}`;
+}
+[riIn,rjIn].forEach(s=>s.addEventListener('input',calcBT));
+$('#qsTeddyGood').onclick=()=>{riIn.value=0.8;rjIn.value=-2;calcBT();};
+$('#qsTeddyPicnic').onclick=()=>{riIn.value=0.8;rjIn.value=0.2;calcBT();};
+$('#qsTie').onclick=()=>{riIn.value=0;rjIn.value=0;calcBT();};
+calcBT();
+
+/* PPO-Clip canvas chart */
+const cv=$('#clipChart'),cx=cv.getContext('2d'),CW=cv.width,CH=cv.height,PAD=48;
+const cssv=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+const EPS=0.2;
+function lclip(r,A){const unclipped=r*A;const clippedRatio=Math.min(Math.max(r,1-EPS),1+EPS);return Math.min(unclipped,clippedRatio*A);}
+function drawClip(mode){
+  cx.clearRect(0,0,CW,CH);
+  const rMin=0,rMax=2,yMin=-1.6,yMax=1.6;
+  const X=r=>PAD+(CW-PAD-14)*(r-rMin)/(rMax-rMin);
+  const Y=y=>CH-PAD-(CH-2*PAD)*(y-yMin)/(yMax-yMin);
+  cx.strokeStyle=cssv('--line')||'#2a3047';cx.lineWidth=1;
+  for(let i=0;i<=4;i++){const yy=PAD+(CH-2*PAD)*i/4;cx.beginPath();cx.moveTo(PAD,yy);cx.lineTo(CW-12,yy);cx.stroke();}
+  cx.strokeStyle=cssv('--line2')||'#39415e';cx.lineWidth=1.5;
+  cx.beginPath();cx.moveTo(X(rMin),Y(0));cx.lineTo(X(rMax),Y(0));cx.stroke();
+  cx.beginPath();cx.moveTo(X(1),PAD);cx.lineTo(X(1),CH-PAD);cx.setLineDash([4,4]);cx.stroke();cx.setLineDash([]);
+  cx.fillStyle=cssv('--ink3')||'#7f8aa6';cx.font='12px sans-serif';cx.textAlign='center';
+  cx.fillText('r=1',X(1),CH-PAD+16);cx.fillText('r=1-ε',X(1-EPS),CH-PAD+30);cx.fillText('r=1+ε',X(1+EPS),CH-PAD+30);
+  const col={pos:cssv('--ok')||'#34d399',neg:cssv('--warn')||'#f87171'};
+  const list=mode==='all'?['pos','neg']:[mode];
+  list.forEach(m=>{
+    const A=m==='pos'?1:-1;
+    cx.strokeStyle=col[m];cx.lineWidth=3;cx.beginPath();
+    for(let p=0;p<=400;p++){const r=rMin+(rMax-rMin)*p/400;const y=lclip(r,A);const px=X(r),py=Y(y);p?cx.lineTo(px,py):cx.moveTo(px,py);}
+    cx.stroke();
+  });
+  const noteMap={pos:'A&gt;0(좋은 행동): r이 1+ε=1.2를 넘는 순간부터 목적함수가 더는 오르지 않고 평평해집니다 — "이미 충분히 밀었으니 그만"이라는 신호입니다.',
+    neg:'A&lt;0(나쁜 행동): r이 1-ε=0.8 아래에서는 평평하다가, 그 이상에서는 계속 낮아집니다 — 나쁜 행동의 확률을 낮추되 역시 한 번에 너무 많이는 아닙니다.',
+    all:'두 곡선을 겹쳐보면, PPO-Clip이 어느 방향으로든 "한 번의 업데이트가 확률비를 [1-ε, 1+ε] 밖으로 크게 흔들지 못하게" 막는다는 대칭성이 보입니다.'};
+  $('#clipNote').innerHTML=noteMap[mode];
+}
+let clipMode='pos';
+$$('#clipCtrls button').forEach(b=>b.onclick=()=>{$$('#clipCtrls button').forEach(x=>x.classList.remove('on'));b.classList.add('on');clipMode=b.dataset.c;drawClip(clipMode);});
+window.onThemeChange=(function(prev){return function(){if(prev)prev();drawClip(clipMode);};})(window.onThemeChange);
+drawClip(clipMode);
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';
+  if(q.id==='quiz1'){box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답! 음의 로그우도를 최소화하면 σ(r_w − r_l)이 1에 가까워지도록, 즉 승자의 점수가 패자보다 확실히 높아지도록 RM이 조정됩니다.':'❌ 다시 보기. 이 손실은 두 점수를 같게 만드는 것이 아니라, 승자의 점수를 패자보다 높이는 방향으로 RM을 조정합니다.';}
+  else{box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답! DPO는 별도의 보상 모델·가치 함수·롤아웃 샘플링 없이, 선호 쌍 데이터와 기준 모델만으로 정책을 직접 지도학습시킵니다.':'❌ 다시 보기. 기준 정책 π_ref와 선호 쌍 데이터는 DPO에도 여전히 필요합니다 — DPO가 생략하는 것은 별도의 보상 모델과 RL 롤아웃입니다.';}
+});});
+
+/* glossary */
+const GLOSS=[
+ ['RLHF','RLHF(Reinforcement Learning from Human Feedback)','사람의 선호 데이터를 보상 신호로 사용해 언어 모델을 강화학습으로 미세조정하는 절차. 보상 모델링과 강화학습(PPO 등) 2단계로 구성됩니다.'],
+ ['Reward Model (RM)','보상 모델','프롬프트-응답 쌍을 입력받아 응답의 품질을 스칼라 점수로 출력하도록 학습된 모델. 사전학습 LLM에 분류 헤드를 얹어 훈련합니다.'],
+ ['Bradley-Terry model','브래들리-테리 모델','두 대상의 잠재 점수 차이를 시그모이드에 통과시켜 승리 확률로 변환하는 쌍대비교 확률 모델. p(i≻j)=σ(r_i−r_j).'],
+ ['Preference tuning','선호 튜닝','정답을 모방하는 대신 두 응답 중 더 나은 쪽을 학습시켜, 모델의 답변 스타일을 사람의 선호에 맞추는 SFT 이후의 학습 단계.'],
+ ['Pointwise / Pairwise / Listwise','점수형·쌍대비교형·순위형','선호 데이터를 표현하는 세 가지 방식. 절대 점수(점수형), 두 응답의 우열(쌍대비교형), 여러 응답의 전체 순위(순위형).'],
+ ['Proximal Policy Optimization (PPO)','PPO(근접 정책 최적화)','새 정책과 이전 정책의 확률비를 클리핑하거나 KL 페널티를 줘서, 한 번의 업데이트가 지나치게 커지지 않도록 제한하는 강화학습 알고리즘.'],
+ ['KL divergence','KL 발산','두 확률분포가 얼마나 다른지를 측정하는 지표. KL(P‖Q)=Σ p_i·log(p_i/q_i). PPO에서 정책이 기준 모델에서 너무 멀어지지 않게 잡아주는 페널티로 쓰입니다.'],
+ ['Advantage','어드밴티지','어떤 행동이 평균적인 기대 보상(가치 함수, 베이스라인)보다 얼마나 더 나은지를 나타내는 값. Advantage ≈ Reward − Baseline.'],
+ ['Value function','가치 함수','현재 정책을 따랐을 때 앞으로 받을 것으로 기대되는 보상을 추정하는 함수. 어드밴티지 계산의 기준선(baseline) 역할을 합니다.'],
+ ['Reference policy (π_ref)','기준 정책(레퍼런스 모델)','KL 제약의 기준이 되는 모델. 보통 SFT 직후 고정해 둔 모델을 씁니다.'],
+ ['Reward hacking','보상 해킹','정책이 보상 모델의 허점을 파고들어, 실제 품질과 무관하게 점수만 높이는 방향으로 학습되는 실패 양상.'],
+ ['Best-of-N (BoN)','Best-of-N(BoN)','여러 응답을 생성한 뒤 보상 모델 점수가 가장 높은 것을 선택하는, RL 없이 선호를 반영하는 추론 시점 기법.'],
+ ['Direct Preference Optimization (DPO)','DPO(직접 선호 최적화)','별도의 보상 모델과 강화학습 단계 없이, 선호 쌍 데이터로 정책을 직접 지도학습시키는 방법.'],
+ ['Implicit reward','암묵적 보상','DPO에서 정책과 기준 모델의 로그확률비 β·log(π_θ/π_ref)가 사실상 보상 모델의 역할을 대신한다는 개념.'],
+ ['GRPO','GRPO(Group Relative Policy Optimization)','그룹 내 여러 응답의 상대적 보상으로 어드밴티지를 추정해, 별도의 가치 함수 없이 정책을 최적화하는 PPO의 변형. 6강에서 더 깊이 다룹니다.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${g[1]} <span class="en">${g[0]}</span></div><div class="gd">${g[2]}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

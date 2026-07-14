@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 3강 논문 노트 — 거대 언어 모델</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --c-icl:#f472b6;--c-cot:#22c55e;--c-sc:#fb923c;
+  --maxw:1180px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+b{color:var(--ink)}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:112px 0 46px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,4.4vw,46px);margin:.1em 0 .25em;letter-spacing:-1px;line-height:1.15}
+.hero .sub{font-size:clamp(16px,2vw,19px);color:var(--ink2);max-width:820px;margin:0 0 22px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:14.5px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:56px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.4vw,34px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:18px;color:var(--ink2);max-width:820px}
+h3{font-size:21px;margin:1.6em 0 .5em}
+.muted{color:var(--ink3);font-size:14px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.syn{border-color:var(--syn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+footer{padding:44px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.crosslinks{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 0}
+.crosslinks a{font-size:13.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);padding:7px 13px;border-radius:9px;color:var(--ink)}
+.crosslinks a:hover{background:var(--brandsoft);border-color:var(--brand);text-decoration:none}
+
+/* ===== timeline SVG (landscape) ===== */
+.tlwrap{margin:26px 0 8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 14px 6px;overflow-x:auto}
+.svgfig{width:100%;height:auto;display:block;min-width:560px}
+.svgfig text{font-family:var(--sans);fill:var(--ink)}
+.svgfig .lbl2{fill:var(--ink2)}
+.svgfig .lbl3{fill:var(--ink3)}
+.svgfig .node{fill:var(--card2);stroke:var(--line2);stroke-width:1.5}
+.svgfig .node-brand{fill:var(--brandsoft);stroke:var(--brand);stroke-width:1.6}
+.svgfig .node-dim{fill:var(--bg3);stroke:var(--line);stroke-width:1.2;opacity:.55}
+.svgfig .arrow{stroke:var(--ink3);stroke-width:2;fill:none}
+.svgfig .arrow-brand{stroke:var(--brand);stroke-width:2.4;fill:none}
+.svgfig .dash{stroke-dasharray:4 4}
+.svgfig .axis{stroke:var(--line2);stroke-width:1.6}
+.tlnode{cursor:pointer}
+.tlnode:focus{outline:2px solid var(--brand2);outline-offset:3px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:10px 8px 16px;font-size:12.5px;color:var(--ink2)}
+.tl-legend span{display:inline-flex;align-items:center;gap:6px}
+.tl-legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+/* ===== master-detail ===== */
+.mdwrap{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;margin-top:26px}
+@media(max-width:920px){.mdwrap{grid-template-columns:1fr}}
+.master{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto}
+@media(max-width:920px){.master{position:static;max-height:none}}
+.searchwrap{position:sticky;top:-1px;background:var(--card);padding-bottom:10px;z-index:2}
+#paperSearch{width:100%;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);padding:11px 14px;border-radius:10px;font-size:14.5px}
+#paperSearch:focus{border-color:var(--brand)}
+.searchmeta{font-size:12px;color:var(--ink3);margin:8px 2px 0}
+.grp{margin-bottom:4px}
+.grp-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;padding:16px 8px 6px}
+.gdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.paperitem{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:11px;padding:10px 11px;cursor:pointer;margin-bottom:3px;font:inherit;color:inherit}
+.paperitem:hover{background:var(--bg3)}
+.paperitem.active{background:var(--brandsoft);border-color:var(--brand)}
+.paperitem .pt{font-weight:700;font-size:14px;color:var(--ink);line-height:1.4}
+.paperitem .pa{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.paperitem .ps{font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.55}
+.paperitem.hide{display:none}
+.grp.hide{display:none}
+.detail{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto}
+@media(max-width:920px){.detail{position:static;max-height:none;margin-top:8px}}
+@media(max-width:600px){.detail{padding:22px 18px}}
+.paperdetail{display:none}
+.paperdetail.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pdhead h3{margin:0 0 8px;font-size:23px;letter-spacing:-.3px}
+.pmeta{color:var(--ink3);font-size:13.5px;margin-bottom:16px}
+.linkrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.btn-link{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);padding:8px 14px;border-radius:9px;font-size:13.5px;font-weight:700}
+.btn-link:hover{background:var(--brandsoft);border-color:var(--brand);text-decoration:none}
+.tldr{background:var(--card2);border-left:3px solid var(--brand);border-radius:0 12px 12px 0;padding:15px 18px;margin:0 0 22px;font-size:15.5px}
+.sblock{margin:15px 0;font-size:15.5px;line-height:1.8}
+.sblock .badge{margin-right:8px}
+.sblock i{color:var(--ink2)}
+.pfig{margin:24px 0;background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:16px}
+.pfig figcaption{font-size:13px;color:var(--ink3);margin-top:10px;line-height:1.65}
+.lecturerole{margin-top:24px;padding-top:18px;border-top:1px dashed var(--line);font-size:15px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{font-size:12px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:4px 11px;border-radius:999px}
+.nores{padding:24px 8px;color:var(--ink3);font-size:14px;text-align:center}
+.nores.hide{display:none}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<!-- 화면에 보이지 않는 공용 화살촉 정의 (모든 인라인 SVG 다이어그램이 공유) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--ink3)"></path>
+    </marker>
+    <marker id="arrowBrand" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--brand)"></path>
+    </marker>
+  </defs>
+</svg>
+
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · 3강 <b>논문 노트</b></span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#master">논문 목록</a>
+    <a href="../강의노트/lecture3.html" target="_blank" rel="noopener">강의 설명자 ↗</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도 ↗</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">CME 295 · 3강 · 논문 노트</span>
+  <h1>CME 295 · 3강 논문 노트 — 거대 언어 모델</h1>
+  <p class="sub">친구와 대화하다가 상대가 말을 하다 말고 잠시 멈추면, 우리는 자연스럽게 다음에 나올 말을 짐작합니다. 거대 언어 모델(Large Language Model, LLM)이 하는 일도 본질적으로 이와 다르지 않습니다 — 지금까지 나온 단어들을 보고 다음에 올 단어를 확률적으로 골라내는 것입니다. 이 페이지는 3강 "거대 언어 모델, 다음 단어를 고르는 법"이 참조하는 논문 11편을 마스터-디테일 구조로 정리한 논문 노트입니다.</p>
+  <div class="metaline">
+    <span><b>강의</b> CME 295 · 3강 · 거대 언어 모델</span>
+    <span><b>수록 논문</b> 11편 · 개념 8개</span>
+    <span><b>발행 목록</b> <a href="../" target="_blank" rel="noopener">전체 강의 보기 ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#master">논문 목록 보기 ↓</a>
+    <a class="cta ghost" href="../강의노트/lecture3.html" target="_blank" rel="noopener">3강 설명자 보기 ↗</a>
+    <a class="cta ghost" href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>원 출처(초록·공식 발표)에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>arXiv 초록 등 <b>외부 자료</b>를 근거로 정리한 요약.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 출처를 엮은 <b>작성자 재구성</b>(비유, 다이어그램, 강의 연결 해설).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== 논문 지형 ===== -->
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">01 — Landscape</span>
+  <h2>이 장의 논문 지형 <span class="en">Where these 11 papers fit</span></h2>
+
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 하나의 비유로 관통해 보기</div>
+  이 페이지에 모아 둔 논문들은 <b>"다음 단어 고르기"</b>라는 단순한 행위 하나가, 모델을 어떻게 키우고(<b>전문가 혼합</b>), 대화를 얼마나 오래 기억하게 하고(<b>컨텍스트 길이</b>), 얼마나 과감하게 짐작하게 하고(<b>샘플링 전략</b>), 무엇을 미리 보여주고(<b>프롬프팅·인컨텍스트 러닝</b>), 어떻게 신중하게 생각하도록 만드는지(<b>사고 사슬·자기 일관성</b>)를 다룬 실험들의 모음입니다. 개별 논문 상세를 읽을 때도 이 비유("대화 중 다음 말 예상하기")를 다시 불러오시면 좋습니다.</div>
+
+  <p class="lead" style="margin-top:22px"><span class="badge b-syn">종합·해석</span> 이 강의가 다루는 8개 개념을 흐름으로 보면 이렇습니다. 2017년, 순환·합성곱 없이 어텐션만으로 시퀀스를 다루는 트랜스포머(<i>Attention Is All You Need</i>)가 오늘날 모든 LLM의 뼈대를 놓았고, 같은 해 게이팅 네트워크로 일부 <b>전문가(expert)</b>만 활성화하는 전문가 혼합이 모델을 더 키우면서도 연산은 아끼는 길을 열었습니다. 2019~2021년에는 그 뼈대를 실제로 크게 키우고(Switch Transformer가 1조 파라미터까지) 잘 쓰는 법을 다지는 흐름이 이어집니다 — 다음 단어를 어떻게 고를지(뉴클리어스 샘플링), 무엇을 어떻게 물어볼지(프롬프팅 서베이)가 정리되었고, 2020년 GPT-3는 파라미터를 건드리지 않고도 프롬프트 속 예시만으로 과제를 배우는 <b>인컨텍스트 러닝</b>을 대규모로 증명해 보였습니다. 2022년에는 "바로 답하지 말고 단계적으로 생각하라"는 <b>사고 사슬</b>과, 그 사고 사슬을 여러 번 시도해 다수결로 정하는 <b>자기 일관성</b>이 나란히 등장하며 추론 능력을 끌어올렸습니다. 2023년 서베이 논문이 이 모든 흐름을 지도 위에 정리한 뒤, 2025년 두 보고서(컨텍스트 부식, 비결정성 극복)는 <i>"컨텍스트 창에 들어간다고 다 잘 쓰는 건 아니다"</i>, <i>"온도를 0으로 둬도 결과가 완전히 같지는 않다"</i>는 식으로 앞선 통념에 균열을 내며 강의 마지막 절의 경고로 이어집니다.</p>
+
+  <p style="margin-top:14px">아래 목록에서 논문 제목을 눌러 보시기 바랍니다. 왼쪽 목록은 8개 개념별로 묶여 있고, 검색창에 제목·저자·개념 이름(한글도 영문도 가능합니다)을 입력하면 실시간으로 걸러집니다. 오른쪽 패널에는 각 논문의 TL;DR과 구조화된 요약, 핵심 아이디어를 그림 하나로 정리한 개념도가 함께 놓여 있습니다.</p>
+
+  <div class="tlwrap">
+    <svg class="svgfig" viewBox="0 0 1000 260" role="img" aria-label="2017년부터 2025년까지 11편 논문의 연도순 타임라인. 점을 누르면 해당 논문 상세로 이동합니다.">
+      <line class="axis" x1="60" y1="220" x2="960" y2="220"></line>
+      <!-- 연도 눈금 -->
+      <g class="lbl3" font-size="12">
+        <text x="70" y="238" text-anchor="middle">2017</text>
+        <text x="285" y="238" text-anchor="middle">2019</text>
+        <text x="393" y="238" text-anchor="middle">2020</text>
+        <text x="500" y="238" text-anchor="middle">2021</text>
+        <text x="608" y="238" text-anchor="middle">2022</text>
+        <text x="715" y="238" text-anchor="middle">2023</text>
+        <text x="930" y="238" text-anchor="middle">2025</text>
+      </g>
+      <g class="axis">
+        <line x1="70" y1="216" x2="70" y2="224"></line>
+        <line x1="285" y1="216" x2="285" y2="224"></line>
+        <line x1="393" y1="216" x2="393" y2="224"></line>
+        <line x1="500" y1="216" x2="500" y2="224"></line>
+        <line x1="608" y1="216" x2="608" y2="224"></line>
+        <line x1="715" y1="216" x2="715" y2="224"></line>
+        <line x1="930" y1="216" x2="930" y2="224"></line>
+      </g>
+      <!-- 연결선 -->
+      <g class="arrow" stroke="var(--line2)" stroke-width="1.4">
+        <line x1="70" y1="108" x2="70" y2="220"></line>
+        <line x1="70" y1="178" x2="70" y2="220"></line>
+        <line x1="285" y1="143" x2="285" y2="220"></line>
+        <line x1="393" y1="143" x2="393" y2="220"></line>
+        <line x1="500" y1="108" x2="500" y2="220"></line>
+        <line x1="500" y1="178" x2="500" y2="220"></line>
+        <line x1="608" y1="108" x2="608" y2="220"></line>
+        <line x1="608" y1="178" x2="608" y2="220"></line>
+        <line x1="715" y1="143" x2="715" y2="220"></line>
+        <line x1="930" y1="108" x2="930" y2="220"></line>
+        <line x1="930" y1="178" x2="930" y2="220"></line>
+      </g>
+      <!-- 논문 점 (클릭 시 상세로 이동) -->
+      <g class="tlnode" data-goto="p2" tabindex="0" role="button" aria-label="Attention Is All You Need 논문 보기">
+        <circle cx="70" cy="100" r="8" fill="var(--brand)"></circle>
+        <text x="70" y="82" text-anchor="middle" font-size="11.5" font-weight="700">어텐션</text>
+      </g>
+      <g class="tlnode" data-goto="p3" tabindex="0" role="button" aria-label="Sparsely-Gated Mixture-of-Experts 논문 보기">
+        <circle cx="70" cy="170" r="8" fill="var(--gold)"></circle>
+        <text x="70" y="196" text-anchor="middle" font-size="11.5" font-weight="700">MoE 원조</text>
+      </g>
+      <g class="tlnode" data-goto="p6" tabindex="0" role="button" aria-label="The Curious Case of Neural Text Degeneration 논문 보기">
+        <circle cx="285" cy="135" r="8" fill="var(--syn)"></circle>
+        <text x="285" y="117" text-anchor="middle" font-size="11.5" font-weight="700">뉴클리어스</text>
+      </g>
+      <g class="tlnode" data-goto="p9" tabindex="0" role="button" aria-label="GPT-3 Language Models are Few-Shot Learners 논문 보기">
+        <circle cx="393" cy="135" r="8" fill="var(--c-icl)"></circle>
+        <text x="393" y="117" text-anchor="middle" font-size="11.5" font-weight="700">GPT-3</text>
+      </g>
+      <g class="tlnode" data-goto="p4" tabindex="0" role="button" aria-label="Switch Transformers 논문 보기">
+        <circle cx="500" cy="100" r="8" fill="var(--gold)"></circle>
+        <text x="500" y="82" text-anchor="middle" font-size="11.5" font-weight="700">Switch</text>
+      </g>
+      <g class="tlnode" data-goto="p8" tabindex="0" role="button" aria-label="Pre-train Prompt and Predict 서베이 논문 보기">
+        <circle cx="500" cy="170" r="8" fill="var(--src)"></circle>
+        <text x="500" y="196" text-anchor="middle" font-size="11.5" font-weight="700">프롬프팅 서베이</text>
+      </g>
+      <g class="tlnode" data-goto="p10" tabindex="0" role="button" aria-label="Chain-of-Thought Prompting 논문 보기">
+        <circle cx="608" cy="100" r="8" fill="var(--c-cot)"></circle>
+        <text x="608" y="82" text-anchor="middle" font-size="11.5" font-weight="700">CoT</text>
+      </g>
+      <g class="tlnode" data-goto="p11" tabindex="0" role="button" aria-label="Self-Consistency 논문 보기">
+        <circle cx="608" cy="170" r="8" fill="var(--c-sc)"></circle>
+        <text x="608" y="196" text-anchor="middle" font-size="11.5" font-weight="700">자기일관성</text>
+      </g>
+      <g class="tlnode" data-goto="p1" tabindex="0" role="button" aria-label="A Survey of Large Language Models 논문 보기">
+        <circle cx="715" cy="135" r="8" fill="var(--brand)"></circle>
+        <text x="715" y="117" text-anchor="middle" font-size="11.5" font-weight="700">LLM 서베이</text>
+      </g>
+      <g class="tlnode" data-goto="p5" tabindex="0" role="button" aria-label="Context Rot 보고서 보기">
+        <circle cx="930" cy="100" r="8" fill="var(--warn)"></circle>
+        <text x="930" y="82" text-anchor="middle" font-size="11.5" font-weight="700">컨텍스트 부식</text>
+      </g>
+      <g class="tlnode" data-goto="p7" tabindex="0" role="button" aria-label="Defeating Nondeterminism in LLM Inference 글 보기">
+        <circle cx="930" cy="170" r="8" fill="var(--syn)"></circle>
+        <text x="930" y="196" text-anchor="middle" font-size="11.5" font-weight="700">비결정성</text>
+      </g>
+    </svg>
+    <div class="tl-legend">
+      <span><i style="background:var(--brand)"></i>거대 언어 모델(LLM)</span>
+      <span><i style="background:var(--gold)"></i>전문가 혼합(MoE)</span>
+      <span><i style="background:var(--warn)"></i>컨텍스트 길이</span>
+      <span><i style="background:var(--syn)"></i>샘플링 전략</span>
+      <span><i style="background:var(--src)"></i>프롬프팅</span>
+      <span><i style="background:var(--c-icl)"></i>인컨텍스트 러닝</span>
+      <span><i style="background:var(--c-cot)"></i>사고 사슬</span>
+      <span><i style="background:var(--c-sc)"></i>자기 일관성</span>
+    </div>
+  </div>
+  <div class="crosslinks">
+    <a href="../강의노트/lecture3.html" target="_blank" rel="noopener">강의 설명자 보기 →</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a>
+  </div>
+</div></section>
+
+<!-- ===== 마스터-디테일 ===== -->
+<section id="master"><div class="wrap reveal">
+  <span class="sec-no">02 — Papers</span>
+  <h2>논문 목록 &amp; 상세 <span class="en">Master–detail paper notes</span></h2>
+  <p class="lead">제목을 누르면(또는 Tab으로 이동해 Enter를 누르면) 오른쪽에 그 논문의 상세 노트가 열립니다. 처음에는 대표적으로 <b>GPT-3</b> 논문이 미리 선택되어 있습니다.</p>
+
+  <div class="mdwrap">
+    <!-- 좌측: 마스터 목록 -->
+    <nav class="master" aria-label="논문 목록">
+      <div class="searchwrap">
+        <input id="paperSearch" type="text" placeholder="제목·저자·개념으로 검색… (한/영 가능)" aria-label="논문 검색">
+        <div class="searchmeta" id="searchMeta" aria-live="polite">11편 표시 중</div>
+      </div>
+
+      <div class="grp" data-grp="llm">
+        <div class="grp-h"><span class="gdot" style="background:var(--brand)"></span>거대 언어 모델(LLM) <span class="en" style="text-transform:none;letter-spacing:0">Large Language Model</span></div>
+        <button class="paperitem" data-id="p1" data-search="a survey of large language models zhao 서베이 거대 언어 모델 llm 사전학습 적응 활용 평가">
+          <div class="pt">A Survey of Large Language Models</div>
+          <div class="pa">Zhao et al. · 2023 · arXiv:2303.18223</div>
+          <div class="ps">LLM 연구를 사전학습·적응·활용·평가 네 축으로 정리한 지도형 서베이.</div>
+        </button>
+        <button class="paperitem" data-id="p2" data-search="attention is all you need vaswani 트랜스포머 transformer 어텐션 디코더">
+          <div class="pt">Attention Is All You Need</div>
+          <div class="pa">Vaswani et al. · 2017 · arXiv:1706.03762</div>
+          <div class="ps">어텐션만으로 시퀀스를 처리하는 트랜스포머 제안 — 모든 LLM의 뼈대.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="moe">
+        <div class="grp-h"><span class="gdot" style="background:var(--gold)"></span>전문가 혼합(MoE) <span class="en" style="text-transform:none;letter-spacing:0">Mixture of Experts</span></div>
+        <button class="paperitem" data-id="p3" data-search="outrageously large neural networks sparsely-gated mixture-of-experts shazeer 전문가 혼합 moe 게이팅">
+          <div class="pt">Outrageously Large Neural Networks</div>
+          <div class="pa">Shazeer et al. · 2017 · arXiv:1701.06538</div>
+          <div class="ps">게이팅 네트워크로 top-k 전문가만 활성화하는 MoE 층의 원조.</div>
+        </button>
+        <button class="paperitem" data-id="p4" data-search="switch transformers fedus 전문가 혼합 moe 라우팅 1조 파라미터">
+          <div class="pt">Switch Transformers</div>
+          <div class="pa">Fedus et al. · 2021 · arXiv:2101.03961</div>
+          <div class="ps">top-1 라우팅으로 MoE를 단순화, 1조 파라미터까지 확장.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="ctx">
+        <div class="grp-h"><span class="gdot" style="background:var(--warn)"></span>컨텍스트 길이 <span class="en" style="text-transform:none;letter-spacing:0">Context Length</span></div>
+        <button class="paperitem" data-id="p5" data-search="context rot how increasing input tokens impacts llm performance chroma hong troynikov huber 컨텍스트 길이 부식">
+          <div class="pt">Context Rot</div>
+          <div class="pa">Hong, Troynikov &amp; Huber (Chroma) · 2025</div>
+          <div class="ps">입력이 길어질수록 성능이 비균일하게 저하되는 "컨텍스트 부식" 실증.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="sampling">
+        <div class="grp-h"><span class="gdot" style="background:var(--syn)"></span>샘플링 전략(온도 포함) <span class="en" style="text-transform:none;letter-spacing:0">Sampling</span></div>
+        <button class="paperitem" data-id="p6" data-search="the curious case of neural text degeneration holtzman 뉴클리어스 top-p 샘플링 디코딩">
+          <div class="pt">The Curious Case of Neural Text Degeneration</div>
+          <div class="pa">Holtzman et al. · 2019 · arXiv:1904.09751</div>
+          <div class="ps">뉴클리어스(top-p) 샘플링을 제안한 디코딩 전략의 원조.</div>
+        </button>
+        <button class="paperitem" data-id="p7" data-search="defeating nondeterminism in llm inference he thinking machines lab 비결정성 배치 온도 temperature">
+          <div class="pt">Defeating Nondeterminism in LLM Inference</div>
+          <div class="pa">He et al. (Thinking Machines Lab) · 2025</div>
+          <div class="ps">temperature=0에서도 결과가 재현되지 않는 이유(배치 불변성)를 규명.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="prompting">
+        <div class="grp-h"><span class="gdot" style="background:var(--src)"></span>프롬프팅 <span class="en" style="text-transform:none;letter-spacing:0">Prompting</span></div>
+        <button class="paperitem" data-id="p8" data-search="pre-train prompt and predict systematic survey of prompting methods liu 프롬프팅 서베이">
+          <div class="pt">Pre-train, Prompt, and Predict</div>
+          <div class="pa">Liu et al. · 2021 · arXiv:2107.13586</div>
+          <div class="ps">프롬프트 기반 학습 패러다임을 체계적으로 정리한 서베이.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="icl">
+        <div class="grp-h"><span class="gdot" style="background:var(--c-icl)"></span>인컨텍스트 러닝(ICL) <span class="en" style="text-transform:none;letter-spacing:0">In-Context Learning</span></div>
+        <button class="paperitem" data-id="p9" data-search="language models are few-shot learners gpt-3 gpt3 brown 인컨텍스트 러닝 icl 퓨샷 제로샷">
+          <div class="pt">Language Models are Few-Shot Learners</div>
+          <div class="pa">Brown et al. · 2020 · arXiv:2005.14165</div>
+          <div class="ps">1750억 파라미터 GPT-3로 인컨텍스트 러닝을 대규모 실증.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="cot">
+        <div class="grp-h"><span class="gdot" style="background:var(--c-cot)"></span>사고 사슬(CoT) <span class="en" style="text-transform:none;letter-spacing:0">Chain-of-Thought</span></div>
+        <button class="paperitem" data-id="p10" data-search="chain-of-thought prompting elicits reasoning in large language models wei 사고 사슬 cot 추론">
+          <div class="pt">Chain-of-Thought Prompting Elicits Reasoning</div>
+          <div class="pa">Wei et al. · 2022 · arXiv:2201.11903</div>
+          <div class="ps">단계적 풀이 과정을 프롬프트에 넣어 추론 성능을 끌어올림.</div>
+        </button>
+      </div>
+
+      <div class="grp" data-grp="sc">
+        <div class="grp-h"><span class="gdot" style="background:var(--c-sc)"></span>자기 일관성 <span class="en" style="text-transform:none;letter-spacing:0">Self-Consistency</span></div>
+        <button class="paperitem" data-id="p11" data-search="self-consistency improves chain of thought reasoning in language models wang 자기 일관성 다수결">
+          <div class="pt">Self-Consistency Improves CoT Reasoning</div>
+          <div class="pa">Wang et al. · 2022 · arXiv:2203.11171</div>
+          <div class="ps">여러 사고 사슬을 샘플링해 다수결로 답을 정하는 디코딩 전략.</div>
+        </button>
+      </div>
+
+      <div class="nores hide" id="noRes">검색 결과가 없습니다. 다른 검색어를 입력해 보시기 바랍니다.</div>
+    </nav>
+
+    <!-- 우측: 디테일 패널 -->
+    <div class="detail" id="detailPane" aria-live="polite">
+
+      <!-- p1: A Survey of Large Language Models -->
+      <article class="paperdetail" id="d-p1">
+        <div class="pdhead"><h3>A Survey of Large Language Models</h3></div>
+        <div class="pmeta">Zhao et al. · 2023 · arXiv:2303.18223</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/2303.18223" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/2303.18223" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 거대 언어 모델 연구 전체를 <b>사전학습(pre-training)</b>·<b>적응(adaptation)</b>·<b>활용(utilization)</b>·<b>평가(capacity evaluation)</b> 네 축으로 정리한 지도 역할의 서베이 논문입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> GPT-3급 모델 이후 아키텍처·훈련 기법·데이터·튜닝·평가 방법이 폭발적으로 늘어나면서, 이를 체계적으로 조망할 지도가 필요해졌습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>핵심 아이디어.</b> LLM 관련 지식을 사전학습·적응·활용·평가 네 단계로 나누어 정리하면 방대한 문헌을 하나의 일관된 틀 안에 담을 수 있다는 것이 이 논문의 접근입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 아키텍처 설계, 훈련 전략과 데이터 구성, 지시 튜닝·정렬 기법, 프롬프팅과 도구 활용, 벤치마크와 평가 지표에 이르기까지 관련 연구를 각 축 아래로 분류·정리했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 모델 규모가 커질수록 성능이 꾸준히 개선될 뿐 아니라, 일정 규모를 넘어서면 소형 모델에서는 보이지 않던 <b>창발적 능력(emergent ability)</b>이 나타난다는 관찰을 정리했고, ChatGPT 이후의 기술 흐름을 이 지도 위에 위치시켰습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 이 서베이는 3강을 포함해 LLM 입문 자료 전반에서 배경지식 지도로 널리 인용되며, 계속 개정되는 living document(살아있는 문서) 형태로 유지되고 있습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 640 300" role="img" aria-label="사전학습, 적응, 활용, 평가 네 축이 중앙의 LLM 지도로 모이는 구조도">
+            <line class="arrow" x1="320" y1="150" x2="320" y2="70" marker-end="url(#arrow)"></line>
+            <line class="arrow" x1="320" y1="150" x2="440" y2="150" marker-end="url(#arrow)"></line>
+            <line class="arrow" x1="320" y1="150" x2="320" y2="230" marker-end="url(#arrow)"></line>
+            <line class="arrow" x1="320" y1="150" x2="200" y2="150" marker-end="url(#arrow)"></line>
+            <circle cx="320" cy="150" r="52" class="node-brand"></circle>
+            <text x="320" y="146" text-anchor="middle" font-weight="700" font-size="15">LLM</text>
+            <text x="320" y="164" text-anchor="middle" font-size="12" class="lbl2">지도</text>
+            <rect x="255" y="14" width="130" height="50" rx="10" class="node"></rect>
+            <text x="320" y="34" text-anchor="middle" font-size="13" font-weight="700">사전학습</text>
+            <text x="320" y="52" text-anchor="middle" font-size="10.5" class="lbl3">pre-training</text>
+            <rect x="450" y="120" width="130" height="60" rx="10" class="node"></rect>
+            <text x="515" y="145" text-anchor="middle" font-size="13" font-weight="700">적응</text>
+            <text x="515" y="163" text-anchor="middle" font-size="10.5" class="lbl3">adaptation</text>
+            <rect x="255" y="236" width="130" height="50" rx="10" class="node"></rect>
+            <text x="320" y="256" text-anchor="middle" font-size="13" font-weight="700">평가</text>
+            <text x="320" y="274" text-anchor="middle" font-size="10.5" class="lbl3">capacity evaluation</text>
+            <rect x="60" y="120" width="130" height="60" rx="10" class="node"></rect>
+            <text x="125" y="145" text-anchor="middle" font-size="13" font-weight="700">활용</text>
+            <text x="125" y="163" text-anchor="middle" font-size="10.5" class="lbl3">utilization</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 서베이가 LLM 연구를 조직화한 네 축을 허브-스포크 구조로 재구성했습니다. 실제 논문은 각 축 아래에 다시 세부 절을 두고 있습니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> 이 강의 전체의 배경 지도 — "거대 언어 모델"이라는 개념 자체를 정의하는 출발점입니다.
+          <div class="chips"><span class="chip">#거대 언어 모델(LLM)</span><span class="chip">#사전학습</span><span class="chip">#평가</span></div>
+        </div>
+      </article>
+
+      <!-- p2: Attention Is All You Need -->
+      <article class="paperdetail" id="d-p2">
+        <div class="pdhead"><h3>Attention Is All You Need</h3></div>
+        <div class="pmeta">Vaswani et al. · 2017 · arXiv:1706.03762</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/1706.03762" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 순환망도 합성곱도 없이 <b>어텐션(attention)</b>만으로 시퀀스를 처리하는 <b>트랜스포머(Transformer)</b> 구조를 제안했고, 오늘날 모든 LLM이 쓰는 <b>디코더 전용(decoder-only)</b> 블록이 바로 여기서 나왔습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 기존 순환신경망(RNN)·합성곱신경망(CNN) 기반 인코더-디코더 구조는 순차적으로 계산해야 해서 병렬화가 어렵고 학습이 느렸습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>핵심 아이디어.</b> 순환·합성곱 계산을 완전히 걷어내고, 입력 토큰들이 서로를 직접 참조하는 어텐션 메커니즘만으로 시퀀스를 표현하자는 것이 핵심 제안입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 인코더-디코더, 인코더 전용, 디코더 전용 세 변형의 뿌리가 되는 구조를 제시했으며, 디코더 쪽에는 미래 토큰을 보지 못하게 가리는 <b>마스크드 멀티헤드 어텐션(masked multi-head attention)</b>과 피드포워드(feed-forward) 층을 쌓았습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 영어-독일어 번역에서 28.4 BLEU, 영어-프랑스어 번역에서 41.8 BLEU를 기록해 기존 최고 기록을 넘어섰고, GPU 8개로 3.5일 만에 학습을 마쳐 학습 속도 면에서도 크게 앞섰습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 오늘날 GPT·LLaMA·Gemma 등 사실상 모든 LLM이 사용하는 디코더 전용 블록은 이 논문의 디코더 스택을 그대로 이어받은 것이며, 3강 슬라이드가 LLM 구조를 설명할 때 가져다 쓰는 그림도 이 논문에서 나옵니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 640 400" role="img" aria-label="입력 임베딩부터 마스크드 멀티헤드 어텐션, 피드포워드를 N번 반복해 다음 토큰 확률을 내는 디코더 전용 블록 구조도">
+            <rect x="190" y="14" width="260" height="38" rx="9" class="node"></rect>
+            <text x="320" y="38" text-anchor="middle" font-size="12.5" font-weight="700">입력 임베딩 + 위치 인코딩</text>
+            <line class="arrow" x1="320" y1="52" x2="320" y2="76" marker-end="url(#arrow)"></line>
+            <rect x="140" y="66" width="360" height="256" rx="14" fill="none" stroke="var(--brand)" stroke-dasharray="5 5"></rect>
+            <text x="490" y="316" text-anchor="end" font-size="12" font-weight="700" fill="var(--brand2)">× N (디코더 레이어 반복)</text>
+            <rect x="170" y="86" width="300" height="46" rx="10" class="node-brand"></rect>
+            <text x="320" y="113" text-anchor="middle" font-size="13" font-weight="700">마스크드 멀티헤드 어텐션</text>
+            <line class="arrow" x1="320" y1="132" x2="320" y2="150" marker-end="url(#arrow)"></line>
+            <rect x="170" y="154" width="300" height="30" rx="8" class="node"></rect>
+            <text x="320" y="174" text-anchor="middle" font-size="12">Add &amp; Norm</text>
+            <line class="arrow" x1="320" y1="184" x2="320" y2="202" marker-end="url(#arrow)"></line>
+            <rect x="170" y="206" width="300" height="44" rx="10" class="node"></rect>
+            <text x="320" y="233" text-anchor="middle" font-size="13" font-weight="700">피드포워드(FFN)</text>
+            <line class="arrow" x1="320" y1="250" x2="320" y2="268" marker-end="url(#arrow)"></line>
+            <rect x="170" y="272" width="300" height="30" rx="8" class="node"></rect>
+            <text x="320" y="292" text-anchor="middle" font-size="12">Add &amp; Norm</text>
+            <line class="arrow" x1="320" y1="322" x2="320" y2="344" marker-end="url(#arrow)"></line>
+            <rect x="190" y="348" width="260" height="38" rx="9" class="node-brand"></rect>
+            <text x="320" y="372" text-anchor="middle" font-size="12.5" font-weight="700">소프트맥스 → 다음 토큰 확률</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 원래 인코더-디코더 구조에서 <b>디코더 스택만 남긴 형태</b>가 오늘날 GPT류 LLM의 공통 골격입니다. 도식은 이해를 돕기 위한 단순화이며, 실제로는 레이어가 수십 층 반복됩니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> LLM 아키텍처의 뿌리 — 마스크드 멀티헤드 어텐션과 피드포워드를 쌓은 디코더 블록이 이후 등장하는 모든 LLM의 공통 골격입니다.
+          <div class="chips"><span class="chip">#거대 언어 모델(LLM)</span><span class="chip">#트랜스포머</span><span class="chip">#디코더 전용</span></div>
+        </div>
+      </article>
+
+      <!-- p3: Sparsely-Gated MoE -->
+      <article class="paperdetail" id="d-p3">
+        <div class="pdhead"><h3>Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer</h3></div>
+        <div class="pmeta">Shazeer et al. · 2017 · arXiv:1701.06538</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/1701.06538" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/1701.06538" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 학습 가능한 <b>게이팅 네트워크(gating network)</b>가 수천 개 <b>전문가(expert)</b> 서브네트워크 중 소수만 활성화하게 해, 연산량은 거의 그대로 두고 모델 용량을 1000배 이상 키울 수 있음을 보였습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 신경망이 담을 수 있는 정보량은 파라미터 수에 좌우되지만, 파라미터를 무작정 늘리면 연산 비용도 함께 폭증합니다. <b>조건부 연산(conditional computation)</b> — 입력마다 일부 파라미터만 계산에 참여시키는 방식 — 은 이 문제를 이론적으로 풀 수 있지만 실제 구현에는 걸림돌이 많았습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>핵심 아이디어.</b> 앞서의 비유로 말하면, 모든 질문을 아무 친구에게나 묻는 대신 질문의 성격에 맞는 몇몇 전문가 친구만 불러오는 것과 같습니다 — 게이팅 네트워크가 입력마다 어떤 전문가 조합을 쓸지 희소하게(sparse) 결정합니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 트랜스포머의 피드포워드 층 자리에 최대 수천 개의 전문가 서브네트워크를 두고, 게이팅 네트워크가 입력마다 상위 k개(top-k)만 골라 그 출력을 가중합해 사용했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 전문가 혼합에 최대 137억 개 파라미터를 적용하면서도 계산 비용 증가는 미미했고, 언어 모델링과 기계 번역 벤치마크에서 더 낮은 계산 비용으로 최고 수준 성능을 달성했습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 이 논문의 게이팅·top-k 선택 방식은 이후 Switch Transformer, Mixtral 등 현대 MoE 기반 LLM의 표준 틀이 되었습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 340" role="img" aria-label="입력 토큰이 게이팅 네트워크를 거쳐 여러 전문가 중 상위 2개만 활성화되고 나머지는 비활성화되는 구조도">
+            <rect x="300" y="14" width="100" height="36" rx="9" class="node"></rect>
+            <text x="350" y="37" text-anchor="middle" font-size="12.5" font-weight="700">입력 토큰</text>
+            <line class="arrow" x1="350" y1="50" x2="350" y2="72" marker-end="url(#arrow)"></line>
+            <rect x="270" y="76" width="160" height="42" rx="10" class="node-brand"></rect>
+            <text x="350" y="102" text-anchor="middle" font-size="12.5" font-weight="700">게이팅 네트워크</text>
+            <g font-size="11" font-weight="700">
+              <line class="arrow dash" x1="300" y1="118" x2="65" y2="166" marker-end="url(#arrow)"></line>
+              <line class="arrow dash" x1="315" y1="118" x2="150" y2="166" marker-end="url(#arrow)"></line>
+              <line class="arrow-brand" x1="335" y1="118" x2="230" y2="166" marker-end="url(#arrowBrand)"></line>
+              <line class="arrow-brand" x1="365" y1="118" x2="410" y2="166" marker-end="url(#arrowBrand)"></line>
+              <line class="arrow dash" x1="385" y1="118" x2="490" y2="166" marker-end="url(#arrow)"></line>
+              <line class="arrow dash" x1="400" y1="118" x2="570" y2="166" marker-end="url(#arrow)"></line>
+              <line class="arrow dash" x1="410" y1="118" x2="650" y2="166" marker-end="url(#arrow)"></line>
+            </g>
+            <rect x="30" y="170" width="70" height="50" rx="8" class="node-dim"></rect>
+            <text x="65" y="199" text-anchor="middle" font-size="11">E1</text>
+            <rect x="115" y="170" width="70" height="50" rx="8" class="node-dim"></rect>
+            <text x="150" y="199" text-anchor="middle" font-size="11">E2</text>
+            <rect x="195" y="170" width="70" height="50" rx="8" class="node-brand"></rect>
+            <text x="230" y="199" text-anchor="middle" font-size="11" font-weight="700">E3 ✓</text>
+            <rect x="375" y="170" width="70" height="50" rx="8" class="node-brand"></rect>
+            <text x="410" y="199" text-anchor="middle" font-size="11" font-weight="700">E4 ✓</text>
+            <rect x="455" y="170" width="70" height="50" rx="8" class="node-dim"></rect>
+            <text x="490" y="199" text-anchor="middle" font-size="11">E5</text>
+            <rect x="535" y="170" width="70" height="50" rx="8" class="node-dim"></rect>
+            <text x="570" y="199" text-anchor="middle" font-size="11">E6</text>
+            <rect x="615" y="170" width="70" height="50" rx="8" class="node-dim"></rect>
+            <text x="650" y="199" text-anchor="middle" font-size="11">E7</text>
+            <text x="350" y="245" text-anchor="middle" font-size="11" class="lbl3">top-k = 2 (E3, E4만 활성화 · 나머지는 비활성 · "조건부 연산")</text>
+            <line class="arrow-brand" x1="230" y1="220" x2="330" y2="256" marker-end="url(#arrowBrand)"></line>
+            <line class="arrow-brand" x1="410" y1="220" x2="370" y2="256" marker-end="url(#arrowBrand)"></line>
+            <rect x="280" y="260" width="140" height="38" rx="9" class="node-brand"></rect>
+            <text x="350" y="284" text-anchor="middle" font-size="12" font-weight="700">가중합 → 출력</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 전문가 7개 중 게이팅 네트워크가 고른 2개(E3, E4)만 실제로 계산에 참여하고 나머지는 쉽니다 — 총 파라미터는 전체 전문가만큼 크지만, 토큰당 연산은 2개 전문가만큼만 씁니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> 전문가 혼합(MoE) 개념의 원조 — 3강이 소개하는 "총 파라미터는 크게, 토큰당 연산은 작게"라는 MoE 핵심 트레이드오프가 이 논문에서 시작됩니다.
+          <div class="chips"><span class="chip">#전문가 혼합(MoE)</span><span class="chip">#조건부 연산</span><span class="chip">#게이팅 네트워크</span></div>
+        </div>
+      </article>
+
+      <!-- p4: Switch Transformers -->
+      <article class="paperdetail" id="d-p4">
+        <div class="pdhead"><h3>Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</h3></div>
+        <div class="pmeta">Fedus et al. · 2021 · arXiv:2101.03961</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/2101.03961" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/2101.03961" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 토큰마다 전문가를 단 하나만 고르는 <b>Switch 라우팅</b>으로 MoE를 단순화해, 1조 파라미터급 모델까지 안정적으로 훈련할 수 있음을 보였습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> MoE는 이론적으로 매력적이었지만, <b>라우팅 붕괴(routing collapse)</b> — 트래픽이 일부 전문가에만 쏠리는 현상 — 와 훈련 불안정성, 복잡한 통신 비용 때문에 널리 채택되지 못하고 있었습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>핵심 아이디어.</b> top-k에서 k를 극단적으로 줄여 k=1, 즉 토큰마다 전문가를 정확히 하나만 선택하게 하면 라우팅이 단순해지고 통신 비용도 줄어든다는 것이 이 논문의 통찰입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 단일 전문가 선택(top-1) 라우팅을 도입하고, 특정 전문가로 트래픽이 쏠리는 것을 막기 위해 라우팅 비율 f_i와 평균 라우팅 확률 P_i를 곱해 더하는 <b>보조 손실(auxiliary load-balancing loss)</b>을 결합했습니다. 낮은 정밀도(bfloat16) 포맷으로도 대규모 희소 모델을 안정적으로 훈련하는 기법도 함께 제시했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 1조 개 파라미터 모델까지 사전훈련에 성공했고, 동일 연산 예산에서 T5-Base/Large 대비 사전훈련 속도를 최대 7배, T5-XXL 대비 4배 끌어올렸으며, 101개 언어 전반에서 mT5-Base보다 나은 성능을 보였습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> f_i·P_i 보조 손실식은 3강 슬라이드가 그대로 인용하는 공식이며, 이후 대다수 MoE 기반 LLM(Mixtral 등)의 부하 분산 표준 기법으로 자리 잡았습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 320" role="img" aria-label="토큰이 게이팅을 거쳐 전문가 단 하나만 선택하는 Switch 라우팅과 부하 분산 보조 손실 개념도">
+            <rect x="260" y="14" width="100" height="36" rx="9" class="node"></rect>
+            <text x="310" y="37" text-anchor="middle" font-size="12.5" font-weight="700">토큰</text>
+            <line class="arrow" x1="310" y1="50" x2="310" y2="72" marker-end="url(#arrow)"></line>
+            <rect x="230" y="76" width="160" height="42" rx="10" class="node-brand"></rect>
+            <text x="310" y="102" text-anchor="middle" font-size="12.5" font-weight="700">Switch 게이팅 (top-1)</text>
+            <g>
+              <line class="arrow dash" x1="270" y1="118" x2="100" y2="170" marker-end="url(#arrow)"></line>
+              <line class="arrow dash" x1="290" y1="118" x2="220" y2="170" marker-end="url(#arrow)"></line>
+              <line class="arrow-brand" x1="320" y1="118" x2="340" y2="170" marker-end="url(#arrowBrand)"></line>
+              <line class="arrow dash" x1="345" y1="118" x2="460" y2="170" marker-end="url(#arrow)"></line>
+              <line class="arrow dash" x1="360" y1="118" x2="580" y2="170" marker-end="url(#arrow)"></line>
+            </g>
+            <rect x="65" y="174" width="70" height="50" rx="8" class="node-dim"></rect><text x="100" y="203" text-anchor="middle" font-size="11">E1</text>
+            <rect x="185" y="174" width="70" height="50" rx="8" class="node-dim"></rect><text x="220" y="203" text-anchor="middle" font-size="11">E2</text>
+            <rect x="305" y="174" width="70" height="50" rx="8" class="node-brand"></rect><text x="340" y="203" text-anchor="middle" font-size="11" font-weight="700">E3 ✓</text>
+            <rect x="425" y="174" width="70" height="50" rx="8" class="node-dim"></rect><text x="460" y="203" text-anchor="middle" font-size="11">E4</text>
+            <rect x="545" y="174" width="70" height="50" rx="8" class="node-dim"></rect><text x="580" y="203" text-anchor="middle" font-size="11">E5</text>
+            <text x="340" y="248" text-anchor="middle" font-size="11" class="lbl3">전문가 단 1개만 선택 (top-1) → 통신·연산 비용 최소화</text>
+            <rect x="470" y="256" width="200" height="56" rx="10" class="node" stroke="var(--syn)"></rect>
+            <text x="570" y="278" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--syn)">보조 손실 ∝ N·Σ fᵢ·Pᵢ</text>
+            <text x="570" y="296" text-anchor="middle" font-size="10" class="lbl3">라우팅 비율 × 평균 확률 — 쏠림 방지</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 전문가 5개 중 정확히 1개(E3)만 선택하는 top-1 라우팅과, 특정 전문가 쏠림을 막는 보조 손실을 함께 보여줍니다. 계수(α) 등 세부 값은 원 논문을 참고하시기 바랍니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> MoE를 "실제로 쓸 수 있게" 단순화한 논문 — Sparsely-Gated MoE의 top-k 게이팅 다음 단계로, top-1 라우팅과 부하 분산 손실이라는 실용적 해법을 제시합니다.
+          <div class="chips"><span class="chip">#전문가 혼합(MoE)</span><span class="chip">#부하 분산</span><span class="chip">#스케일링</span></div>
+        </div>
+      </article>
+
+      <!-- p5: Context Rot -->
+      <article class="paperdetail" id="d-p5">
+        <div class="pdhead"><h3>Context Rot: How Increasing Input Tokens Impacts LLM Performance</h3></div>
+        <div class="pmeta">Hong, Troynikov &amp; Huber (Chroma) · 2025 · arXiv 없음(기술 보고서)</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://research.trychroma.com/context-rot" target="_blank" rel="noopener">원문 보기 ↗ (trychroma.com)</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 컨텍스트 창(context window)에 들어가기만 하면 모델이 모든 토큰을 균일하게 쓴다는 통념과 달리, 입력이 길어질수록 단순 과제에서조차 정확도가 고르지 않게 떨어진다는 것을 18개 모델로 확인했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 기존 <b>니들 인 헤이스택(Needle in a Haystack, NIAH)</b> 벤치마크는 단순 어휘 검색만 측정해, "컨텍스트 창에 들어간 정보는 모델이 동일하게 활용한다"는 가정 자체를 제대로 검증하지 못했습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>핵심 아이디어.</b> 앞서의 비유로 말하면, 컨텍스트 길이는 "대화를 얼마나 오래 기억하고 있는가"에 해당합니다. 이 보고서는 그 기억이 길어질수록 실제로 얼마나 흐려지는지를 통제된 실험으로 측정했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> Claude(Opus 4, Sonnet 4 등)·GPT(4.1, 4o 등)·Gemini(2.5 Pro/Flash 등)·Qwen3 계열 등 18개 모델을 대상으로, 니들-질문 유사도·방해 요소(distractor) 유무·니들-건초더미 유사도·건초더미 구조(논리적 순서 대 무작위)를 바꿔가며 검색 과제를 수행시켰고, 대화형 질의응답 과제(LongMemEval)와 단순 문자 반복 과제(Repeated Words)로도 검증했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 과제와 모델 종류를 가리지 않고 입력 길이가 늘수록 성능이 저하되었고, 니들과 질문의 유사도가 낮거나 방해 요소가 있을 때 저하가 더 빨랐습니다. 흥미롭게도 논리적으로 정돈된 건초더미보다 무작위로 섞인 건초더미에서 오히려 성능이 더 좋았고, Claude 계열은 불확실할 때 답을 보류하는 반면 GPT 계열은 그럴듯한 오답을 만들어내는 경향이 관찰되었습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 저자들은 이 현상을 <b>컨텍스트 부식(context rot)</b>이라 이름 붙였고, 3강 슬라이드는 컨텍스트 길이를 설명하며 이 보고서를 "주의(beware)"라는 표현과 함께 직접 인용합니다. 실무에서는 컨텍스트를 무작정 채우기보다 필요한 정보만 골라 배치하는 컨텍스트 엔지니어링(context engineering)이 중요해짐을 시사합니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 320" role="img" aria-label="입력 길이가 늘어날수록 정확도가 하락하며, 방해 요소가 있을 때 하락 폭이 더 큰 것을 보여주는 개념 그래프(실제 수치 아님)">
+            <line class="axis" x1="70" y1="270" x2="660" y2="270"></line>
+            <line class="axis" x1="70" y1="40" x2="70" y2="270"></line>
+            <text x="365" y="300" text-anchor="middle" font-size="12" class="lbl2">입력 길이(토큰) →</text>
+            <text x="30" y="155" text-anchor="middle" font-size="12" class="lbl2" transform="rotate(-90 30 155)">정확도 ↑</text>
+            <polyline points="90,90 250,110 400,130 550,150 640,165" fill="none" stroke="var(--warn)" stroke-width="3"></polyline>
+            <polyline points="90,100 250,150 400,195 550,235 640,255" fill="none" stroke="var(--brand)" stroke-width="3"></polyline>
+            <circle cx="640" cy="165" r="5" fill="var(--warn)"></circle>
+            <circle cx="640" cy="255" r="5" fill="var(--brand)"></circle>
+            <text x="500" y="80" font-size="12" font-weight="700" fill="var(--warn)">방해 요소 없음</text>
+            <text x="430" y="200" font-size="12" font-weight="700" fill="var(--brand)">방해 요소(distractor) 있음</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 실제 수치가 아닌 개념을 보여주기 위한 일러스트레이션입니다. 두 곡선 모두 우하향하지만, 방해 요소가 섞였을 때 하락 폭이 더 크다는 보고서의 핵심 발견을 형상화했습니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> "컨텍스트 창에 넣을 수 있다"와 "모델이 그것을 잘 쓴다"는 별개라는 것을 보여주는 3강의 경고 사례입니다.
+          <div class="chips"><span class="chip">#컨텍스트 길이</span><span class="chip">#컨텍스트 부식</span><span class="chip">#NIAH</span></div>
+        </div>
+      </article>
+
+      <!-- p6: Neural Text Degeneration (nucleus sampling) -->
+      <article class="paperdetail" id="d-p6">
+        <div class="pdhead"><h3>The Curious Case of Neural Text Degeneration</h3></div>
+        <div class="pmeta">Holtzman et al. · 2019 · arXiv:1904.09751 · ICLR 2020</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/1904.09751" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/1904.09751" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 매번 가장 그럴듯한 단어만 고르는 우도(likelihood) 기반 디코딩이 오히려 밋밋하고 반복적인 텍스트를 만든다는 역설을 밝히고, 누적 확률 상위 p까지만 후보로 남기는 <b>뉴클리어스(top-p) 샘플링</b>을 제안했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 언어 모델을 훈련할 때는 우도를 최대화하는 것이 좋은 모델을 만들지만, 생성(디코딩) 단계에서 똑같이 우도를 기준으로 <b>탐욕적 디코딩(greedy decoding)</b>이나 <b>빔 서치(beam search)</b>를 쓰면 오히려 단조롭고 반복적인 텍스트가 나온다는 역설이 관찰되었습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>핵심 아이디어.</b> 인간이 쓰는 문장은 항상 가장 확률 높은 단어만 고르지 않는다는 데 착안해, 확률 분포에서 지나치게 가능성 낮은 꼬리는 잘라내되 적당한 다양성은 남기는 방식을 제안합니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 토큰들을 확률 순으로 정렬한 뒤, 누적 확률이 임계값 p 이상이 되는 최소 개수의 토큰 집합(동적 핵, dynamic nucleus)만 남기고 그 안에서만 다시 정규화해 샘플링하는 뉴클리어스 샘플링(top-p 샘플링)을 제시했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 동일한 언어 모델이라도 디코딩 전략만 바꾸면 생성 품질이 크게 달라졌으며, 뉴클리어스 샘플링은 유창성과 일관성을 유지하면서도 인간 텍스트에 더 가까운 다양성을 만들어냈습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 3강 슬라이드가 소개하는 top-p 샘플링의 원조 논문으로, 오늘날 대다수 LLM API의 기본 디코딩 옵션(top-p, temperature와 함께)으로 자리 잡았습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 320" role="img" aria-label="확률이 높은 순서로 정렬한 토큰 막대그래프에서 누적 확률 임계값 p 지점 이후를 잘라내는 뉴클리어스 샘플링 도식(예시 확률, 실제 수치 아님)">
+            <line class="axis" x1="60" y1="260" x2="660" y2="260"></line>
+            <g font-size="11">
+              <rect x="80" y="120" width="60" height="140" class="node-brand"></rect><text x="110" y="278" text-anchor="middle">A</text>
+              <rect x="160" y="165" width="60" height="95" class="node-brand"></rect><text x="190" y="278" text-anchor="middle">B</text>
+              <rect x="240" y="190" width="60" height="70" class="node-brand"></rect><text x="270" y="278" text-anchor="middle">C</text>
+              <rect x="320" y="210" width="60" height="50" class="node-brand"></rect><text x="350" y="278" text-anchor="middle">D</text>
+              <rect x="400" y="225" width="60" height="35" class="node-dim"></rect><text x="430" y="278" text-anchor="middle">E</text>
+              <rect x="480" y="235" width="60" height="25" class="node-dim"></rect><text x="510" y="278" text-anchor="middle">F</text>
+              <rect x="560" y="243" width="60" height="17" class="node-dim"></rect><text x="590" y="278" text-anchor="middle">G</text>
+            </g>
+            <line x1="392" y1="105" x2="392" y2="260" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 5"></line>
+            <text x="392" y="95" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--warn)">nucleus 경계 (누적확률 ≥ p)</text>
+            <text x="250" y="60" text-anchor="middle" font-size="11.5" class="lbl2">A–D: 핵(nucleus) 안 — 샘플링 후보</text>
+            <text x="520" y="60" text-anchor="middle" font-size="11.5" class="lbl3">E–G: 긴 꼬리 — 제외됨</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 예시 확률 분포(일러스트레이션)입니다. 토큰을 확률 내림차순으로 나열하고, 누적 확률이 p를 넘는 지점까지만 후보로 남긴다는 개념을 보여줍니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> "다음 단어를 어떻게 고를 것인가"라는 샘플링 전략 전체의 출발점 — 온도·top-k와 함께 3강이 다루는 디코딩 규칙의 한 축입니다.
+          <div class="chips"><span class="chip">#샘플링 전략</span><span class="chip">#top-p</span><span class="chip">#디코딩</span></div>
+        </div>
+      </article>
+
+      <!-- p7: Defeating Nondeterminism -->
+      <article class="paperdetail" id="d-p7">
+        <div class="pdhead"><h3>Defeating Nondeterminism in LLM Inference</h3></div>
+        <div class="pmeta">He et al. (Thinking Machines Lab) · 2025 · arXiv 없음(기술 블로그)</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/" target="_blank" rel="noopener">원문 보기 ↗ (thinkingmachines.ai)</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 온도(temperature)를 0으로 설정해도 실제 서빙 환경에서 결과가 재현되지 않는 이유가 GPU 부동소수점 연산 자체가 아니라, 요청마다 달라지는 배치 크기가 연산 순서를 바꾸는 <b>배치 불변성(batch invariance)</b> 결여에 있음을 밝혔습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> temperature=0(가장 확률 높은 토큰만 고르는 결정적 설정)으로도 vLLM·SGLang 같은 실제 추론 엔진에서는 같은 질문에 다른 답이 나오는 경우가 흔한데, 그 원인이 널리 알려져 있지 않았습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>핵심 아이디어.</b> 흔히 GPU의 병렬 연산과 부동소수점 오차 누적을 원인으로 지목하지만, 개별 커널 자체는 실행할 때마다 같은 결과를 냅니다. 진짜 원인은 서버가 그때그때 처리하는 배치 크기가 사용자 입장에서는 예측할 수 없이 바뀐다는 데 있습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 배치 크기가 달라져도 각 원소의 연산(감소, reduction) 순서가 그대로 유지되는 성질인 배치 불변성을 RMSNorm·행렬곱·어텐션 세 핵심 연산에 대해 구현했습니다 — 배치 요소마다 고정된 감소 전략을 쓰고, 행렬곱은 고정 타일 크기로 Split-K 방식을 피하고, 어텐션은 고정 크기 Split-KV 전략을 도입했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 배치 불변 커널을 적용하자 1000회 생성 중 관찰되던 80개의 서로 다른 응답이 완전히 동일한 결과로 수렴했으며, 약 2배의 속도 저하만으로 결정성을 확보할 수 있었습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 3강 슬라이드는 온도를 설명하는 절에서 이 글을 추가 읽을거리로 직접 인용하며, LLM 서빙 인프라를 다루는 실무자들 사이에서 비결정성 문제의 원인을 명확히 설명한 자료로 널리 회자되었습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 300" role="img" aria-label="같은 질의라도 서버 부하에 따른 배치 크기 차이가 연산 순서를 바꿔 서로 다른 결과를 낳고, 배치 불변 커널을 적용하면 하나의 결과로 수렴하는 도식">
+            <rect x="20" y="30" width="130" height="40" rx="9" class="node"></rect><text x="85" y="55" text-anchor="middle" font-size="12" font-weight="700">같은 질의</text>
+            <line class="arrow" x1="150" y1="50" x2="200" y2="50" marker-end="url(#arrow)"></line>
+            <rect x="204" y="24" width="170" height="52" rx="9" class="node"></rect><text x="289" y="46" text-anchor="middle" font-size="11.5" font-weight="700">부하 낮음(배치=4)</text><text x="289" y="63" text-anchor="middle" font-size="10.5" class="lbl3">연산 순서 A</text>
+            <line class="arrow" x1="374" y1="50" x2="424" y2="50" marker-end="url(#arrow)"></line>
+            <rect x="428" y="24" width="110" height="52" rx="9" class="node-dim"></rect><text x="483" y="55" text-anchor="middle" font-size="12" font-weight="700">결과 R1</text>
+
+            <rect x="20" y="200" width="130" height="40" rx="9" class="node"></rect><text x="85" y="225" text-anchor="middle" font-size="12" font-weight="700">같은 질의</text>
+            <line class="arrow" x1="150" y1="220" x2="200" y2="220" marker-end="url(#arrow)"></line>
+            <rect x="204" y="194" width="170" height="52" rx="9" class="node"></rect><text x="289" y="216" text-anchor="middle" font-size="11.5" font-weight="700">부하 높음(배치=128)</text><text x="289" y="233" text-anchor="middle" font-size="10.5" class="lbl3">연산 순서 B (다름)</text>
+            <line class="arrow" x1="374" y1="220" x2="424" y2="220" marker-end="url(#arrow)"></line>
+            <rect x="428" y="194" width="110" height="52" rx="9" class="node-dim"></rect><text x="483" y="215" text-anchor="middle" font-size="12" font-weight="700">결과 R2</text><text x="483" y="232" text-anchor="middle" font-size="9.5" fill="var(--warn)">R1과 다를 수 있음</text>
+
+            <line class="arrow-brand" x1="483" y1="76" x2="600" y2="130" marker-end="url(#arrowBrand)"></line>
+            <line class="arrow-brand" x1="483" y1="194" x2="600" y2="150" marker-end="url(#arrowBrand)"></line>
+            <rect x="560" y="112" width="130" height="56" rx="10" class="node-brand"></rect>
+            <text x="625" y="134" text-anchor="middle" font-size="11" font-weight="700">배치 불변 커널</text>
+            <text x="625" y="151" text-anchor="middle" font-size="10" class="lbl2">항상 결과 R (동일)</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 같은 온도=0 설정이라도 서버의 배치 크기가 다르면 연산 순서가 달라져 결과가 갈라질 수 있고, 배치 불변 커널을 적용하면 하나의 결과로 수렴한다는 논지를 도식화했습니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> "온도를 0으로 두면 항상 같은 답이 나온다"는 통념을 깨는 사례 — 샘플링 전략이 모델의 확률만이 아니라 서빙 인프라 구현에도 좌우된다는 것을 보여줍니다.
+          <div class="chips"><span class="chip">#샘플링 전략</span><span class="chip">#온도</span><span class="chip">#추론 서빙</span></div>
+        </div>
+      </article>
+
+      <!-- p8: Pre-train, Prompt, and Predict -->
+      <article class="paperdetail" id="d-p8">
+        <div class="pdhead"><h3>Pre-train, Prompt, and Predict: A Systematic Survey of Prompting Methods in NLP</h3></div>
+        <div class="pmeta">Liu et al. · 2021 · arXiv:2107.13586</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/2107.13586" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/2107.13586" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> "모델을 데이터에 맞추는" 전통적 지도학습과 반대로, 입력을 프롬프트 형태로 바꿔 사전학습된 언어 모델 자체에 맞추는 <b>프롬프트 기반 학습</b> 패러다임을 체계적으로 정리한 서베이입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 프롬프트를 활용한 학습법이 우후죽순 등장했지만, 이를 아우르는 통일된 분류 체계나 용어가 없어 연구가 파편화되어 있었습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>핵심 아이디어.</b> 원본 입력 x를 템플릿을 이용해 빈칸(슬롯) 있는 프롬프트로 바꾸고, 사전학습된 언어 모델이 그 빈칸을 확률적으로 채우게 한 뒤, 채워진 값을 다시 원하는 출력으로 매핑하는 것이 프롬프트 기반 학습의 공통 틀이라고 정리합니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 프롬프트 템플릿을 어떻게 설계할지, 빈칸을 채운 결과를 최종 정답으로 어떻게 매핑(검증자, verbalizer)할지, 그리고 프롬프트·모델 파라미터를 얼마나·어떻게 튜닝할지라는 세 축으로 기존 연구들을 분류했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 이렇게 정리된 틀 안에서는 사전학습된 모델을 대규모 원본 텍스트만으로 학습시키고도, 적은 라벨 데이터로 새로운 과제에 적응하는 제로샷·퓨샷 학습이 가능해진다는 공통 패턴이 드러납니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 이 서베이가 정리한 템플릿·검증자 개념은 3강이 다루는 프롬프트 구성 요소(맥락·지시·입력·제약)와 인컨텍스트 러닝 논의의 배경 지식에 해당합니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 220" role="img" aria-label="입력이 템플릿을 거쳐 프롬프트가 되고, 사전학습 언어모델이 빈칸을 채운 뒤 검증자를 거쳐 최종 출력이 되는 흐름도">
+            <g font-size="11.5" font-weight="700">
+              <rect x="10" y="82" width="100" height="50" rx="9" class="node"></rect><text x="60" y="112" text-anchor="middle">입력 x</text>
+              <line class="arrow" x1="110" y1="107" x2="140" y2="107" marker-end="url(#arrow)"></line>
+              <rect x="144" y="82" width="130" height="50" rx="9" class="node"></rect><text x="209" y="103" text-anchor="middle">템플릿</text><text x="209" y="120" text-anchor="middle" font-size="10" font-weight="400" class="lbl3">(빈칸 [Z] 포함)</text>
+              <line class="arrow" x1="274" y1="107" x2="304" y2="107" marker-end="url(#arrow)"></line>
+              <rect x="308" y="76" width="130" height="62" rx="9" class="node-brand"></rect><text x="373" y="103" text-anchor="middle">사전학습 LM</text><text x="373" y="120" text-anchor="middle" font-size="10" font-weight="400" class="lbl2">빈칸 채우기 확률</text>
+              <line class="arrow" x1="438" y1="107" x2="468" y2="107" marker-end="url(#arrow)"></line>
+              <rect x="472" y="82" width="120" height="50" rx="9" class="node"></rect><text x="532" y="103" text-anchor="middle" font-size="11">검증자</text><text x="532" y="120" text-anchor="middle" font-size="10" font-weight="400" class="lbl3">(verbalizer)</text>
+              <line class="arrow" x1="592" y1="107" x2="622" y2="107" marker-end="url(#arrow)"></line>
+              <rect x="626" y="82" width="64" height="50" rx="9" class="node-brand"></rect><text x="658" y="112" text-anchor="middle">출력 y</text>
+            </g>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 서베이가 정리한 프롬프트 기반 학습의 공통 파이프라인 — 템플릿으로 빈칸을 만들고, 언어 모델이 채우고, 검증자가 정답으로 매핑합니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> 프롬프팅이라는 큰 우산 개념을 체계화한 지도 — 이어지는 인컨텍스트 러닝·사고 사슬·자기 일관성 논문은 모두 이 우산 아래의 구체적 기법들입니다.
+          <div class="chips"><span class="chip">#프롬프팅</span><span class="chip">#제로샷</span><span class="chip">#퓨샷</span></div>
+        </div>
+      </article>
+
+      <!-- p9: GPT-3 -->
+      <article class="paperdetail active" id="d-p9">
+        <div class="pdhead"><h3>Language Models are Few-Shot Learners</h3></div>
+        <div class="pmeta">Brown et al. · 2020 · arXiv:2005.14165 · GPT-3</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/2005.14165" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 1750억 파라미터 GPT-3로, 파라미터를 전혀 업데이트하지 않고 프롬프트 속 몇 개의 예시만으로 새로운 과제를 수행하는 <b>인컨텍스트 러닝(in-context learning)</b> 능력을 대규모로 입증했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 과제마다 모델을 따로 파인튜닝하는 기존 방식은 새로운 과제가 나올 때마다 라벨링된 데이터와 재훈련이 필요해 비효율적입니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>핵심 아이디어.</b> 앞서의 비유로 말하면, 대화 중간에 몇 가지 예시를 슬쩍 보여주기만 해도 상대가 패턴을 알아채고 이어가는 것처럼, 모델 파라미터를 건드리지 않고 프롬프트 안의 예시만으로 과제를 이해시킬 수 있다는 것이 핵심입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 이전의 어떤 비희소(non-sparse) 언어 모델보다 10배 큰 1750억 파라미터 자기회귀 모델을 구축하고, 예시 없이 지시만 주는 <b>제로샷(zero-shot)</b>, 예시 1개를 주는 <b>원샷(one-shot)</b>, 예시 여러 개를 주는 <b>퓨샷(few-shot)</b> 세 조건에서 성능을 비교했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 모델 규모를 키울수록 제로샷·원샷·퓨샷 성능이 함께 향상되었고, 번역·질의응답·빈칸채우기는 물론 신조어 활용·산술·영역 적응이 필요한 과제에서도 강한 성능을 보였으며, 사람이 구별하기 어려운 수준의 뉴스 기사도 생성해냈습니다(다만 일부 데이터셋에서는 여전히 한계가 있었습니다).</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 3강이 소개하는 인컨텍스트 러닝과 제로샷·원샷·퓨샷 구분은 바로 이 논문에서 비롯된 것이며, 이후 등장한 프롬프트 엔지니어링·사고 사슬 등 수많은 후속 기법의 실험 무대가 되었습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 300" role="img" aria-label="파인튜닝은 가중치를 업데이트하는 루프를 도는 반면, 인컨텍스트 러닝은 가중치를 고정한 채 프롬프트 속 예시만으로 답을 내는 것을 대비한 도식">
+            <line x1="350" y1="20" x2="350" y2="280" stroke="var(--line2)" stroke-dasharray="4 4"></line>
+            <text x="175" y="30" text-anchor="middle" font-size="13" font-weight="700">파인튜닝</text>
+            <rect x="90" y="60" width="170" height="52" rx="10" class="node"></rect>
+            <text x="175" y="82" text-anchor="middle" font-size="12" font-weight="700">라벨 데이터</text>
+            <text x="175" y="99" text-anchor="middle" font-size="10" class="lbl3">과제별로 매번 준비</text>
+            <path d="M175,112 C175,150 260,150 260,190 C260,230 175,230 175,190" fill="none" class="arrow" marker-end="url(#arrow)"></path>
+            <rect x="90" y="192" width="170" height="52" rx="10" class="node-brand"></rect>
+            <text x="175" y="214" text-anchor="middle" font-size="12" font-weight="700">모델 가중치</text>
+            <text x="175" y="231" text-anchor="middle" font-size="10" class="lbl2">그레이디언트로 매번 갱신</text>
+
+            <text x="525" y="30" text-anchor="middle" font-size="13" font-weight="700">인컨텍스트 러닝 (GPT-3)</text>
+            <rect x="440" y="60" width="170" height="66" rx="10" class="node"></rect>
+            <text x="525" y="82" text-anchor="middle" font-size="12" font-weight="700">프롬프트</text>
+            <text x="525" y="99" text-anchor="middle" font-size="10" class="lbl3">예시1, 예시2, 질문</text>
+            <text x="525" y="115" text-anchor="middle" font-size="10" class="lbl3">(가중치 업데이트 없음)</text>
+            <line class="arrow-brand" x1="525" y1="126" x2="525" y2="188" marker-end="url(#arrowBrand)"></line>
+            <rect x="440" y="192" width="170" height="52" rx="10" class="node-brand"></rect>
+            <text x="525" y="214" text-anchor="middle" font-size="12" font-weight="700">가중치 고정</text>
+            <text x="525" y="231" text-anchor="middle" font-size="10" class="lbl2">그대로 두고 추론만</text>
+            <line class="arrow-brand" x1="525" y1="244" x2="525" y2="268" marker-end="url(#arrowBrand)"></line>
+            <text x="525" y="284" text-anchor="middle" font-size="12" font-weight="700">출력</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 왼쪽은 과제마다 가중치를 다시 학습시키는 파인튜닝, 오른쪽은 가중치를 고정한 채 프롬프트 속 예시만으로 과제를 수행하는 인컨텍스트 러닝을 대비했습니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> "파라미터를 바꾸지 않고도 프롬프트만으로 학습된 것처럼 행동한다"는 인컨텍스트 러닝 개념 자체를 대규모로 증명한, 이 강의의 대표 논문입니다.
+          <div class="chips"><span class="chip">#인컨텍스트 러닝(ICL)</span><span class="chip">#제로샷·원샷·퓨샷</span><span class="chip">#스케일링</span></div>
+        </div>
+      </article>
+
+      <!-- p10: Chain-of-Thought -->
+      <article class="paperdetail" id="d-p10">
+        <div class="pdhead"><h3>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</h3></div>
+        <div class="pmeta">Wei et al. · 2022 · arXiv:2201.11903</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/2201.11903" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 정답만 요구하는 대신 프롬프트 예시에 중간 추론 단계까지 적어주면, 특히 대형 모델에서 산술·상식·기호 추론 성능이 크게 향상된다는 것을 보였습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 표준적인 프롬프팅은 산술 문제나 다단계 상식 추론처럼 여러 단계를 거쳐야 답이 나오는 문제에서 잘 작동하지 않았습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>핵심 아이디어.</b> 앞서의 비유로 말하면, 질문을 받자마자 답부터 내뱉는 대신 "소리 내어 풀이 과정을 말해보는 것"에 해당합니다 — few-shot 예시에 최종 답뿐 아니라 그 답에 이르는 중간 단계까지 적어 두는 것입니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 별도의 파인튜닝 없이, 프롬프트에 넣는 몇 개의 예시마다 단계적 풀이 과정(<b>사고 사슬, chain-of-thought</b>)을 함께 적어 세 개의 대규모 언어 모델에서 검증했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> 540B 파라미터 모델에서는 단 8개의 CoT 예시만으로 GSM8K 수학 문제 벤치마크에서, 정답 검증기까지 결합해 파인튜닝한 GPT-3보다도 높은 성능을 냈습니다. 이 효과는 모델 규모가 충분히 클 때만 뚜렷하게 나타나는 <b>창발적 능력(emergent ability)</b>의 성격을 띠었습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 3강 슬라이드의 곰인형 나이 계산 예시가 이 논문의 논의를 그대로 재현한 것이며, 이후 자기 일관성을 비롯한 다양한 추론 강화 기법들이 모두 이 사고 사슬 개념 위에 세워졌습니다.</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 280" role="img" aria-label="표준 프롬프팅은 질문에서 바로 오답으로 가고, 사고 사슬 프롬프팅은 단계별 풀이를 거쳐 정답에 도달하는 것을 대비한 도식(예시 문제, 슬라이드 원문과 다름)">
+            <text x="20" y="30" font-size="13" font-weight="700">표준 프롬프팅</text>
+            <rect x="20" y="42" width="180" height="56" rx="9" class="node"></rect>
+            <text x="110" y="64" text-anchor="middle" font-size="11">Q. 사과 3개, 배 4개.</text>
+            <text x="110" y="80" text-anchor="middle" font-size="11">과일은 모두 몇 개?</text>
+            <line class="arrow" x1="200" y1="70" x2="260" y2="70" marker-end="url(#arrow)"></line>
+            <rect x="264" y="42" width="90" height="56" rx="9" class="node"></rect>
+            <text x="309" y="74" text-anchor="middle" font-size="12" font-weight="700">모델</text>
+            <line class="arrow" x1="354" y1="70" x2="414" y2="70" marker-end="url(#arrow)"></line>
+            <rect x="418" y="42" width="120" height="56" rx="9" class="node-dim" stroke="var(--warn)"></rect>
+            <text x="478" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="var(--warn)">6개 ✗</text>
+
+            <text x="20" y="150" font-size="13" font-weight="700">사고 사슬 프롬프팅</text>
+            <rect x="20" y="162" width="180" height="56" rx="9" class="node"></rect>
+            <text x="110" y="184" text-anchor="middle" font-size="11">Q. 사과 3개, 배 4개.</text>
+            <text x="110" y="200" text-anchor="middle" font-size="11">과일은 모두 몇 개?</text>
+            <line class="arrow-brand" x1="200" y1="190" x2="256" y2="190" marker-end="url(#arrowBrand)"></line>
+            <rect x="260" y="162" width="170" height="56" rx="9" class="node-brand"></rect>
+            <text x="345" y="182" text-anchor="middle" font-size="10.5">"사과 3개 + 배 4개이므로</text>
+            <text x="345" y="198" text-anchor="middle" font-size="10.5">3+4를 계산하면..."</text>
+            <line class="arrow-brand" x1="430" y1="190" x2="486" y2="190" marker-end="url(#arrowBrand)"></line>
+            <rect x="490" y="162" width="110" height="56" rx="9" class="node" stroke="var(--ok)"></rect>
+            <text x="545" y="194" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ok)">7개 ✓</text>
+            <text x="345" y="254" text-anchor="middle" font-size="11" class="lbl3">중간 추론 단계를 거치면 정답률이 올라갑니다 (예시는 이해를 돕기 위한 일러스트레이션).</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 논문의 핵심 발견 — "정답만 요구"와 "풀이 과정 요구"의 차이 — 을 보여주기 위한 자체 예시입니다. 실제 3강 슬라이드의 곰인형 예시와는 다른 문제입니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> "바로 답하지 말고 단계적으로 생각하라"는 프롬프팅 기법을 정식화 — 자기 일관성이 이 사고 사슬 여러 개를 샘플링하는 다음 단계로 이어집니다.
+          <div class="chips"><span class="chip">#사고 사슬(CoT)</span><span class="chip">#창발적 능력</span><span class="chip">#추론</span></div>
+        </div>
+      </article>
+
+      <!-- p11: Self-Consistency -->
+      <article class="paperdetail" id="d-p11">
+        <div class="pdhead"><h3>Self-Consistency Improves Chain of Thought Reasoning in Language Models</h3></div>
+        <div class="pmeta">Wang et al. · 2022 · arXiv:2203.11171</div>
+        <div class="linkrow">
+          <a class="btn-link" href="https://arxiv.org/pdf/2203.11171" target="_blank" rel="noopener">PDF ↗</a>
+          <a class="btn-link" href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">arXiv ↗</a>
+        </div>
+        <div class="tldr"><b>TL;DR.</b> 하나의 질문에 대해 여러 사고 사슬 경로를 샘플링한 뒤 가장 많이 나온 답을 다수결로 채택해, 표준 사고 사슬보다 큰 폭의 성능 향상을 이끌어냈습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>문제의식.</b> 표준 사고 사슬 프롬프팅은 탐욕적 디코딩으로 단 하나의 추론 경로만 생성하는데, 복잡한 문제일수록 정답에 이르는 추론 경로가 여러 갈래로 존재할 수 있습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>핵심 아이디어.</b> 앞서의 비유로 말하면, 같은 질문을 여러 친구에게 물어보고 다수결로 답을 정하는 것과 같습니다 — 온도를 높여 다양한 추론 경로를 여러 개 뽑은 뒤, 각 경로가 도달한 답을 모아 가장 많이 나온 답을 최종 답으로 삼습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>방법.</b> 탐욕적으로 하나의 경로만 디코딩하는 대신 다양한 사고 사슬 경로를 샘플링하고, 각 경로의 최종 답을 집계해 다수결로 주변화(marginalize)하는 self-consistency 디코딩 전략을 제안했습니다.</div>
+        <div class="sblock"><span class="badge b-ext">외부</span><b>주요 결과.</b> GSM8K에서 +17.9%p, SVAMP에서 +11.0%p, AQuA에서 +12.2%p, StrategyQA에서 +6.4%p, ARC-challenge에서 +3.9%p의 성능 향상을 보이는 등, 산술·상식 추론 벤치마크 전반에서 뚜렷한 개선을 확인했습니다.</div>
+        <div class="sblock"><span class="badge b-syn">종합·해석</span><b>영향·후속 연구.</b> 3강 슬라이드의 3경로(5, 5, 4 → 다수결 5) 예시가 이 논문의 핵심 그림을 그대로 가져온 것이며, 개별 경로의 우연한 오류가 다수결 앞에서 상쇄된다는 통찰은 이후 다양한 추론 강화·검증 기법의 밑바탕이 되었습니다(다만 경로 수만큼 추론 비용이 늘어나는 트레이드오프가 있습니다).</div>
+
+        <figure class="pfig">
+          <svg class="svgfig" viewBox="0 0 700 330" role="img" aria-label="하나의 질문에서 세 개의 서로 다른 추론 경로가 샘플링되어 각각 5, 5, 4라는 답에 이르고, 다수결로 최종 답 5가 채택되는 도식">
+            <rect x="270" y="14" width="160" height="46" rx="10" class="node-brand"></rect>
+            <text x="350" y="42" text-anchor="middle" font-size="12.5" font-weight="700">질문 (온도 ↑ 샘플링)</text>
+            <line class="arrow" x1="310" y1="60" x2="140" y2="110" marker-end="url(#arrow)"></line>
+            <line class="arrow" x1="350" y1="60" x2="350" y2="110" marker-end="url(#arrow)"></line>
+            <line class="arrow" x1="390" y1="60" x2="560" y2="110" marker-end="url(#arrow)"></line>
+            <rect x="50" y="114" width="180" height="60" rx="10" class="node"></rect>
+            <text x="140" y="138" text-anchor="middle" font-size="11" font-weight="700">경로 1 (풀이 방식 A)</text>
+            <text x="140" y="158" text-anchor="middle" font-size="11" class="lbl3">→ 답: 5</text>
+            <rect x="260" y="114" width="180" height="60" rx="10" class="node"></rect>
+            <text x="350" y="138" text-anchor="middle" font-size="11" font-weight="700">경로 2 (풀이 방식 B)</text>
+            <text x="350" y="158" text-anchor="middle" font-size="11" class="lbl3">→ 답: 5</text>
+            <rect x="470" y="114" width="180" height="60" rx="10" class="node"></rect>
+            <text x="560" y="138" text-anchor="middle" font-size="11" font-weight="700">경로 3 (풀이 방식 C)</text>
+            <text x="560" y="158" text-anchor="middle" font-size="11" class="lbl3">→ 답: 4</text>
+            <line class="arrow-brand" x1="140" y1="174" x2="320" y2="230" marker-end="url(#arrowBrand)"></line>
+            <line class="arrow-brand" x1="350" y1="174" x2="350" y2="230" marker-end="url(#arrowBrand)"></line>
+            <line class="arrow" x1="560" y1="174" x2="390" y2="230" marker-end="url(#arrow)"></line>
+            <rect x="280" y="234" width="140" height="46" rx="10" class="node-brand"></rect>
+            <text x="350" y="262" text-anchor="middle" font-size="12" font-weight="700">다수결</text>
+            <line class="arrow-brand" x1="350" y1="280" x2="350" y2="298" marker-end="url(#arrowBrand)"></line>
+            <text x="350" y="318" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ok)">최종 답: 5 (2표 &gt; 1표)</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 3강 슬라이드가 제시하는 3경로 예시(5, 5, 4 → 다수결 5)의 구조를 재구성했습니다. 세 번째 경로의 오류(4)가 다수결 앞에서 상쇄됩니다.</figcaption>
+        </figure>
+
+        <div class="lecturerole"><b>이 강의에서의 역할.</b> 사고 사슬을 "여러 번, 다양하게" 시도해 다수결로 신뢰도를 높이는 기법 — 샘플링 전략(온도)과 사고 사슬을 결합한 지점입니다.
+          <div class="chips"><span class="chip">#자기 일관성</span><span class="chip">#사고 사슬(CoT)</span><span class="chip">#샘플링 전략</span></div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+
+  <div class="crosslinks" style="margin-top:26px">
+    <a href="../강의노트/lecture3.html" target="_blank" rel="noopener">강의 설명자 보기 →</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 CME 295(스탠퍼드) 3강 "거대 언어 모델"이 참조하는 논문들의 비공식 교육용 노트입니다.
+   <span class="badge b-src">원본</span>=원 출처, <span class="badge b-ext">외부</span>=arXiv 초록 등 외부 자료 근거 요약, <span class="badge b-syn">종합·해석</span>=작성자 재구성(비유·다이어그램·강의 연결 해설)입니다.
+   9편은 arXiv 초록을 직접 조회해 근거로 삼았고, arXiv가 없는 2편(Context Rot, Defeating Nondeterminism)은 공식 웹페이지 원문을 조회해 근거로 삼았습니다. 모든 다이어그램은 이해를 돕기 위한 자체 도식화이며, 수치가 표시된 경우가 아니면 예시(일러스트레이션)입니다.</div>
+  <div>제작: Claude · 원저작권은 각 논문·보고서의 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* chrome: progress bar, back-to-top, reveal-on-scroll, theme toggle */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* ===== 마스터-디테일: 논문 선택 ===== */
+const MOBILE_BP=920;
+function selectPaper(id){
+  $$('.paperitem').forEach(b=>{const on=b.dataset.id===id;b.classList.toggle('active',on);if(on)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');});
+  $$('.paperdetail').forEach(d=>d.classList.toggle('active',d.id==='d-'+id));
+  if(innerWidth<MOBILE_BP){
+    const target=$('#d-'+id);
+    if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+$$('.paperitem').forEach(btn=>{btn.addEventListener('click',()=>selectPaper(btn.dataset.id));});
+
+/* 타임라인 SVG 점 — 클릭 및 키보드로 해당 논문 상세로 이동 */
+$$('.tlnode').forEach(g=>{
+  const go=()=>{selectPaper(g.dataset.goto);const target=$('#master');if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'start'});};
+  g.addEventListener('click',go);
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+});
+
+/* ===== 검색 필터 (제목/저자/개념, 한/영) ===== */
+const search=$('#paperSearch'),searchMeta=$('#searchMeta'),noRes=$('#noRes');
+function filterPapers(q){
+  q=q.trim().toLowerCase();
+  let shown=0;
+  $$('.grp').forEach(grp=>{
+    let grpShown=0;
+    $$('.paperitem',grp).forEach(item=>{
+      const hay=(item.dataset.search||'')+' '+item.textContent.toLowerCase();
+      const match=!q || hay.toLowerCase().includes(q);
+      item.classList.toggle('hide',!match);
+      if(match){grpShown++;shown++;}
+    });
+    grp.classList.toggle('hide',grpShown===0);
+  });
+  searchMeta.textContent=q?`${shown}편 검색됨`:'11편 표시 중';
+  noRes.classList.toggle('hide',shown!==0);
+}
+search.addEventListener('input',e=>filterPapers(e.target.value));
+search.addEventListener('keydown',e=>{if(e.key==='Escape'){search.value='';filterPapers('');search.blur();}});
+filterPapers('');
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

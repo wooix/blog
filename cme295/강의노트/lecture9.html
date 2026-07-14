@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 9강 — 코스 총정리와 최신 트렌드 — 인터랙티브 해설</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,6vw,58px);margin:.1em 0 .2em;letter-spacing:-1.2px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:760px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(26px,4vw,40px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* cascade */
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:22px;margin:.2em 0 .1em}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+/* continuum slider */
+.cbar{position:relative;height:14px;border-radius:999px;background:linear-gradient(90deg,#334155,#5b4bdb 45%,#7c6cff 70%,#2dd4bf);margin:46px 8px 10px}
+.cknob{position:absolute;top:50%;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--brand);transform:translate(-50%,-50%);cursor:grab;touch-action:none}
+.cmark{position:absolute;top:-34px;transform:translateX(-50%);font-size:12px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.cout{margin-top:18px;background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-height:100px}
+.cout .lvl{font-size:20px;font-weight:800;color:var(--brand2)}
+/* calculator */
+.calc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+.calc .row{display:flex;gap:18px;flex-wrap:wrap}.field{flex:1 1 200px}
+.field label{font-size:13px;color:var(--ink2);font-weight:600;display:flex;justify-content:space-between}.field label b{color:var(--brand2)}
+input[type=range]{width:100%;accent-color:var(--brand);height:6px;margin-top:14px}
+.calc-out{margin-top:22px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:700px){.calc-out{grid-template-columns:1fr}}
+.calc-out .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+.calc-out .box .big{font-size:26px;font-weight:800;color:var(--gold)}
+/* timeline */
+.tl-axis{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);border-bottom:2px solid var(--line2);padding-bottom:6px;margin-bottom:4px}
+.tl-row{display:grid;grid-template-columns:170px 1fr;gap:14px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+@media(max-width:680px){.tl-row{grid-template-columns:1fr}}
+.tl-row .lab{font-size:13.5px;font-weight:700}.tl-row .lab span{display:block;font-size:11.5px;color:var(--ink3);font-weight:500}
+.tl-bar-wrap{position:relative;height:30px;background:var(--bg3);border-radius:8px}
+.tl-bar{position:absolute;top:0;bottom:0;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-size:11.5px;font-weight:700;color:#0a0c12;cursor:pointer}
+/* token chips (static masking illustration) */
+.tokrow{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;align-items:center}
+.tokrow .tag{font-size:12px;color:var(--ink3);font-weight:700;width:100px}
+.chip{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;background:var(--bg3);border:1px solid var(--line2);border-radius:8px;padding:6px 10px}
+.chip.mask{background:var(--bg2);color:var(--ink3);border-style:dashed}
+.chip.fill{background:var(--syn-bg);color:#86efe0;border-color:var(--syn-bd)}
+/* footer + misc */
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>9강</b></span>
+  <nav>
+    <a href="#s1">개요</a>
+    <a href="#recap">여정지도</a>
+    <a href="#vit-vlm">멀티모달</a>
+    <a href="#diffusion">확산LLM</a>
+    <a href="#trends">트렌드</a>
+    <a href="#check">자가점검</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · Lecture 9 · 인터랙티브 해설</span>
+  <h1>CME 295 · 9강 — 코스 총정리와 최신 트렌드</h1>
+  <p class="sub">여덟 번의 강의를 관통하는 흐름을 되짚고, 트랜스포머가 텍스트 바깥으로 뻗어나가는 모습(비전 트랜스포머·비전-언어 모델), 자기회귀 생성의 대안인 확산 LLM, 그리고 아직 풀리지 않은 과제들을 슬라이드 내용에 충실하게 정리합니다.</p>
+  <div class="metaline">
+    <span><b>강사</b> Afshine Amidi &amp; Shervine Amidi (Stanford ICME)</span>
+    <span><b>강의일</b> 2025년 12월 5일</span>
+    <span><b>슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture9.pdf" target="_blank" rel="noopener">PDF 원문 ↗</a></span>
+    <span><b>영상</b> <a href="https://www.youtube.com/watch?v=Q86qzJ1K1Ss" target="_blank" rel="noopener">YouTube ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#s1">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://www.youtube.com/watch?v=Q86qzJ1K1Ss" target="_blank" rel="noopener">강의 영상 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>슬라이드에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>슬라이드가 인용했거나 이 해설이 추가로 인용한 <b>외부 논문·자료</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 슬라이드를 엮어 만든 <b>작성자 재구성</b>(비유, 타임라인 배치 등).</span></div>
+  </div>
+</div></section>
+
+<main>
+
+<!-- ===== 01 OVERVIEW ===== -->
+<section id="s1"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>짐가방을 다시 열어보는 시간 <span class="en">Why this lecture, why now</span></h2>
+  <p class="lead">긴 여행을 마치고 돌아온 날, 캐리어를 다시 열어 무엇을 챙겨 왔는지 확인해 본 적이 있을 겁니다. 어떤 짐은 정말 유용했고, 어떤 칸은 아직 정리되지 않은 채 남아 있죠. CME 295의 마지막 강의도 꼭 이와 같습니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 강의 구성</div>
+  결론부터 말하면, 9강은 캐리어의 세 칸을 순서대로 엽니다. 슬라이드 목차 그대로 <b>(1) Recap</b> — 여덟 번의 강의를 관통한 여정, <b>(2) Beyond Transformer-based LLMs &amp; Diffusion LLMs</b> — 트랜스포머가 이미지를 끌어안고(비전 트랜스포머·비전-언어 모델), 자기회귀 생성의 대안(확산 LLM)이 등장하는 흐름, <b>(3) Closing thoughts</b> — 모달리티 간 아이디어 교차수분, 하드웨어 최적화, 성능/비용 트레이드오프, 그리고 아직 풀리지 않은 과제들입니다.</div>
+  <div class="grid g3">
+    <div class="card"><div class="icon">🗺️</div><h4>첫 번째 칸 — 여정 지도</h4><p>1강부터 8강까지, 무엇을 배웠는지 한 장의 타임라인으로 되짚어 봅니다.</p></div>
+    <div class="card"><div class="icon">🧩</div><h4>두 번째 칸 — 새 도구</h4><p>트랜스포머가 텍스트를 넘어 이미지를 다루는 법(ViT·VLM), 그리고 순서를 내려놓는 확산 LLM.</p></div>
+    <div class="card"><div class="icon">🧭</div><h4>세 번째 칸 — 남은 정리</h4><p>모달리티 교차수분, 하드웨어, 비용/성능 균형, 그리고 여전히 열려 있는 질문들.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== 02 RECAP TIMELINE ===== -->
+<section id="recap"><div class="wrap reveal">
+  <span class="sec-no">02 — Course journey</span>
+  <h2>지나온 여덟 정거장 <span class="en">Rewinding the quarter</span></h2>
+  <p class="lead">슬라이드는 "Rewinding the quarter..."라는 제목 아래 1강부터 8강까지를 한 장씩 되짚습니다. <span class="badge b-src">원본</span> 아래 타임라인은 각 강의의 핵심 주제를 슬라이드 순서 그대로 배치한 것으로, 막대의 길이와 색 구분 자체는 <span class="badge b-syn">종합·해석</span>입니다 — 강의 시간의 실제 비중을 나타내지는 않습니다.</p>
+  <div class="tl-axis" id="tlAxis"></div>
+  <div id="tlRender"></div>
+  <p class="muted" id="tlNote" style="margin-top:14px"></p>
+</div></section>
+
+<!-- ===== 03 VIT / VLM ===== -->
+<section id="vit-vlm"><div class="wrap reveal">
+  <span class="sec-no">03 — Beyond text</span>
+  <h2>트랜스포머, 이미지를 끌어안다 <span class="en">Vision Transformer &amp; Vision-Language Models</span></h2>
+  <p class="lead">2017년 트랜스포머가 기계번역을 위해 등장했을 때, 핵심은 셀프어텐션(self-attention)과 Query·Key·Value 개념이었습니다. 슬라이드는 <i>"Can we use Transformers for other things?"</i>라는 질문을 던지며, 트랜스포머가 합성곱 신경망(CNN)보다 <b>귀납적 편향(inductive bias)</b>이 약해 더 넓은 데이터에 일반화되기 쉽다는 점을 그 답으로 제시합니다.</p>
+
+  <h3>비전 트랜스포머(Vision Transformer, ViT): 이미지를 "단어"처럼 읽기</h3>
+  <p>마치 긴 문장을 단어 단위로 잘라 읽듯이, ViT는 이미지를 겹치지 않는 작은 정사각형 <b>패치(patch)</b>로 잘라 각 패치를 하나의 "단어"로 취급합니다. <span class="badge b-src">원본</span> 슬라이드는 이 과정을 테디베어가 책을 읽는 이미지로 단계별로 보여줍니다. 아래 캐스케이드에서 「해결 →」 버튼을 눌러 그 파이프라인을 직접 따라가 볼 수 있습니다.</p>
+
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">해결 →</button></div>
+
+  <h4>직접 계산해보기: 패치 수와 위치 임베딩 파라미터</h4>
+  <p><span class="badge b-src">원본</span> 슬라이드의 테디베어 예시는 이미지를 3×3, 총 9개의 패치로 나누고 여기에 [CLS] 토큰을 더해 10개의 임베딩을 인코더에 통과시킵니다. 아래 계산기의 슬라이더를 3(한 변당 패치 수)으로 두면 이 예시를 정확히 재현합니다 — 슬라이드에서 "encoded embeddings" 줄에 그려진 상자가 정확히 10개였습니다.</p>
+  <div class="calc">
+    <div class="row">
+      <div class="field"><label>한 변당 패치 수 <b id="aLab">3</b></label><input type="range" id="aIn" min="2" max="6" value="3" step="1"></div>
+      <div class="field"><label>임베딩 차원 D <b id="bLab">768</b></label><input type="range" id="bIn" min="64" max="1024" value="768" step="64"></div>
+    </div>
+    <div class="calc-out">
+      <div class="box"><div class="big" id="o1">—</div><div class="muted">총 패치 수 N = n×n</div></div>
+      <div class="box"><div class="big" id="o2">—</div><div class="muted">위치 임베딩 파라미터 수 = (N+1)×D</div></div>
+    </div>
+    <p class="muted" id="calcNote"></p>
+  </div>
+
+  <h4>비전-언어 모델(Vision-Language Model, VLM): 이미지와 언어를 잇는 두 가지 방법</h4>
+  <p>VLM은 이미지와 질문을 함께 받아 답을 내놓는 모델입니다. 슬라이드는 두 가지 결합 방식을 나란히 제시합니다.</p>
+  <div class="grid g2">
+    <div class="card"><h4>방법 1 · 디코더 전용 아키텍처 재활용</h4>
+      <p><span class="badge b-src">원본</span> 비전 인코더가 뽑아낸 이미지 표현을 선형 투영(projection) <b>W</b>로 언어모델의 임베딩 공간에 맞춘 뒤, 이미지 토큰을 텍스트 토큰과 똑같이 시퀀스에 이어 붙여 "typical LLM"에 흘려보냅니다. 별도의 새 어텐션 층이 필요 없습니다.</p>
+      <p class="muted"><span class="badge b-ext">외부</span> LLaVA — Liu et al., 2023, <i>"Visual Instruction Tuning"</i> (<a href="https://arxiv.org/abs/2304.08485" target="_blank" rel="noopener">arXiv:2304.08485 ↗</a>)</p>
+    </div>
+    <div class="card"><h4>방법 2 · 크로스어텐션 층 활용</h4>
+      <p><span class="badge b-src">원본</span> 언어모델의 트랜스포머 블록 사이사이에 별도의 <b>크로스어텐션(cross-attention)</b> 층을 끼워 넣어, 텍스트 토큰이 이미지·비디오·음성 표현을 직접 참조하도록 만듭니다. 언어모델 본체는 그대로 둔 채 어댑터만 추가로 학습합니다.</p>
+      <p class="muted"><span class="badge b-ext">외부</span> Llama 3 — Llama Team, 2024, <i>"The Llama 3 Herd of Models"</i> (<a href="https://arxiv.org/abs/2407.21783" target="_blank" rel="noopener">arXiv:2407.21783 ↗</a>)</p>
+    </div>
+  </div>
+
+  <div class="callout syn"><div class="h"><span class="badge b-src">원본</span> 슬라이드의 요약</div>
+  트랜스포머는 이제 텍스트 생성(CME 295가 다루는 LLM), 이미지 이해(ViT), 이미지 생성(DiT, MM-DiT 등)까지, "그 밖에도 추천 시스템·음성 등 다양한 곳"에서 쓰이는 범용 아키텍처가 되었다고 슬라이드는 정리합니다.</div>
+</div></section>
+
+<!-- ===== 04 DIFFUSION LLM ===== -->
+<section id="diffusion"><div class="wrap reveal">
+  <span class="sec-no">04 — Diffusion LLMs</span>
+  <h2>순서를 내려놓다 <span class="en">Beyond autoregressive generation</span></h2>
+  <p class="lead">지금까지 이 코스에서 배운 LLM은 모두 <b>자기회귀 모델링(AutoRegressive Modeling, ARM)</b>을 따릅니다 — [BOS] 토큰부터 시작해 "A", "teddy", "bear", "is", "reading"을 한 단어씩, 왼쪽에서 오른쪽으로 순서대로 만들어냅니다.</p>
+
+  <div class="callout warn"><div class="h"><span class="badge b-src">원본</span> ARM의 한계</div>
+  슬라이드는 이렇게 정리합니다: <i>"Problem. Inference-time generation is not parallelizable (although training is)."</i> 학습은 모든 위치를 한꺼번에 계산할 수 있지만, 추론(생성) 시에는 다음 토큰이 이전 토큰에 의존하므로 한 글자씩 순서대로 만들 수밖에 없습니다.</div>
+
+  <p><span class="badge b-src">원본</span> 이 한계에 대한 대안으로 슬라이드는 2025년의 실제 뉴스를 인용합니다: Inception의 코드/텍스트용 확산 모델(TechCrunch, 2025-11-06), 구글의 Gemini Diffusion(2025-05-20 공개), ByteDance의 Seed Diffusion(2025-07-31, ARM 대비 5.4배 빠른 초당 2,146토큰)이 그 예시입니다.</p>
+
+  <h3>이미지 확산에서 텍스트 확산으로: "이미 조각상은 대리석 안에 있다"</h3>
+  <p>마치 미켈란젤로가 <i>"조각상은 이미 대리석 블록 안에 완성되어 있다. 나는 그저 불필요한 부분을 깎아낼 뿐이다"</i>라고 말했듯이(<span class="badge b-src">원본</span> 슬라이드가 직접 인용한 문장), 확산 모델(diffusion model)은 노이즈 안에 이미 목표 데이터가 잠재되어 있다고 보고, 노이즈를 조금씩 "깎아내는" 법을 학습합니다.</p>
+  <p>이미지 확산 모델은 두 과정으로 이루어집니다. <b>순방향 과정(forward process)</b>은 원본 이미지에 노이즈를 점점 더해 완전한 노이즈로 만들고, <b>역방향 과정(reverse process)</b>은 그 노이즈를 한 단계씩 제거해 원본을 복원하도록 학습합니다. <span class="badge b-ext">외부</span> Ho et al., 2020, <i>"Denoising Diffusion Probabilistic Models"</i> (<a href="https://arxiv.org/abs/2006.11239" target="_blank" rel="noopener">arXiv:2006.11239 ↗</a>)</p>
+
+  <p>슬라이드는 이 아이디어를 텍스트로 그대로 옮깁니다 — 노이즈를 더하는 대신 토큰을 <b>마스킹(masking)</b>하고, 노이즈를 제거하는 대신 <b>언마스킹(unmasking)</b>합니다. 아래는 슬라이드의 다이어그램을 재구성한 것입니다.</p>
+  <div class="tokrow"><span class="tag">순방향(t=0)</span><span class="chip">A</span><span class="chip">teddy</span><span class="chip">bear</span><span class="chip">is</span><span class="chip">reading</span></div>
+  <div class="tokrow"><span class="tag">순방향(t 중간)</span><span class="chip">A</span><span class="chip mask">MASK</span><span class="chip">bear</span><span class="chip">is</span><span class="chip mask">MASK</span></div>
+  <div class="tokrow"><span class="tag">순방향(t=T)</span><span class="chip mask">MASK</span><span class="chip mask">MASK</span><span class="chip mask">MASK</span><span class="chip mask">MASK</span><span class="chip mask">MASK</span></div>
+  <div class="tokrow"><span class="tag">역방향(복원)</span><span class="chip fill">A</span><span class="chip fill">teddy</span><span class="chip fill">bear</span><span class="chip fill">is</span><span class="chip fill">reading</span></div>
+  <p class="muted"><span class="badge b-syn">종합·해석</span> 위 토큰 상자는 슬라이드의 노이즈/마스크 다이어그램을 텍스트로 재구성한 것으로, 실제 학습에서 마스킹 비율과 순서는 학습된 스케줄을 따릅니다.</p>
+
+  <h3>MDM = Masked Diffusion Model: 왜 더 빠른가</h3>
+  <p>확산 LLM(<b>MDM, Masked Diffusion Model</b>)의 핵심은 <i>"Decoding done in fewer forward passes!"</i>라는 슬라이드의 한 문장에 있습니다. <span class="badge b-src">원본</span> ARM은 토큰마다 한 번씩 순전파(forward pass)를 해야 하지만, MDM은 한 번의 순전파로 여러 개의 마스크 토큰을 동시에 예측할 수 있어 필요한 순전파 횟수 자체가 줄어듭니다.</p>
+
+  <h4>스펙트럼으로 보기: ARM ↔ 확산 LLM</h4>
+  <p>아래 슬라이더를 움직여 "완전 순차 생성"에서 "완전 병렬 생성"까지의 스펙트럼을 살펴보겠습니다. 가운데 지점은 슬라이드가 명시적으로 그린 것이 아니라, 두 극단을 잇는 <span class="badge b-syn">종합·해석</span>입니다.</p>
+  <div class="cbar" id="cbar">
+    <div class="cmark" style="left:6%">ARM</div><div class="cmark" style="left:50%">하이브리드</div><div class="cmark" style="left:94%">확산 LLM</div>
+    <div class="cknob" id="cknob" style="left:6%" role="slider" tabindex="0" aria-label="자기회귀-확산 생성 스펙트럼" aria-valuemin="0" aria-valuemax="100" aria-valuenow="6"></div>
+  </div>
+  <div class="cout" id="cout" aria-live="polite"></div>
+
+  <h4>토론: 장점과 남은 과제</h4>
+  <div class="grid g2">
+    <div class="card"><h4>⚡ 장점</h4>
+      <p><span class="badge b-src">원본</span> ARM 대비 최대 <b>10배</b> 많은 초당 출력 토큰(output tokens per second)을 낼 수 있고, 특정 작업(예: 코드처럼 구조가 있는 생성)에는 더 적합할 수 있습니다.</p></div>
+    <div class="card"><h4>🚧 과제와 현재 연구</h4>
+      <p><span class="badge b-src">원본</span> 아직 최상위 ARM 모델과의 <b>성능(performance)</b> 격차가 남아 있고, ARM 진영이 오랫동안 다듬어 온 KV 캐시·추측 디코딩 같은 기법들을 확산 방식에 맞게 <b>이식(adapt ARM-based techniques)</b>하는 것도 진행 중인 과제입니다.</p></div>
+  </div>
+  <p class="muted">더 읽을거리(<span class="badge b-ext">외부</span>, 슬라이드가 제안한 참고문헌): Lou et al., 2023 <i>"Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution"</i> (<a href="https://arxiv.org/abs/2310.16834" target="_blank" rel="noopener">arXiv:2310.16834 ↗</a>) · Sahoo et al., 2024 <i>"Simple and Effective Masked Diffusion Language Models"</i> (<a href="https://arxiv.org/abs/2406.07524" target="_blank" rel="noopener">arXiv:2406.07524 ↗</a>) · Nie et al., 2025 <i>"Large Language Diffusion Models"</i> (<a href="https://arxiv.org/abs/2502.09992" target="_blank" rel="noopener">arXiv:2502.09992 ↗</a>)</p>
+</div></section>
+
+<!-- ===== 05 CLOSING THOUGHTS / TRENDS (TABS) ===== -->
+<section id="trends"><div class="wrap reveal">
+  <span class="sec-no">05 — Closing thoughts</span>
+  <h2>아직 정리 중인 짐칸 <span class="en">Trend topics from the slides</span></h2>
+  <p class="lead">마지막 캐리어 칸에는 슬라이드가 "Closing thoughts"라는 제목 아래 다룬 다섯 가지 흐름이 담겨 있습니다. 탭을 눌러 하나씩 살펴보겠습니다.</p>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="트렌드 주제 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>모달리티 교차수분</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>기본기로의 회귀</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>성능-비용 전선</button>
+    <button class="tab" data-p="3" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>하드웨어 최적화</button>
+    <button class="tab" data-p="4" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>남은 과제·전망</button>
+  </div>
+
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">모달리티 교차수분 <span class="en">Cross-pollination between modalities</span></h3>
+    <p><span class="badge b-src">원본</span> 슬라이드는 <i>"Trend. Modalities trade ideas on concepts that work"</i>라는 한 문장으로 이 흐름을 요약합니다. 텍스트 전용으로 설계된 기법과 이미지 전용으로 설계된 기법이 서로 건너가고 있다는 뜻입니다.</p>
+    <div class="grid g3">
+      <div class="card"><h4>아키텍처</h4><p><span class="badge b-ext">외부</span> "확산" 학습이 텍스트 출력에(LLaDA, Nie et al. 2025), 트랜스포머 구조가 이미지 생성에(DiT, Peebles &amp; Xie 2022) 서로 옮겨갑니다.</p></div>
+      <div class="card"><h4>입력 표현</h4><p><span class="badge b-ext">외부</span> DeepSeek-OCR은 긴 텍스트 문맥을 이미지로 렌더링한 뒤 비전 인코더로 압축해 처리 토큰 수를 줄이는 "광학적 문맥 압축"을 시도합니다 (Wei et al., 2025, <a href="https://arxiv.org/abs/2510.18234" target="_blank" rel="noopener">arXiv:2510.18234 ↗</a>).</p></div>
+      <div class="card"><h4>트릭</h4><p><span class="badge b-ext">외부</span> RoPE(회전 위치 인코딩)의 이미지용 변형인 Multimodal Scalable RoPE(MSRoPE) 같은 위치 인코딩 트릭도 오갑니다 (Qwen-Image Technical Report, Wu et al., 2025, <a href="https://arxiv.org/abs/2508.02324" target="_blank" rel="noopener">arXiv:2508.02324 ↗</a>).</p></div>
+    </div>
+  </div>
+
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">기본기로의 회귀 <span class="en">Back to the basics</span></h3>
+    <p><span class="badge b-src">원본</span> 슬라이드는 <i>"Foundational research still very much ongoing"</i>이라 말합니다. 트랜스포머가 표준이 된 지 오래됐지만, 세부 설계는 여전히 논문마다 크게 다릅니다.</p>
+    <div class="grid g2">
+      <div class="card"><h4>미시적 설계 선택</h4><p><span class="badge b-src">원본</span> 옵티마이저(AdamW 대 MuonClip 등), 정규화 방식, MHA/MQA/GQA 선택, 활성함수, MoE 사용 여부, 레이어 수까지 — 예시로 든 Kimi K2 보고서(Kimi Team, 2025)의 설계가 다른 모델과 다릅니다.</p></div>
+      <div class="card"><h4>"연료": 미래의 데이터</h4><p>앞으로도 고품질 데이터가 충분히 공급될지는 열린 질문입니다. <span class="badge b-ext">외부</span> 모델이 생성한 데이터로 계속 학습하면 분포 다양성이 줄어드는 <b>모델 붕괴(model collapse)</b> 위험이 지적됩니다 (Shumailov et al., 2023, <i>"The Curse of Recursion"</i>, <a href="https://arxiv.org/abs/2305.17493" target="_blank" rel="noopener">arXiv:2305.17493 ↗</a>).</p></div>
+    </div>
+    <div class="callout"><div class="h"><span class="badge b-src">원본</span> 한 걸음 물러서서</div>슬라이드는 <i>"Taking a step back. Transformer = best architecture?"</i>라는 질문을 답 없이 열어둔 채 다음 주제로 넘어갑니다.</div>
+  </div>
+
+  <div class="tabpane" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">성능 대 비용의 파레토 전선 <span class="en">Interest in pushing through new frontiers</span></h3>
+    <p><span class="badge b-src">원본</span> 슬라이드는 LLM Arena의 Elo 점수 대 토큰당 가격 산점도를 두 번 보여주며 흐름의 변화를 짚습니다: <i>"Until now. Focus on best performance."</i> — 그리고 <i>"More and more? Focus on the best quality/cost trade-off."</i></p>
+    <p>즉, 지금까지는 절대 성능이 가장 높은 모델(그래프 맨 위)에 관심이 쏠렸다면, 점점 더 같은 성능이면 더 싼 모델, 같은 가격이면 더 좋은 모델을 찾는 <b>파레토 전선(Pareto frontier)</b> — 품질과 비용을 동시에 고려하는 지점 — 로 관심이 옮겨가고 있다는 관찰입니다.</p>
+    <p class="muted"><span class="badge b-ext">외부</span> 출처: "LLM Arena Pareto Frontier: Performance vs Cost (April 2025)", 2025-11-18 스크린샷 인용. 그래프의 정확한 좌표값까지는 이 해설에서 재현하지 않았습니다 — 원문 슬라이드를 참고해 주세요.</p>
+  </div>
+
+  <div class="tabpane" data-p="3" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">하드웨어 최적화 <span class="en">Hardware optimization</span></h3>
+    <p><span class="badge b-src">원본</span> 관찰: 지금의 GPU는 행렬-벡터/행렬-행렬 연산에 최적화되어 있지만, 어텐션은 KV 캐시를 자주 읽고 써야 해서 <b>메모리 이동이 연산 비용을 지배</b>하는 구조적 병목을 겪습니다.</p>
+    <p><span class="badge b-ext">외부</span> 아이디어: 어텐션 연산을 하드웨어 차원에서 "네이티브"로 지원하자는 것입니다. KV 캐시를 <b>게인 셀(gain cell)</b>이라는 전용 아날로그 메모리 회로에 저장하고, 아날로그 신호로 내적(dot-product) 연산을 수행합니다 (Leroux et al., 2025, <a href="https://arxiv.org/abs/2409.19315" target="_blank" rel="noopener">arXiv:2409.19315 ↗</a>).</p>
+    <div class="callout"><div class="h"><span class="badge b-src">원본</span> 결과</div>Nvidia H100 대비 최대 <b>~100배의 지연시간</b> 개선과 <b>~70,000배의 에너지</b> 절감을 보고합니다 (15억 파라미터 모델 학습 실험 기준).</div>
+  </div>
+
+  <div class="tabpane" data-p="4" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">남은 과제와 다가올 미래 <span class="en">Ongoing challenges &amp; what's next</span></h3>
+    <p><span class="badge b-src">원본</span> 슬라이드가 꼽은 "Areas of improvement. Top of mind"는 다음과 같습니다: 고정된 가중치(≠ 연속 학습), "환각(hallucination)", 개인화, 해석가능성(interpretability), 안전성(safety) 등입니다.</p>
+    <div class="grid g2">
+      <div class="card"><h4>일상은 이미 바뀌었다</h4><p><span class="badge b-src">원본</span> 코딩("진짜" 코딩과 text-to-query), 일반 대화형 비서, 창작, 학습 등에서 LLM은 이미 널리 쓰이고 있습니다.</p></div>
+      <div class="card"><h4>더 늘어날 사용처</h4><p><span class="badge b-ext">외부</span> 내일: 기존 에이전트의 대중화(Google Workspace Studio, 2025-12-03). 가까운 미래: 브라우저형 에이전트(ChatGPT Atlas, 2025-10-21)와 "OS 수준 LLM". 장기: "진짜" 자율 에이전트. 슬라이드는 마지막으로 "불가능한 것?"이라며 <i>"actually useful customer service"</i>를 농담 섞어 묻습니다.</p></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===== 06 QUIZ ===== -->
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">06 — Self-check</span>
+  <h2>총정리 자가 점검 <span class="en">Five questions across the course</span></h2>
+  <p class="lead">캐리어를 다시 닫기 전에, 여러 강의를 오가며 마지막으로 점검해 보겠습니다.</p>
+
+  <div class="quiz">
+    <div class="q">🧩 1. Vision Transformer(ViT)가 이미지를 트랜스포머 인코더에 넣기 위해 가장 먼저 하는 일은 무엇일까요?</div>
+    <button class="opt">CNN으로 특징 맵을 추출한다</button>
+    <button class="opt" data-correct="1">이미지를 겹치지 않는 패치(patch)로 잘라 시퀀스처럼 만든다</button>
+    <button class="opt">이미지를 그대로 픽셀 단위 토큰으로 바꾼다</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <div class="q">🧩 2. 확산 LLM(MDM)이 자기회귀(ARM) 모델과 근본적으로 다른 점은 무엇일까요?</div>
+    <button class="opt">더 많은 파라미터를 사용한다</button>
+    <button class="opt" data-correct="1">여러 마스크 토큰을 한 번의 순전파로 동시에 예측하며 점진적으로 언마스킹한다</button>
+    <button class="opt">토큰을 오른쪽에서 왼쪽으로 생성한다</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <div class="q">🧩 3. (5강 복습) RLHF에서 보상 모델(RM)이 두 응답 중 하나를 선호하도록 학습될 때 쓰이는 확률 모델은?</div>
+    <button class="opt">코사인 유사도</button>
+    <button class="opt" data-correct="1">Bradley–Terry 모델 — p(y_i &gt; y_j) = σ(r_i − r_j)</button>
+    <button class="opt">소프트맥스 교차 엔트로피만 단독으로 사용</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <div class="q">🧩 4. (1·2강 복습 + 9강 연결) ViT에서 위치 임베딩(position embedding)이 필요한 이유는?</div>
+    <button class="opt">패치의 색상 정보를 보정하기 위해</button>
+    <button class="opt" data-correct="1">셀프어텐션 자체는 집합 연산에 가까워 입력의 순서(위치) 정보를 모르기 때문</button>
+    <button class="opt">패치 수를 줄이기 위해</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <div class="q">🧩 5. 아날로그 인메모리 컴퓨팅(analog in-memory computing) 기반 어텐션 가속의 핵심 아이디어는?</div>
+    <button class="opt">모델을 더 작은 정밀도로 양자화한다</button>
+    <button class="opt" data-correct="1">KV 캐시를 게인 셀이라는 전용 아날로그 메모리에 저장해 메모리 이동을 줄인다</button>
+    <button class="opt">어텐션 헤드 수를 줄인다</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== 07 GLOSSARY ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">07 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색…"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 (Afshine Amidi &amp; Shervine Amidi) 9강 슬라이드의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=슬라이드에서 직접 가져온 내용, <span class="badge b-ext">외부</span>=슬라이드가 인용했거나 이 해설이 추가로 인용한 자료, <span class="badge b-syn">종합·해석</span>=작성자 재구성(여정 타임라인의 막대 길이, ARM↔확산 스펙트럼의 중간 지점, 마스킹 토큰 상자 등). 성능/비용 산점도의 정확한 좌표값 등 이미지로만 제시된 세부 수치는 재현하지 않았으니 원문 슬라이드·영상을 함께 참고해 주세요. 다이어그램은 모두 슬라이드 내용을 바탕으로 새로 그린 인라인 요소이며, 슬라이드 이미지를 그대로 추출하지 않았습니다.</div>
+  <div>제작: Claude · 원저작권은 Stanford CME 295 및 각 인용 논문 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* tabs — pointer + keyboard (arrow keys), roving tabindex + aria-selected */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* cascade — ViT end-to-end pipeline (reproduces the slide's teddy-bear example) */
+const CASC=[
+ {ic:'①',src:'원본',s:'패치화',stage:'0단계 · 입력 변환',title:'이미지를 패치로 자르기',prob:'트랜스포머의 셀프어텐션은 순서열(시퀀스)을 입력받도록 설계됐지만, 이미지는 가로·세로 2차원 격자입니다.',sol:'이미지를 겹치지 않는 P×P 크기의 작은 정사각형(패치)들로 잘라, 각 패치를 하나의 "단어"처럼 취급합니다. 슬라이드 예시는 테디베어 이미지를 3×3, 총 9개의 패치로 나눕니다.',next:'패치는 여전히 픽셀 값 덩어리일 뿐입니다 → <b>선형 투영</b>으로 벡터화해야 합니다.'},
+ {ic:'②',src:'원본',s:'선형 투영',stage:'1단계 · 임베딩',title:'패치를 벡터로 투영하기',prob:'각 패치는 P×P×C개의 픽셀 값이 나열된 것일 뿐, 트랜스포머가 다룰 수 있는 고정 차원의 벡터가 아닙니다.',sol:'학습 가능한 선형층(Linear)으로 각 패치를 펼쳐(flatten) D차원 벡터로 투영합니다. 9개의 패치는 이제 9개의 D차원 임베딩이 됩니다.',next:'이 벡터들만으로는 어느 패치가 왼쪽 위였는지 알 수 없습니다 → <b>위치 임베딩</b>이 필요합니다.'},
+ {ic:'③',src:'원본',s:'위치 임베딩',stage:'2단계 · 위치 정보',title:'위치 임베딩 더하기',prob:'셀프어텐션은 집합(set) 연산에 가까워 입력 순서를 그 자체로 구분하지 못합니다. 패치를 섞어도 계산 결과는 같습니다.',sol:'각 패치의 격자 위치에 대응하는 위치 임베딩(position embedding)을 학습해 패치 임베딩에 더합니다. 이제 벡터는 "무엇을" 담았는지와 "어디에" 있었는지를 함께 인코딩합니다.',next:'분류를 위해 9개로 흩어진 정보를 하나로 모아야 합니다 → <b>[CLS] 토큰과 인코더</b>로 넘어갑니다.'},
+ {ic:'④',src:'원본',s:'CLS·인코더',stage:'3단계 · 문맥화',title:'[CLS] 토큰을 더해 인코더에 통과시키기',prob:'9개의 패치 임베딩은 아직 서로 정보를 교환하지 않았습니다. 이미지 전체를 요약하는 하나의 표현이 필요합니다.',sol:'학습 가능한 [CLS] 토큰을 시퀀스 맨 앞에 추가해 총 10개의 임베딩을 만들고, 표준 트랜스포머 인코더(멀티헤드 셀프어텐션 + FFN)에 통과시킵니다. [CLS] 토큰은 인코더를 거치며 모든 패치의 정보를 흡수합니다.',next:'문맥화된 [CLS] 벡터를 사람이 읽을 라벨로 바꿔야 합니다 → <b>분류 헤드</b>로 이어집니다.'},
+ {ic:'⑤',src:'원본',s:'분류 헤드',stage:'4단계 · 출력',title:'FFN으로 클래스 확률 산출하기',prob:'[CLS] 벡터는 여전히 D차원 실수 벡터일 뿐, "teddy bear"라는 단어가 아닙니다.',sol:'인코더를 통과한 [CLS] 벡터를 작은 FFN(Feed-Forward Network)과 소프트맥스에 통과시켜 클래스 확률 분포를 얻습니다. 슬라이드 예시에서는 "teddy bear"가 가장 높은 확률을 받습니다.',next:'처음으로 돌아가 다른 이미지·다른 패치 수로 파이프라인을 다시 따라가 볼 수 있습니다.'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${c.s}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${c.stage} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${c.title}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 묶는가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'해결 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* patch/embedding calculator — reproduces the slide's 3x3=9 patch example */
+const aIn=$('#aIn'),bIn=$('#bIn');
+function calc(){
+  const n=+aIn.value,D=+bIn.value;
+  $('#aLab').textContent=n;$('#bLab').textContent=D;
+  const N=n*n,seq=N+1,params=seq*D;
+  $('#o1').textContent=N.toLocaleString();
+  $('#o2').textContent=params.toLocaleString();
+  $('#calcNote').innerHTML = (n===3)
+    ? '<span class="badge b-src">원본</span> n=3일 때 패치 수는 9개, [CLS] 토큰을 더한 시퀀스 길이는 10 — 슬라이드의 테디베어 예시(encoded embeddings 10개)와 정확히 일치합니다.'
+    : '패치 수 n을 바꾸면 시퀀스 길이(N+1)와 그에 따른 위치 임베딩 파라미터 수가 함께 늘어납니다. n=3으로 되돌리면 슬라이드의 예시와 같아집니다.';
+}
+[aIn,bIn].forEach(s=>s.addEventListener('input',calc));calc();
+
+/* continuum — ARM <-> Diffusion LLM spectrum */
+const CL=[
+ {t:'완전 자기회귀(ARM)',d:'토큰을 왼쪽에서 오른쪽으로 하나씩 생성합니다. 각 스텝이 이전에 생성된 모든 토큰에 의존하므로 근본적으로 순차적입니다. 품질은 검증되어 있지만, 문장이 길어질수록 지연시간이 늘어납니다. <span class="badge b-src">원본</span> "Problem. Inference-time generation is not parallelizable."'},
+ {t:'블록 단위·하이브리드 생성',d:'여러 토큰을 블록으로 묶어 일부를 병렬로 다루는 절충 지점입니다. <span class="badge b-syn">종합·해석</span> — 슬라이드가 명시적으로 그린 지점은 아니며, 두 극단 사이의 관계를 이해하기 위해 이 해설이 구성했습니다.'},
+ {t:'완전 병렬 확산(Diffusion LLM, MDM)',d:'전체 시퀀스를 마스킹한 뒤, 여러 마스크 토큰을 동시에 예측하며 점진적으로 언마스킹합니다. <span class="badge b-src">원본</span> 디코딩에 필요한 순전파 횟수가 줄어 ARM 대비 최대 10배의 초당 출력 토큰 수를 달성하지만, 최상위 ARM 모델과의 성능 격차를 좁히는 것이 과제로 남아있습니다.'}
+];
+const cknob=$('#cknob'),cbar=$('#cbar'),cout=$('#cout');
+const lvlIdx=p=>p<33?0:p<66?1:2;
+function setKnob(p){p=Math.max(0,Math.min(100,p));cknob.style.left=p+'%';cknob.setAttribute('aria-valuenow',Math.round(p));const i=lvlIdx(p);cout.innerHTML=`<div class="lvl">${CL[i].t}</div><p style="margin:.5em 0 0">${CL[i].d}</p>`;}
+let drag=false;const moveTo=e=>{const r=cbar.getBoundingClientRect();setKnob(((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*100);};
+cknob.addEventListener('pointerdown',e=>{drag=true;cknob.setPointerCapture(e.pointerId);});
+addEventListener('pointermove',e=>{if(drag)moveTo(e);});addEventListener('pointerup',()=>drag=false);
+cbar.addEventListener('pointerdown',e=>{if(e.target!==cknob)moveTo(e);});
+cknob.addEventListener('keydown',e=>{const v=+cknob.getAttribute('aria-valuenow')||0;const d={ArrowRight:2,ArrowUp:2,ArrowLeft:-2,ArrowDown:-2,PageUp:10,PageDown:-10}[e.key];if(d!==undefined){e.preventDefault();setKnob(v+d);}else if(e.key==='Home'){e.preventDefault();setKnob(0);}else if(e.key==='End'){e.preventDefault();setKnob(100);}});
+setKnob(6);
+
+/* timeline — course journey (lecture 1..9), synthesis ordering of slide recap topics */
+const Y0=1,Y1=10,SPAN=Y1-Y0;
+const TL=[
+ ['1강 · Transformers','어텐션 Q·K·V, 인코더-디코더 구조',1,2,'#f0c9c9','#recap'],
+ ['2강 · 트랜스포머 변형·트릭','RoPE, GQA, 효율화 기법',2,3,'#f0c9c9','#recap'],
+ ['3강 · Large Language Models','MoE, 디코딩 전략, 인컨텍스트 러닝',3,4,'#f0c9c9','#recap'],
+ ['4강 · LLM training','스케일링 법칙, FlashAttention, SFT/LoRA',4,5,'#f0c9c9','#recap'],
+ ['5강 · LLM tuning','RLHF, 보상모델, PPO/DPO',5,6,'#f0c9c9','#recap'],
+ ['6강 · LLM reasoning','CoT, GRPO, 테스트타임 스케일링',6,7,'#f0c9c9','#recap'],
+ ['7강 · Agentic LLMs','RAG, 함수 호출, ReAct',7,8,'#f0c9c9','#recap'],
+ ['8강 · LLM evaluation','LLM-as-a-Judge, 벤치마크',8,9,'#f0c9c9','#recap'],
+ ['9강 · Current trends','ViT·VLM, 확산 LLM, 하드웨어·전망',9,10,'#7c6cff','#vit-vlm'],
+];
+$('#tlAxis').innerHTML=[1,2,3,4,5,6,7,8,9].map(y=>`<span>${y}강</span>`).join('');
+$('#tlRender').innerHTML=TL.map(r=>{const l=(r[2]-Y0)/SPAN*100,w=(r[3]-r[2])/SPAN*100;
+  return `<div class="tl-row"><div class="lab">${r[0]}<span>${r[1]}</span></div><div class="tl-bar-wrap"><div class="tl-bar" data-go="${r[5]}" style="left:${l}%;width:${w}%;background:${r[4]}"></div></div></div>`;}).join('');
+$$('.tl-bar').forEach(b=>b.onclick=()=>{const t=$(b.dataset.go);if(t){t.scrollIntoView({behavior:'smooth',block:'start'});}});
+$('#tlNote').innerHTML='막대를 클릭하면 해당 구간(1~8강은 복습 섹션, 9강은 이 페이지의 멀티모달 섹션)으로 이동합니다.';
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답입니다.':'❌ 아쉽습니다 — 초록색으로 표시된 보기가 정답입니다.';});});
+
+/* glossary */
+const GLOSS=[
+ ['Vision Transformer (ViT)','비전 트랜스포머','이미지를 패치로 나눠 표준 트랜스포머 인코더에 입력하는 이미지 인식 아키텍처.'],
+ ['Patchify','패치화','이미지를 겹치지 않는 정사각형 조각으로 잘라 시퀀스의 각 원소처럼 다루는 전처리 단계.'],
+ ['Class token ([CLS])','클래스 토큰','시퀀스 맨 앞에 추가하는 학습 가능한 토큰으로, 인코더를 거치며 전체 입력을 요약하는 역할을 함.'],
+ ['Vision-Language Model (VLM)','비전-언어 모델','이미지와 텍스트를 함께 입력받아 텍스트를 생성하는 멀티모달 모델.'],
+ ['Cross-attention','크로스어텐션','한 시퀀스가 다른 시퀀스(예: 이미지 표현)를 참조해 어텐션을 계산하는 방식.'],
+ ['Autoregressive Modeling (ARM)','자기회귀 모델링','이전에 생성한 토큰들을 조건으로 다음 토큰을 순차적으로 예측하는 표준 LLM 생성 방식.'],
+ ['Masked Diffusion Model (MDM)','마스킹 확산 모델','시퀀스를 마스킹했다가 여러 토큰을 동시에 언마스킹하며 복원을 학습하는 확산 기반 언어모델.'],
+ ['Forward / reverse process','순방향·역방향 과정','확산 모델에서 데이터에 노이즈(또는 마스크)를 더하는 과정과, 그것을 제거해 복원하는 과정.'],
+ ['Diffusion Transformer (DiT)','확산 트랜스포머','확산 기반 이미지 생성 모델의 U-Net 백본을 트랜스포머로 교체한 아키텍처.'],
+ ['Analog in-memory computing','아날로그 인메모리 컴퓨팅','데이터를 메모리 밖으로 옮기지 않고 메모리 내부에서 아날로그 신호로 직접 연산하는 하드웨어 접근법.'],
+ ['Gain cell','게인 셀','전하를 저장해 KV 캐시 같은 값을 담아두는 전용 아날로그 메모리 회로 소자.'],
+ ['Optical context compression','광학적 문맥 압축','긴 텍스트를 이미지로 렌더링한 뒤 비전 인코더로 처리해 토큰 수를 줄이는 입력 표현 기법.'],
+ ['MSRoPE (Multimodal Scalable RoPE)','멀티모달 스케일러블 RoPE','텍스트용 회전 위치 인코딩(RoPE)을 이미지의 2차원 위치 정보에 맞게 확장한 변형.'],
+ ['Pareto frontier (quality/cost)','파레토 전선(성능·비용)','같은 비용에서 더 높은 성능을, 같은 성능에서 더 낮은 비용을 달성하는 모델들이 이루는 경계선.'],
+ ['Hallucination','환각','모델이 사실이 아니거나 근거 없는 내용을 그럴듯하게 생성하는 현상.'],
+ ['Model collapse','모델 붕괴','모델이 생성한 데이터로 반복 학습할 경우 분포의 다양성이 줄어들며 성능이 퇴화하는 현상.'],
+ ['Continuous learning','연속 학습','배포 이후에도 모델 가중치를 계속 갱신하며 새로운 정보를 학습하는 능력. 현재 LLM은 고정된 가중치로 배포됨.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${g[1]} <span class="en">${g[0]}</span></div><div class="gd">${g[2]}</div></div>`).join('')||`<p class="muted">"${q}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

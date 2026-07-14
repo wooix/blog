@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: article
 title: "샘플 글: 이것은 블로그 포스트입니다"
 date: 2026-07-13 14:00:00 +0900
 categories: [sample]

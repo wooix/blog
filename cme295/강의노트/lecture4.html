@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 4강 — LLM 학습(프리트레이닝~LoRA) 인터랙티브 해설</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.6vw,54px);margin:.1em 0 .2em;letter-spacing:-1.2px;line-height:1.1}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:760px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+@media(max-width:640px){.g4{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+table.datatab{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+table.datatab th,table.datatab td{border:1px solid var(--line);padding:8px 12px;text-align:right}
+table.datatab th:first-child,table.datatab td:first-child{text-align:left}
+table.datatab th{background:var(--bg3);color:var(--ink2)}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* cascade */
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:22px;margin:.2em 0 .1em}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden;background:var(--card)}
+.acc summary{padding:15px 18px;cursor:pointer;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .ar{margin-left:auto;transition:.2s;color:var(--ink3)}.acc[open] summary .ar{transform:rotate(90deg)}
+.acc .body{padding:0 18px 18px;color:var(--ink2)}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+/* calculator */
+.calc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;margin:18px 0}
+.calc .row{display:flex;gap:18px;flex-wrap:wrap}.field{flex:1 1 220px}
+.field label{font-size:13px;color:var(--ink2);font-weight:600;display:flex;justify-content:space-between}.field label b{color:var(--brand2)}
+input[type=range]{width:100%;accent-color:var(--brand);height:6px;margin-top:14px}
+select{width:100%;margin-top:6px;background:var(--bg3);color:var(--ink);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:14px}
+.calc-out{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.calc-out.n4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:700px){.calc-out{grid-template-columns:1fr 1fr}.calc-out.n4{grid-template-columns:1fr 1fr}}
+.calc-out .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.calc-out .box.hl{border-color:var(--brand);background:var(--brandsoft)}
+.calc-out .box .big{font-size:22px;font-weight:800;color:var(--gold)}
+.calc-out .box .big.small{font-size:16px}
+.calc-note{margin-top:14px;font-size:13.5px;color:var(--ink2);background:var(--bg3);border-radius:10px;padding:10px 14px;border-left:3px solid var(--syn)}
+/* svg diagrams */
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:18px 0}
+.diagram svg{width:100%;height:auto;display:block}
+.diagram figcaption{font-size:13px;color:var(--ink3);margin-top:10px}
+/* footer + misc */
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>4강</b></span>
+  <nav>
+    <a href="#s1">개요</a>
+    <a href="#s2">프리트레이닝</a>
+    <a href="#s3">최적화</a>
+    <a href="#s4">병렬화</a>
+    <a href="#s5">양자화</a>
+    <a href="#s6">SFT</a>
+    <a href="#s7">LoRA</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · Lecture 4 · 인터랙티브 해설</span>
+  <h1>CME 295 · 4강 — LLM 학습: 프리트레이닝부터 LoRA까지</h1>
+  <p class="sub">거대 언어 모델(LLM, Large Language Model)이 "말을 배우는 신입"에서 "지시를 따르는 조수"로 자라기까지, 그리고 그 과정을 좁은 GPU 주방에서 어떻게 효율적으로 해내는지를 살펴보는 강의입니다.</p>
+  <div class="metaline">
+    <span><b>강사</b> Afshine Amidi &amp; Shervine Amidi (Stanford ICME)</span>
+    <span><b>강의일</b> 2025년 10월 17일</span>
+    <span><b>슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture4.pdf" target="_blank" rel="noopener">원본 PDF ↗</a></span>
+    <span><b>영상</b> <a href="https://www.youtube.com/watch?v=VlA_jt_3Qc4" target="_blank" rel="noopener">YouTube 강의 ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#s1">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://www.youtube.com/watch?v=VlA_jt_3Qc4" target="_blank" rel="noopener">원 강의 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>4강 슬라이드에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>슬라이드가 인용했거나 추가로 확인한 <b>외부 논문·자료</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>이해를 돕기 위한 <b>비유·계산기·재구성</b>(슬라이드의 직접 주장은 아님).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== SECTION 1: OVERVIEW ===== -->
+<section id="s1"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>이 강의의 지도 <span class="en">Where we are headed</span></h2>
+  <p class="lead">요리사를 키우는 과정을 떠올려 봅시다. 처음에는 요리학교에서 수천 권의 레시피북을 통째로 읽으며 "요리의 감"을 잡습니다. 그다음 좁은 주방에서 여러 명이 손발을 맞춰 재료를 효율적으로 준비하는 법을 익히고, 정식 코스 요리를 반복 실습하며 "손님상에 낼 수 있는" 요리사로 훈련받습니다. 그리고 마지막으로, 이미 훈련된 셰프에게 매번 처음부터 다시 가르치는 대신 작은 "특기 노트" 한 장만 더해 새 요리를 빠르게 배우게 합니다.</p>
+  <p><strong>결론부터 말하면</strong>, 이 강의는 바로 이 네 단계 — <b>프리트레이닝(Pretraining, 사전학습)</b>, <b>학습 최적화(Training optimizations)</b>, <b>지도 미세조정(SFT, Supervised Fine-Tuning)</b>, <b>파라미터 효율적 미세조정(PEFT, Parameter-Efficient Fine-Tuning)</b> — 을 다룹니다. 앞의 셋은 "모델을 무엇으로, 어떻게 훈련시키는가"에 대한 것이고, 마지막은 "그 훈련을 더 적은 자원으로 어떻게 해내는가"에 대한 것입니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 슬라이드가 제시하는 4강의 구조</div>
+    ① Pretraining → ② Training optimizations → ③ Supervised finetuning → ④ Parameter-efficient finetuning. 3강까지는 트랜스포머(Transformer) 구조와 추론(inference) 최적화를 다뤘고, 5강부터는 선호도 튜닝(Preference tuning, RLHF 등)으로 이어집니다.
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="icon">①</div><h4>프리트레이닝</h4><p>"다음 토큰이 뭘까?"만 반복해서 맞히며 언어와 코드의 패턴을 통째로 흡수하는 단계. 수조 개의 토큰, 수백억~수천억 개의 파라미터가 필요합니다.</p></div>
+    <div class="card"><div class="icon">②</div><h4>학습 최적화</h4><p>모델과 데이터가 GPU 한 대에 담기지 않을 때, 여러 GPU와 여러 정밀도(precision)를 조합해 메모리와 시간을 쥐어짜는 기술들입니다.</p></div>
+    <div class="card"><div class="icon">③</div><h4>지도 미세조정(SFT)</h4><p>"다음 토큰 맞히기"라는 같은 목적함수를, 사람이 원하는 입출력 예시 위에서 다시 돌려 모델을 "도움이 되는 조수"로 졸업시킵니다.</p></div>
+    <div class="card"><div class="icon">④</div><h4>파라미터 효율적 미세조정</h4><p>전체 가중치를 다 건드리지 않고도 같은 효과를 내는 LoRA(Low-Rank Adaptation) 같은 기법으로, 개인 GPU로도 미세조정을 할 수 있게 해줍니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 2: PRETRAINING & SCALING ===== -->
+<section id="s2"><div class="wrap reveal">
+  <span class="sec-no">02 — Pretraining</span>
+  <h2>프리트레이닝: 모델에게 세상의 글과 코드를 통째로 읽히다 <span class="en">Learning the pattern of language</span></h2>
+  <p class="lead">전통적 머신러닝(Traditional ML)은 과제마다 모델을 처음부터 새로 훈련했습니다. 스팸 탐지 모델, 감성 분석 모델, 번역 모델을 각각 밑바닥부터 만드는 식이었지요. <strong>프리트레이닝(Pretraining, 사전학습)</strong> 패러다임은 이 순서를 뒤집습니다 — 먼저 언어 자체를 이해하는 "기초 체력"을 기른 뒤, 그 위에 개별 과제를 얹습니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 프리트레이닝의 목표와 목적함수</div>
+    목표는 <b>언어와 코드의 패턴을 학습</b>하는 것이고, 목적함수(objective function)는 <b>다음 토큰 예측(next-token prediction)</b>입니다. "A teddy bear is" 다음에 올 단어를 맞히도록 수많은 웹 텍스트(Common Crawl, Wikipedia 등)와 코드(GitHub, StackOverflow 등)로 학습시킵니다.
+  </div>
+  <p>학습 데이터의 규모는 상상을 뛰어넘습니다. GPT-3는 약 <b>3,000억 토큰</b>, LLaMA 3는 약 <b>15조 토큰</b>으로 학습되었습니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">(Brown et al., 2020)</a>, <a href="https://arxiv.org/abs/2407.21783" target="_blank" rel="noopener">(LLaMA team, 2024)</a>.</p>
+
+  <h3>왜 "얼마나 크게, 얼마나 오래" 학습할지가 중요할까?</h3>
+  <p>모델을 훈련하는 데 드는 연산량은 <b>FLOPs(Floating-point Operations, 부동소수점 연산 수)</b>라는 단위로 잽니다. 작은 신경망은 약 10⁷ FLOPs, 큰 RNN은 약 10¹⁴ FLOPs인 데 비해, LLM 하나를 훈련하는 데는 약 10²⁵ FLOPs가 필요합니다 <span class="badge b-src">원본</span>. 이 값은 파라미터 수(N)와 토큰 수(D) 두 가지의 함수입니다.</p>
+  <p><em>연산량이 커질수록 테스트 손실(test loss)이 예측 가능한 거듭제곱 법칙(power law)으로 줄어든다</em>는 것이 <b>스케일링 법칙(Scaling Laws)</b>의 핵심 발견입니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noopener">(Kaplan et al., 2020)</a>. 마치 요리학교 학생이 읽은 레시피북 권수(데이터)와 머릿속에 담을 수 있는 레퍼토리 크기(파라미터)가 둘 다 늘어날수록 요리 실력(테스트 손실의 반대)이 꾸준히, 예측 가능하게 좋아지는 것과 같습니다.</p>
+
+  <h3>Chinchilla 법칙: 크기와 데이터, 뭐가 더 급할까?</h3>
+  <p>Kaplan et al.(2020)의 스케일링 법칙을 이어받아, <b>Chinchilla 법칙</b>은 <em>주어진 연산 예산(compute budget) 안에서 손실을 최소화하려면 파라미터 수와 토큰 수를 함께, 거의 같은 비율로 늘려야 한다</em>는 것을 보였습니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2203.15556" target="_blank" rel="noopener">(Hoffmann et al., 2022)</a>. 그전까지는 "파라미터만 최대한 키우자"는 경향이 있었는데, Chinchilla 논문은 같은 연산량이라면 더 작은 모델을 더 많은 데이터로 학습하는 편이 나을 수 있음을 보여준 것입니다. 마치 요리학교에서 "손이 큰 레퍼토리를 갖는 것"과 "레시피북을 많이 읽는 것" 중 한쪽에만 치우치지 않고 균형을 맞추는 것과 같습니다.</p>
+  <table class="datatab">
+    <tr><th>파라미터</th><th>FLOPs</th><th>토큰</th></tr>
+    <tr><td>400 Million</td><td>1.92 × 10¹⁹</td><td>8.0 Billion</td></tr>
+    <tr><td>1 Billion</td><td>1.21 × 10²⁰</td><td>20.2 Billion</td></tr>
+    <tr><td>67 Billion</td><td>5.76 × 10²³</td><td>1.5 Trillion</td></tr>
+    <tr><td>175 Billion</td><td>3.85 × 10²⁴</td><td>3.7 Trillion</td></tr>
+  </table>
+  <p class="muted">위 표는 <span class="badge b-src">원본</span> 슬라이드가 인용한 Chinchilla 논문의 연산-최적(compute-optimal) 조합 예시입니다. 아래 계산기에서 직접 파라미터·토큰 수를 바꿔 FLOPs가 어떻게 변하는지 확인해 보세요 — 기본값(10억 파라미터·202억 토큰)은 위 표의 두 번째 행과 정확히 일치하도록 맞춰져 있습니다.</p>
+
+  <h3>계산기: 우리 모델을 학습시키려면 얼마나 걸릴까? <span class="en">Compute &amp; cost estimator</span></h3>
+  <div class="calc">
+    <div class="row">
+      <div class="field"><label>파라미터 수 N <b id="c1nLab">—</b></label><input type="range" id="c1nExp" min="8" max="11.85" step="0.01" value="9"></div>
+      <div class="field"><label>토큰 수 D <b id="c1dLab">—</b></label><input type="range" id="c1dExp" min="9" max="13.3" step="0.001" value="10.305"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <div class="field"><label>GPU 대수 <b id="c1gLab">—</b></label><input type="range" id="c1gExp" min="0" max="4" step="0.01" value="0.9"></div>
+      <div class="field"><label>MFU(모델 연산 활용률) <b id="c1mLab">—</b></label><input type="range" id="c1mPct" min="10" max="60" step="1" value="40"></div>
+    </div>
+    <div class="calc-out">
+      <div class="box hl"><div class="big" id="c1out1">—</div><div class="muted">총 연산량 C = 6ND (FLOPs)</div></div>
+      <div class="box"><div class="big small" id="c1out2">—</div><div class="muted">벽시계 학습 시간</div></div>
+      <div class="box"><div class="big small" id="c1out3">—</div><div class="muted">대략적 학습 비용</div></div>
+    </div>
+    <p class="calc-note" id="c1note"></p>
+  </div>
+
+  <h3>공짜 점심은 없다: 프리트레이닝의 대가</h3>
+  <div class="grid g2">
+    <div class="card soft"><h4>비용</h4><p>최소 수백만 달러, 오랜 시간, 상당한 전력 소비가 따릅니다 <span class="badge b-src">원본</span>.</p></div>
+    <div class="card soft"><h4>학습된 지식의 한계</h4><p>"지식 컷오프(Knowledge cutoff)"가 생기고, 이미 학습된 지식을 나중에 수정하기 어렵습니다. 예컨대 2025년 10월 시점 GPT-5는 2024년 9월 30일 지식 컷오프를 명시하고 있습니다 <span class="badge b-src">원본</span> <a href="https://platform.openai.com/docs/models/gpt-5" target="_blank" rel="noopener">(OpenAI 문서, 2025-10-14 확인)</a>.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 3: TRAINING OPTIMIZATIONS (CASCADE) ===== -->
+<section id="s3"><div class="wrap reveal">
+  <span class="sec-no">03 — Training optimizations</span>
+  <h2>좁은 주방에서 큰 잔치를 준비하는 법 <span class="en">The memory &amp; speed bottleneck cascade</span></h2>
+  <p class="lead">GPU 한 대는 모델 하나를 통째로 담기엔 좁은 주방과 같습니다. 프리트레이닝이 부딪히는 병목은 하나가 풀리면 다음 병목이 드러나는 <b>연쇄(cascade)</b> 구조를 이룹니다. 「해결 →」 버튼을 눌러 이 병목이 풀려나가는 순서를 따라가 보세요.</p>
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">해결 →</button></div>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ZeRO 단계별로 옵티마이저 상태, 그래디언트, 파라미터를 GPU 간에 나눠 저장하는 모습을 보여주는 다이어그램. ZeRO-1은 옵티마이저 상태만, ZeRO-2는 옵티마이저 상태와 그래디언트를, ZeRO-3는 세 가지 모두를 GPU마다 분할해 저장한다.">
+      <text x="10" y="24" fill="var(--ink)" font-size="14" font-weight="700">ZeRO(Zero Redundancy Optimizer): 중복 저장을 얼마나 없앨까</text>
+      <g font-size="12" fill="var(--ink2)">
+        <text x="30" y="55">ZeRO-1</text>
+        <rect x="90" y="42" width="70" height="18" fill="var(--src-bg)" stroke="var(--src-bd)"/><text x="95" y="55" fill="var(--ink)">파라미터×N</text>
+        <rect x="90" y="62" width="70" height="18" fill="var(--src-bg)" stroke="var(--src-bd)"/><text x="95" y="75" fill="var(--ink)">그래디언트×N</text>
+        <rect x="90" y="82" width="70" height="18" fill="var(--syn-bg)" stroke="var(--syn-bd)"/><text x="95" y="95" fill="var(--ink)">옵티마이저÷N</text>
+
+        <text x="270" y="55">ZeRO-2</text>
+        <rect x="330" y="42" width="70" height="18" fill="var(--src-bg)" stroke="var(--src-bd)"/><text x="335" y="55" fill="var(--ink)">파라미터×N</text>
+        <rect x="330" y="62" width="70" height="18" fill="var(--syn-bg)" stroke="var(--syn-bd)"/><text x="335" y="75" fill="var(--ink)">그래디언트÷N</text>
+        <rect x="330" y="82" width="70" height="18" fill="var(--syn-bg)" stroke="var(--syn-bd)"/><text x="335" y="95" fill="var(--ink)">옵티마이저÷N</text>
+
+        <text x="510" y="55">ZeRO-3</text>
+        <rect x="570" y="42" width="70" height="18" fill="var(--syn-bg)" stroke="var(--syn-bd)"/><text x="575" y="55" fill="var(--ink)">파라미터÷N</text>
+        <rect x="570" y="62" width="70" height="18" fill="var(--syn-bg)" stroke="var(--syn-bd)"/><text x="575" y="75" fill="var(--ink)">그래디언트÷N</text>
+        <rect x="570" y="82" width="70" height="18" fill="var(--syn-bg)" stroke="var(--syn-bd)"/><text x="575" y="95" fill="var(--ink)">옵티마이저÷N</text>
+      </g>
+      <text x="10" y="130" fill="var(--ink3)" font-size="12">×N = 모든 GPU에 그대로 복제(중복) · ÷N = GPU 대수만큼 나눠서 한 조각씩만 저장</text>
+      <text x="10" y="152" fill="var(--ink3)" font-size="12">단계가 올라갈수록 GPU 1대당 메모리 사용량은 줄지만, 통신량은 늘어나는 trade-off가 있습니다.</text>
+    </svg>
+    <figcaption><span class="badge b-src">원본</span> "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models", Rajbhandari et al., 2019의 개념을 슬라이드 구성에 맞춰 재구성한 다이어그램입니다.</figcaption>
+  </div>
+
+  <h3>정밀도를 낮추면 왜 빨라질까?</h3>
+  <p>모든 실수는 컴�터 안에서 부호(sign)·지수(exponent)·가수(mantissa)로 쪼개져 저장됩니다. 가수 비트 수가 많을수록 소수점 아래를 더 촘촘히 표현할 수 있지만, 계산도 그만큼 무거워집니다. 마치 요리에서 재료를 그램 단위까지 정밀히 계량할지, 눈대중으로 "한 줌"만큼 담을지의 차이와 같습니다 — 후자가 훨씬 빠르지만 오차가 생깁니다.</p>
+  <table class="datatab">
+    <tr><th>표현</th><th>부호</th><th>지수</th><th>가수</th></tr>
+    <tr><td>FP64 (Floating-Point 64)</td><td>1</td><td>11</td><td>52</td></tr>
+    <tr><td>FP32 (Floating-Point 32)</td><td>1</td><td>8</td><td>23</td></tr>
+    <tr><td>FP16 (Floating-Point 16)</td><td>1</td><td>5</td><td>10</td></tr>
+    <tr><td>BFLOAT16 (Brain Float 16)</td><td>1</td><td>8</td><td>7</td></tr>
+  </table>
+  <p class="muted"><span class="badge b-src">원본</span> "Super Study Guide: Transformers and Large Language Models", Amidi et al., 2024에서 인용된 표입니다. NVIDIA H100 스펙시트 기준으로도 정밀도가 낮을수록(FP32→BFLOAT16→FP8) 처리량(teraFLOPS)이 커집니다 <span class="badge b-src">원본</span> <a href="https://www.nvidia.com/en-us/data-center/h100/" target="_blank" rel="noopener">(NVIDIA H100 Tensor Core GPU, 2025-10-14 확인)</a>.</p>
+  <p><b>혼합 정밀도 학습(Mixed Precision Training)</b>은 이 트레이드오프를 절충합니다: 순전파(forward pass)의 활성화(activation)와 역전파(backward pass)의 그래디언트는 FP16처럼 낮은 정밀도로 빠르게 계산하되, <b>가중치 업데이트(weight update)만은 FP32의 높은 정밀도로 보관</b>해 학습이 발산하지 않도록 합니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/1710.03740" target="_blank" rel="noopener">(Micikevicius et al., 2017)</a>.</p>
+
+  <h3>Flash Attention: GPU 내부의 "냉장고와 조리대" 문제</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 620 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GPU 내부에는 크고 느린 HBM 메모리와 작고 빠른 SRAM이 있으며, FlashAttention은 HBM과 SRAM 사이의 데이터 이동을 최소화한다.">
+      <rect x="10" y="10" width="600" height="150" rx="14" fill="none" stroke="var(--line2)"/>
+      <text x="30" y="34" fill="var(--ink2)" font-size="13" font-weight="700">GPU</text>
+      <rect x="40" y="55" width="180" height="90" rx="8" fill="var(--src-bg)" stroke="var(--src-bd)"/>
+      <text x="130" y="105" text-anchor="middle" fill="var(--ink)" font-size="15" font-weight="700">HBM</text>
+      <text x="130" y="124" text-anchor="middle" fill="var(--ink3)" font-size="11">크고 느림 (Big &amp; slow)</text>
+      <rect x="420" y="70" width="150" height="34" rx="6" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+      <text x="495" y="92" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="700">SRAM</text>
+      <rect x="420" y="112" width="150" height="26" rx="6" fill="var(--bg3)" stroke="var(--line2)"/>
+      <text x="495" y="129" text-anchor="middle" fill="var(--ink2)" font-size="11">연산 유닛(CU)</text>
+      <text x="495" y="60" text-anchor="middle" fill="var(--ink3)" font-size="11">작고 빠름 (Small &amp; fast)</text>
+      <path d="M220 90 L418 90" stroke="var(--brand2)" stroke-width="2" marker-end="url(#arrow4)" fill="none"/>
+      <defs><marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--brand2)"/></marker></defs>
+    </svg>
+    <figcaption><span class="badge b-src">원본</span> H100 GPU에는 용량이 큰 HBM(High-Bandwidth Memory)과, 훨씬 작지만 훨씬 빠른 SRAM이 함께 있습니다. 표준 어텐션 계산은 중간 결과(S=QKᵀ, P=softmax(S))를 매번 HBM에 썼다가 다시 읽어오는데, 이 왕복이 병목입니다.</figcaption>
+  </div>
+  <p><b>FlashAttention</b>은 이 왕복을 없애는 두 가지 트릭을 씁니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">(Dao et al., 2022)</a>.</p>
+  <div class="grid g2">
+    <div class="card"><h4>① 타일링(Tiling)</h4><p>Q, K, V를 통째로 HBM에서 불러오는 대신 작은 블록 단위로 SRAM에 올려 그 안에서 바로 계산을 마칩니다. softmax는 전체 행렬을 한 번에 계산하지 않아도 블록별 부분합을 나중에 올바르게 합칠 수 있다는 수학적 성질을 이용합니다.</p></div>
+    <div class="card"><h4>② 재계산(Recomputation)</h4><p>역전파에 필요한 중간 행렬 S, P를 HBM에 저장해두는 대신, 필요할 때 SRAM에서 다시 계산합니다. <em>FLOPs는 늘지만 실제 실행 시간(runtime)은 오히려 줄어듭니다</em> — 병목이 연산량이 아니라 메모리 이동이었기 때문입니다.</p></div>
+  </div>
+  <table class="datatab">
+    <tr><th>지표</th><th>표준 어텐션</th><th>FlashAttention</th></tr>
+    <tr><td>GFLOPs</td><td>66.6</td><td>75.2</td></tr>
+    <tr><td>HBM 읽기/쓰기 (GB)</td><td>40.3</td><td>4.4</td></tr>
+    <tr><td>실행 시간 (ms)</td><td>41.7</td><td>7.3</td></tr>
+  </table>
+  <p class="muted"><span class="badge b-src">원본</span> 슬라이드가 인용한 FlashAttention 논문의 벤치마크 결과입니다. 연산량은 13% 늘었지만 HBM 왕복은 89% 줄었고, 실제 실행 시간은 약 5.7배 빨라졌습니다(41.7ms → 7.3ms).</p>
+</div></section>
+
+<!-- ===== SECTION 4: MODEL PARALLELISM (TABS) ===== -->
+<section id="s4"><div class="wrap reveal">
+  <span class="sec-no">04 — Model parallelism</span>
+  <h2>모델 자체를 여러 GPU로 쪼개는 다섯 가지 방법 <span class="en">Five flavors of model parallelism</span></h2>
+  <p class="lead">데이터 병렬화(Data Parallelism)와 ZeRO는 <em>같은 모델을 복제해 데이터만 나눠 처리</em>했습니다. 하지만 모델 자체가 GPU 한 대에 안 들어갈 만큼 크다면, 모델의 계산 자체를 쪼개야 합니다. 이것이 <b>모델 병렬화(Model Parallelism)</b>이며, 슬라이드는 다섯 가지 변형을 나열합니다 <span class="badge b-src">원본</span>. 아래 설명은 각 기법의 표준적인 정의를 정리한 것입니다 <span class="badge b-ext">외부</span> <a href="https://huggingface.co/spaces/nanotron/ultrascale-playbook" target="_blank" rel="noopener">(The Ultra-Scale Playbook, HuggingFace team, 2025)</a>.</p>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="모델 병렬화 변형 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>텐서(TP)</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>파이프라인(PP)</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>시퀀스(SP)</button>
+    <button class="tab" data-p="3" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>컨텍스트(CP)</button>
+    <button class="tab" data-p="4" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>전문가(EP)</button>
+  </div>
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0"><h3 style="margin-top:0">텐서 병렬화 Tensor Parallelism (TP)</h3><p>하나의 큰 행렬 곱셈 연산 자체를 여러 GPU로 쪼갭니다. 예를 들어 가중치 행렬을 열(column) 단위로 나눠 GPU마다 부분 곱을 계산한 뒤, 통신(all-reduce)으로 결과를 합칩니다. 같은 레이어를 "동시에" 여러 GPU가 나눠 계산하는 방식이라, GPU 간 통신이 매우 빈번합니다.</p></div>
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0"><h3 style="margin-top:0">파이프라인 병렬화 Pipeline Parallelism (PP)</h3><p>모델을 레이어 단위 구간(stage)으로 나눠 GPU마다 서로 다른 구간을 담당합니다. 데이터를 마이크로배치(micro-batch)로 잘게 쪼개 파이프라인처럼 흘려보내, 한 GPU가 노는 시간(bubble)을 줄입니다.</p></div>
+  <div class="tabpane" data-p="2" role="tabpanel" tabindex="0"><h3 style="margin-top:0">시퀀스 병렬화 Sequence Parallelism (SP)</h3><p>LayerNorm이나 Dropout처럼 텐서 병렬화로는 나누기 어려운 연산의 활성화(activation)를, 시퀀스(토큰) 축을 따라 나눠 저장·계산합니다. 텐서 병렬화의 메모리 절감 효과를 보완하는 역할을 합니다.</p></div>
+  <div class="tabpane" data-p="3" role="tabpanel" tabindex="0"><h3 style="margin-top:0">컨텍스트 병렬화 Context Parallelism (CP)</h3><p>매우 긴 입력 시퀀스(long context) 자체를 여러 GPU에 나눠 담고, 어텐션 계산 시 필요한 K, V 조각을 GPU 간에 주고받으며 처리합니다. 긴 컨텍스트 윈도우를 지원하기 위한 핵심 기법입니다.</p></div>
+  <div class="tabpane" data-p="4" role="tabpanel" tabindex="0"><h3 style="margin-top:0">전문가 병렬화 Expert Parallelism (EP)</h3><p>MoE(Mixture-of-Experts, 전문가 혼합) 구조의 모델에서, 서로 다른 "전문가" 서브네트워크를 서로 다른 GPU에 나눠 배치합니다. 토큰마다 라우터가 몇 개의 전문가만 골라 쓰므로, 전체 파라미터는 크지만 토큰당 실제 연산량은 그보다 작습니다.</p></div>
+
+  <div class="quiz" id="quiz1" data-ex-ok="Chinchilla 법칙의 핵심은 파라미터 수만 키우는 것이 아니라, 주어진 연산 예산에서 파라미터와 토큰 수를 함께 늘려야 손실을 최소화할 수 있다는 것입니다." data-ex-no="Chinchilla 법칙은 '무조건 크게'가 아니라 '연산 예산 안에서 파라미터와 데이터의 균형'을 강조합니다. 위 02절의 표를 다시 확인해 보세요.">
+    <div class="q">🧩 Chinchilla 법칙이 말하는 핵심은 무엇일까요?</div>
+    <button class="opt">파라미터 수가 많을수록 항상 좋으므로, 데이터 양과 상관없이 모델을 최대한 키워야 한다.</button>
+    <button class="opt" data-correct="1">주어진 연산 예산 안에서는 파라미터 수와 토큰(데이터) 수를 함께, 균형 있게 늘려야 손실을 최소화할 수 있다.</button>
+    <button class="opt">데이터 양만 중요하며, 파라미터 수는 손실에 거의 영향을 주지 않는다.</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 5: QUANTIZATION ===== -->
+<section id="s5"><div class="wrap reveal">
+  <span class="sec-no">05 — Quantization</span>
+  <h2>양자화: 정밀도를 낮춰 GPU 냉장고 공간을 아끼다 <span class="en">Quantization</span></h2>
+  <p class="lead"><b>양자화(Quantization)</b>는 모델 가중치를 더 적은 비트로 표현해 메모리를 아끼는 기법입니다. 흔한 오해와 달리 <em>모든 값을 균등한 간격(uniform)</em>으로 자르는 것이 최선은 아닙니다. 가중치 값들은 대체로 정규분포(normal distribution)를 따르는 경향이 있어서, 값이 몰려 있는 가운데 구간은 더 촘촘하게, 드문 꼬리 구간은 더 성기게 나누는 편이 정보 손실이 적습니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> NF4(4-bit NormalFloat)</div>
+    슬라이드는 INT8의 균등 분할(왼쪽, ✗)과 NF4의 정규분포 분위수 기반 분할(오른쪽, ✓)을 대비합니다. 값이 몰린 구간을 세밀하게 쪼개는 NF4가 같은 비트 수로 더 적은 오차를 냅니다.
+  </div>
+  <p>여기에 <b>이중 양자화(Double Quantization)</b>를 더할 수 있습니다. 4비트로 가중치를 양자화해도, 그 양자화에 쓰인 "양자화 상수(quantization constants)"는 보통 FP32로 저장해 추가 메모리를 잡아먹습니다. 이 양자화 상수 자체를 한 번 더(FP8 등으로) 양자화하면 추가로 메모리를 아낄 수 있습니다 — 슬라이드에 따르면 LLaMA 65B 기준으로 약 6%의 추가 절감 효과가 있습니다 <span class="badge b-src">원본</span>.</p>
+
+  <h3>계산기: 정밀도를 낮추면 모델이 얼마나 가벼워질까? <span class="en">Precision memory calculator</span></h3>
+  <div class="calc">
+    <div class="row">
+      <div class="field"><label>모델 크기 (파라미터 수) <b id="c2nLab">—</b></label><input type="range" id="c2nExp" min="8.3" max="12" step="0.01" value="10.845"></div>
+    </div>
+    <div class="calc-out n4">
+      <div class="box"><div class="big small" id="c2fp32">—</div><div class="muted">FP32 (4바이트/파라미터)</div></div>
+      <div class="box"><div class="big small" id="c2fp16">—</div><div class="muted">FP16·BF16 (2바이트)</div></div>
+      <div class="box"><div class="big small" id="c2int8">—</div><div class="muted">INT8 (1바이트)</div></div>
+      <div class="box hl"><div class="big small" id="c2int4">—</div><div class="muted">INT4·NF4 (0.5바이트)</div></div>
+    </div>
+    <p class="calc-note" id="c2note"></p>
+  </div>
+  <p class="muted">계산식은 단순화된 근사치입니다: 메모리(GB) ≈ 파라미터 수 × (정밀도당 바이트 수) ÷ 10⁹. 실제로는 NF4에 양자화 상수 오버헤드(이중 양자화 적용 시 파라미터당 약 0.127비트 추가)가 조금 더 붙지만, 계산기는 이를 무시한 이론적 하한을 보여줍니다 <span class="badge b-syn">종합·해석</span>. 예를 들어 70억(7B) 파라미터 모델을 FP16으로 올리면 약 14GB가 필요하다는 사실은 실제 LLaMA-7B 계열 모델의 실측치와도 잘 맞습니다.</p>
+</div></section>
+
+<!-- ===== SECTION 6: SFT ===== -->
+<section id="s6"><div class="wrap reveal">
+  <span class="sec-no">06 — Supervised finetuning</span>
+  <h2>SFT: "요리학교 졸업생"을 "손님 응대가 되는 조수"로 <span class="en">Supervised Fine-Tuning</span></h2>
+  <p class="lead">프리트레이닝만 마친 모델에게 "내 테디베어를 세탁기에 넣어도 될까요?"라고 물으면, 모델은 질문에 답하는 대신 테디베어에 대한 백과사전식 설명을 이어 쓰는 경우가 많습니다 <span class="badge b-src">원본</span>. 다음 토큰을 잘 예측하도록 배웠을 뿐, "질문에 답하는 대화 상대가 되어라"고는 배운 적이 없기 때문입니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> SFT의 정의</div>
+    <b>SFT(Supervised Fine-Tuning, 지도 미세조정)</b>는 <em>모델의 행동을 가중치 튜닝으로 바꾸는 것</em>입니다. 원하는 행동을 보여주는 입력·출력 쌍(input/output pairs)을 모아 "SFT 데이터"를 만들고, 프리트레이닝과 똑같은 다음 토큰 예측 목적함수를 이 데이터 위에서 다시 돌립니다 — 다만 이번엔 <em>주어진 입력에 대해(given the input)</em> 출력을 예측하도록 합니다.</p>
+  </div>
+  <p>이 SFT의 특수한 형태가 <b>지시문 튜닝(Instruction Tuning)</b>입니다. 목표는 모델을 "도움이 되는 조수(helpful assistant)"로 졸업시키는 것으로, 이야기 쓰기·목록 생성·시 창작·설명 등 다양한 형식의 사람이 작성했거나 합성한 지시문-응답 쌍으로 학습합니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2109.01652" target="_blank" rel="noopener">(Wei et al., 2022)</a>. 지시문 튜닝을 거치면 같은 질문에 "손세탁을 권한다"는 식의 실질적 답을 내놓게 됩니다 <span class="badge b-src">원본</span>.</p>
+  <p>규모 면에서 SFT 데이터는 프리트레이닝보다 훨씬 작습니다 — GPT-3는 약 1만 3천 개, LLaMA 3는 약 1천만 개의 예시로 SFT를 거쳤습니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">(Brown et al., 2020)</a>, <a href="https://arxiv.org/abs/2407.21783" target="_blank" rel="noopener">(LLaMA team, 2024)</a>. 그렇다고 SFT가 쉬운 것은 아닙니다.</p>
+  <div class="grid g3">
+    <div class="card soft"><h4>고품질 데이터</h4><p>SFT는 매우 높은 품질의 데이터를 요구합니다.</p></div>
+    <div class="card soft"><h4>프롬프트 분포 민감성</h4><p>학습에 쓰인 프롬프트 분포와 실제 사용 분포가 다르면 성능이 잘 일반화되지 않습니다.</p></div>
+    <div class="card soft"><h4>평가의 어려움</h4><p>연산 비용도 크지만, "잘 튜닝됐는가"를 재는 것 자체가 어려운 문제입니다.</p></div>
+  </div>
+
+  <h3>어떻게 "잘 됐는지" 확인할까?</h3>
+  <p>벤치마크(Benchmark)는 일반 지식(MMLU), 기초 추론(ARC-Challenge), 수학 추론(GSM8K), 코드 생성(HumanEval) 같은 차원별로 모델을 채점합니다 <span class="badge b-src">원본</span>. 다만 <em>"평가하려는 과제 자체로 학습(training on the test task)"</em>하면 모델 간 비교와 "창발적 능력(emergent capability)"에 대한 주장이 왜곡될 수 있다는 지적도 있습니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2407.07890" target="_blank" rel="noopener">(Dominguez-Olmedo et al., 2024)</a>.</p>
+  <p>Chatbot Arena 같은 "실제 느낌(real-life feeling)" 리더보드는 사용자 프롬프트로 A/B 테스트를 진행해 "바이브(vibe)"에 숫자를 매깁니다 <span class="badge b-src">원본</span>. 그러나 모델별 노출 불균형("콜드 스타트" 문제), 리더보드 조작(rigging) 가능성, 사용자가 사실성(factuality) 같은 중요한 측면을 정확히 판단하기 어렵다는 점, 개인 취향 편향, 안전성에 대한 과도한 페널티 등 여러 도전 과제가 있습니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2501.07493" target="_blank" rel="noopener">(Huang et al., 2025)</a>. <em>평가는 그 자체로 어려운 문제입니다.</em></p>
+</div></section>
+
+<!-- ===== SECTION 7: PEFT / LoRA ===== -->
+<section id="s7"><div class="wrap reveal">
+  <span class="sec-no">07 — Parameter-efficient finetuning</span>
+  <h2>LoRA: 셰프를 다시 훈련시키지 않고 "특기 노트"만 얹기 <span class="en">Low-Rank Adaptation</span></h2>
+  <p class="lead">SFT는 자원을 많이 먹습니다. 모든 파라미터, 그래디언트, 옵티마이저 상태를 다 갱신해야 하니까요. <strong>결론부터 말하면</strong>, <b>LoRA(Low-Rank Adaptation, 저랭크 적응)</b>는 원래의 큰 가중치 행렬 W는 그대로 얼려 두고(freeze), 그 위에 <em>훨씬 작은 두 행렬의 곱</em>만 학습해 더하는 방식으로 이 문제를 풉니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">(Hu et al., 2021)</a>.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> LoRA의 핵심 아이디어</div>
+    W = W₀ + B × A. 여기서 W₀(크기 d×k)는 프리트레이닝된 가중치로 고정되고, B(d×r)와 A(r×k)라는 두 개의 <b>저랭크(low-rank)</b> 행렬만 학습됩니다. r(rank, 랭크)이 d, k보다 훨씬 작을수록 학습할 파라미터가 극적으로 줄어듭니다.
+  </div>
+  <p>마치 숙련된 셰프에게 매번 요리 전체를 처음부터 다시 가르치는 대신, "이 요리엔 이 소스 한 스푼을 더하라"는 작은 메모 한 장만 쥐여주는 것과 같습니다. 본체(W₀)는 그대로 두고, 작은 보정치(B×A)만 새로 익히는 것이지요. 그리고 이 보정치를 통째로 바꿔 끼우면 같은 본체로 스팸 탐지용, 감성 분석용, 번역용 등 서로 다른 과제에 즉시 적응할 수 있습니다 <span class="badge b-src">원본</span>.</p>
+
+  <h3>계산기: LoRA는 얼마나 적은 파라미터로 충분할까? <span class="en">LoRA parameter-savings calculator</span></h3>
+  <div class="calc">
+    <div class="row">
+      <div class="field"><label>은닉 차원 d <b id="c3dLab">—</b></label><input type="range" id="c3d" min="512" max="8192" step="64" value="4096"></div>
+      <div class="field"><label>랭크 r <b id="c3rLab">—</b></label><input type="range" id="c3r" min="1" max="256" step="1" value="8"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <div class="field"><label>레이어 수 L <b id="c3lLab">—</b></label><input type="range" id="c3l" min="1" max="96" step="1" value="32"></div>
+    </div>
+    <div class="calc-out">
+      <div class="box"><div class="big small" id="c3out1">—</div><div class="muted">LoRA 학습 파라미터 (Q,K,V,O 4개 행렬 × L레이어)</div></div>
+      <div class="box"><div class="big small" id="c3out2">—</div><div class="muted">전체 미세조정 대비 축소 배수</div></div>
+      <div class="box hl"><div class="big" id="c3out3">—</div><div class="muted">전체 모델 대비 학습 비율(추정)</div></div>
+    </div>
+    <p class="calc-note" id="c3note"></p>
+  </div>
+
+  <h3>LoRA는 어디에, 어떻게 붙일까?</h3>
+  <div class="grid g2">
+    <div class="card"><h4>원래 논문의 위치</h4><p>Hu et al.(2021)의 원 실험은 어텐션(attention)의 Q, K, V, O 투영 행렬에 LoRA를 적용했습니다 <span class="badge b-ext">외부</span>.</p></div>
+    <div class="card"><h4>최근의 권장 위치</h4><p>이후 연구는 피드포워드(Feed Forward) 계층에 LoRA를 적용하는 것이 <em>가장 중요한 위치</em>라고 갱신된 가이드를 제시합니다 <span class="badge b-ext">외부</span> <a href="https://thinkingmachines.ai/blog/lora/" target="_blank" rel="noopener">("LoRA Without Regret", Schulman et al., 2025)</a>.</p></div>
+  </div>
+  <p>같은 자료는 학습 동역학(training dynamics)에 대한 실용적인 발견도 보고합니다: LoRA는 전체 미세조정보다 <b>더 높은 학습률(learning rate)</b>이 필요하고, <b>큰 배치 크기(batch size)</b>에서는 전체 미세조정만큼 성능이 나오지 않는 경향이 있습니다(경험적 관찰) <span class="badge b-ext">외부</span>.</p>
+
+  <h3>QLoRA: 저장까지 양자화하면?</h3>
+  <p><b>QLoRA</b>는 얼려둔 W₀ 자체를 양자화된 형태(4비트 NF4)로 저장해 메모리 병목을 한 번 더 줄입니다 <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">(Dettmers et al., 2023)</a>. B, A는 여전히 전체 정밀도(full precision)로 저장·학습되고, 실제 계산도 전체 정밀도로 수행됩니다 — <em>저장은 가볍게, 계산은 정확하게</em>라는 절충입니다.</p>
+  <div class="grid g2">
+    <div class="card soft"><h4>VRAM 절감</h4><p>LLaMA 65B 기준으로 미세조정 시 약 <b>16배</b>의 VRAM 절감 효과가 보고되었습니다 <span class="badge b-ext">외부</span>.</p></div>
+    <div class="card soft"><h4>이중 양자화의 추가 효과</h4><p>양자화 상수까지 한 번 더 양자화하면 추가로 약 <b>6%</b>의 메모리를 더 아낄 수 있습니다 <span class="badge b-ext">외부</span>.</p></div>
+  </div>
+
+  <div class="quiz" id="quiz2" data-ex-ok="LoRA는 원래의 큰 가중치 W₀는 얼리고, 훨씬 작은 두 저랭크 행렬 B·A의 곱만 학습해 W₀에 더합니다. 그래서 저장·전환이 가볍고, 과제별로 B·A만 바꿔 끼우면 됩니다." data-ex-no="LoRA의 핵심은 양자화가 아니라 저랭크 분해(low-rank decomposition)입니다. W₀를 통째로 양자화하는 것은 QLoRA가 추가로 하는 일이며, LoRA 자체의 정의는 아닙니다.">
+    <div class="q">🧩 LoRA가 학습 파라미터 수를 줄이는 핵심 원리는 무엇일까요?</div>
+    <button class="opt">원래 가중치 행렬 W 전체를 저정밀도(4비트 등)로 양자화해서 저장한다.</button>
+    <button class="opt" data-correct="1">원래 가중치 W₀는 고정하고, 훨씬 작은 두 저랭크 행렬 B(d×r)와 A(r×k)의 곱만 학습해 더한다.</button>
+    <button class="opt">트랜스포머의 레이어 절반을 통째로 삭제하고 나머지만 학습한다.</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== GLOSSARY ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">08 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <p class="lead">이 강의에 나온 핵심 용어를 영어(한글) 병기로 모았습니다. 검색창에 일부만 입력해도 필터링됩니다.</p>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색… (예: LoRA, ZeRO, HBM)"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 "Transformers &amp; Large Language Models" (Afshine Amidi &amp; Shervine Amidi, 2025년 가을학기) 4강 슬라이드의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=4강 슬라이드에서 직접 가져온 내용, <span class="badge b-ext">외부</span>=슬라이드가 인용했거나 추가로 확인한 논문·자료(출처 링크 병기), <span class="badge b-syn">종합·해석</span>=이해를 돕기 위해 작성자가 구성한 비유·계산기·근사 공식(슬라이드의 직접 주장이 아님). 계산기들의 수치는 표준적인 근사 공식(예: 학습 연산량 C≈6ND, 정밀도별 바이트 수)에 기반한 <em>추정치</em>이며, 실제 학습 비용·시간·메모리 사용량은 클러스터 구성·소프트웨어 구현·시장가에 따라 크게 달라질 수 있습니다. GPU 대여 단가(약 $2.5/GPU-시간)는 2025~2026년경 여러 클라우드 GPU 가격 비교 자료를 종합한 대략치이며 빠르게 변할 수 있습니다.</div>
+  <div>제작: Claude · 원저작권은 Stanford ICME 및 각 인용 논문의 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+/* esc(): ALWAYS wrap source-derived text before putting it in innerHTML */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* tabs — pointer + keyboard (arrow keys), roving tabindex + aria-selected */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* cascade — the memory & speed bottleneck chain of Section 03 */
+const CASC=[
+ {ic:'①',src:'원본',s:'메모리 부족',stage:'문제의 시작',title:'GPU 메모리에 모델이 안 들어간다',
+  prob:'파라미터, 그래디언트, Adam 옵티마이저 상태(모멘텀+분산 2개)까지 GPU마다 통째로 복제하면 O(10s of GB)인 GPU 메모리가 금방 바닥납니다.',
+  sol:'데이터 병렬화(Data Parallelism)로 배치를 나누고, <b>ZeRO</b>(Zero Redundancy Optimizer)로 옵티마이저 상태→그래디언트→파라미터 순으로 중복 저장을 단계적으로(ZeRO-1/2/3) 없앱니다.',
+  next:'그런데 모델 자체가 GPU 한 대보다 크면? → <b>모델 병렬화</b>(TP/PP/SP/CP/EP)'},
+ {ic:'②',src:'원본',s:'모델이 너무 큼',stage:'ZeRO 다음 단계',title:'모델 자체가 GPU 한 대에 안 들어간다',
+  prob:'모델의 파라미터 수가 O(billions)~O(100s of billions)에 달하면, ZeRO로 중복을 없애도 모델 하나가 GPU 한 대의 메모리를 넘어섭니다.',
+  sol:'모델의 계산 자체를 여러 GPU에 쪼개는 <b>모델 병렬화</b>(Tensor/Pipeline/Sequence/Context/Expert Parallelism)를 함께 씁니다.',
+  next:'계산은 되는데, 어텐션 연산 자체가 왜 이렇게 느릴까? → <b>FlashAttention</b>'},
+ {ic:'③',src:'외부',s:'느린 어텐션',stage:'FlashAttention',title:'표준 어텐션이 HBM 병목에 걸린다',
+  prob:'표준 어텐션은 중간 행렬 S=QKᵀ, P=softmax(S)를 매번 크고 느린 HBM에 썼다가 다시 읽어옵니다. 연산 자체보다 이 메모리 왕복이 병목입니다.',
+  sol:'FlashAttention은 Q,K,V를 블록 단위로 작고 빠른 SRAM에 올려 <b>타일링</b>하고, 역전파 때는 중간값을 저장 대신 <b>재계산</b>합니다. FLOPs는 늘지만 HBM 왕복이 줄어 실행 시간은 오히려 5배 이상 짧아집니다(41.7ms→7.3ms).',
+  next:'계산과 통신이 빨라졌다면, 이제 무엇을 더 가볍게 만들 수 있을까? → <b>정밀도 낮추기</b>'},
+ {ic:'④',src:'종합',s:'정밀도 최적화',stage:'마지막 단계',title:'모든 수를 32비트로 계산하는 건 낭비',
+  prob:'FP32처럼 정밀도가 높은 표현은 정확하지만 느리고 메모리를 많이 씁니다. 학습 중 모든 계산을 이 정밀도로 할 필요는 없습니다.',
+  sol:'<b>혼합 정밀도 학습</b>(순전파·역전파는 FP16, 가중치 갱신만 FP32)으로 학습을 가속하고, <b>양자화</b>(NF4 4비트 + 이중 양자화)로 저장·추론·미세조정 메모리를 한 번 더 줄입니다.',
+  next:'이 절감 기법들은 이후 QLoRA 같은 파라미터 효율적 미세조정 기법으로 이어집니다 — 07절에서 계속됩니다.'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${esc(c.s)}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${esc(c.stage)} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${esc(c.title)}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 묶는가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'해결 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* quiz — per-instance explanation via data-ex-ok / data-ex-no */
+$$('.quiz').forEach(q=>{
+  const opts=$$('.opt',q),box=$('.fb',q);
+  const okMsg=q.dataset.exOk||'정답입니다.', noMsg=q.dataset.exNo||'다시 확인해 보세요.';
+  opts.forEach(o=>o.onclick=()=>{
+    if(q.dataset.done)return;q.dataset.done=1;
+    opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});
+    if(!o.hasAttribute('data-correct'))o.classList.add('wrong');
+    box.style.display='block';
+    box.innerHTML=o.hasAttribute('data-correct')?('✅ 정답입니다! '+okMsg):('❌ 다시 생각해 보세요. '+noMsg);
+  });
+});
+
+/* glossary */
+const GLOSS=[
+ ['Pretraining','프리트레이닝(사전학습)','다음 토큰 예측을 목적함수로, 방대한 웹 텍스트·코드로 모델에게 언어의 패턴을 통째로 학습시키는 첫 단계.'],
+ ['Scaling laws','스케일링 법칙','연산량(FLOPs)이 커질수록 테스트 손실이 예측 가능한 거듭제곱 법칙으로 줄어든다는 경험적 법칙 (Kaplan et al., 2020).'],
+ ['Chinchilla law','Chinchilla 법칙','주어진 연산 예산에서 손실을 최소화하려면 파라미터 수와 토큰 수를 함께 늘려야 한다는 연산-최적 스케일링 법칙 (Hoffmann et al., 2022).'],
+ ['FLOPs','FLOPs(부동소수점 연산 수)','FLoating-point OPerations. 모델 학습·추론에 필요한 총 연산량을 재는 단위.'],
+ ['FLOPS / FLOP·s⁻¹','FLOPS(초당 연산 성능)','FLoating-point OPerations per Second. 하드웨어의 초당 처리량을 재는 단위(FLOPs와 구분).'],
+ ['Data parallelism','데이터 병렬화','같은 모델을 여러 GPU에 복제하고, 배치(batch)만 나눠 각 GPU가 서로 다른 데이터를 처리하게 하는 병렬화 방식.'],
+ ['ZeRO','ZeRO(Zero Redundancy Optimizer)','데이터 병렬화 시 GPU마다 중복 저장되는 옵티마이저 상태·그래디언트·파라미터를 단계적으로 나눠 저장해 메모리를 아끼는 기법 (Rajbhandari et al., 2019).'],
+ ['Model parallelism','모델 병렬화','모델의 계산 자체를 여러 GPU에 나누는 방식. 텐서·파이프라인·시퀀스·컨텍스트·전문가 병렬화 등이 있다.'],
+ ['Tensor parallelism (TP)','텐서 병렬화','하나의 행렬 연산을 여러 GPU가 나눠 계산하는 모델 병렬화 방식.'],
+ ['FlashAttention','FlashAttention(플래시어텐션)','HBM과 SRAM 사이의 데이터 이동을 최소화하도록 타일링과 재계산을 활용해 어텐션을 정확하게, 그러나 훨씬 빠르게 계산하는 알고리즘 (Dao et al., 2022).'],
+ ['HBM','HBM(고대역폭 메모리)','High-Bandwidth Memory. GPU의 크고 느린 주 메모리.'],
+ ['SRAM','SRAM(정적 램)','GPU 내부의 작지만 매우 빠른 메모리. FlashAttention이 계산을 이곳에서 수행한다.'],
+ ['Mixed precision training','혼합 정밀도 학습','순전파·역전파는 FP16 등 낮은 정밀도로 빠르게 계산하고, 가중치 갱신만 FP32로 정밀하게 보관하는 학습 기법 (Micikevicius et al., 2017).'],
+ ['Quantization','양자화','모델 가중치를 더 적은 비트(예: INT8, 4비트 NF4)로 표현해 메모리 사용량을 줄이는 기법.'],
+ ['NF4','NF4(4비트 노멀플로트)','정규분포 분위수를 기준으로 값을 나눠, 균등 분할보다 정보 손실이 적은 4비트 양자화 표현 (QLoRA).'],
+ ['SFT','SFT(지도 미세조정)','Supervised Fine-Tuning. 원하는 입력·출력 예시 쌍으로 프리트레이닝된 모델의 가중치를 다시 조정하는 단계.'],
+ ['Instruction tuning','지시문 튜닝','다양한 지시문-응답 데이터로 SFT를 수행해, 모델을 "도움이 되는 조수"로 만드는 특수한 SFT (Wei et al., 2022).'],
+ ['Benchmark','벤치마크','MMLU, GSM8K, HumanEval 등 모델의 특정 능력(지식·추론·코딩 등)을 정량적으로 재는 표준화된 평가 세트.'],
+ ['LoRA','LoRA(저랭크 적응)','Low-Rank Adaptation. 원 가중치 W₀는 고정하고, 두 개의 작은 저랭크 행렬 B·A의 곱만 학습해 더하는 파라미터 효율적 미세조정 기법 (Hu et al., 2021).'],
+ ['Rank (r)','랭크(r)','LoRA에서 저랭크 행렬 B(d×r), A(r×k)의 공통 차원. r이 작을수록 학습 파라미터가 적어진다.'],
+ ['QLoRA','QLoRA(큐로라)','LoRA에 양자화를 결합해, 얼려둔 원 가중치를 4비트(NF4)로 저장함으로써 메모리를 더 아끼는 기법 (Dettmers et al., 2023).'],
+ ['PEFT','PEFT(파라미터 효율적 미세조정)','Parameter-Efficient Fine-Tuning. 전체 파라미터가 아니라 일부(또는 추가된 소수)만 학습해 미세조정 비용을 줄이는 기법군. LoRA가 대표적이다.'],
+ ['MFU','MFU(모델 연산 활용률)','Model FLOPs Utilization. 실제 달성한 처리량이 하드웨어 이론상 최대 처리량(peak FLOPS) 대비 몇 %인지를 나타내는 지표.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${esc(g[1])} <span class="en">${esc(g[0])}</span></div><div class="gd">${esc(g[2])}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+
+/* ---------- number formatting ---------- */
+function fmtCount(n){
+  if(n>=1e12) return (n/1e12).toFixed(2)+'T';
+  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(2)+'K';
+  return n.toFixed(0);
+}
+function fmtSci(n){
+  if(!isFinite(n)||n<=0) return '0';
+  const e=Math.floor(Math.log10(n));
+  const m=n/Math.pow(10,e);
+  return m.toFixed(2)+' × 10^'+e;
+}
+function fmtGB(gb){
+  if(gb>=1024) return (gb/1024).toFixed(2)+' TB';
+  return gb.toFixed(1)+' GB';
+}
+function fmtDays(d){
+  if(d<1/24) return Math.round(d*1440)+'분';
+  if(d<1) return (d*24).toFixed(1)+'시간';
+  if(d<3) return (d*24).toFixed(1)+'시간';
+  if(d<365) return d.toFixed(1)+'일';
+  return (d/365).toFixed(1)+'년';
+}
+function fmtUSD(x){
+  if(x>=1e6) return '$'+(x/1e6).toFixed(2)+'M';
+  if(x>=1e3) return '$'+(x/1e3).toFixed(1)+'K';
+  return '$'+x.toFixed(0);
+}
+
+/* ---------- calc 1: compute & cost ---------- */
+const c1n=$('#c1nExp'), c1d=$('#c1dExp'), c1g=$('#c1gExp'), c1m=$('#c1mPct');
+const H100_BF16_DENSE=989e12; // FLOP/s, from the slide's H100 spec table (dense, non-sparse)
+const USD_PER_GPU_HOUR=2.5;   // rough 2025-2026 on-demand median, external estimate
+function calc1(){
+  const N=Math.pow(10,+c1n.value), D=Math.pow(10,+c1d.value);
+  const gpus=Math.max(1,Math.round(Math.pow(10,+c1g.value)));
+  const mfu=+c1m.value/100;
+  $('#c1nLab').textContent=fmtCount(N);
+  $('#c1dLab').textContent=fmtCount(D)+' tokens';
+  $('#c1gLab').textContent=gpus.toLocaleString()+'대';
+  $('#c1mLab').textContent=c1m.value+'%';
+  const C=6*N*D;
+  const effFlops=H100_BF16_DENSE*mfu;
+  const singleGPUdays=(C/effFlops)/86400;
+  const wallDays=singleGPUdays/gpus;
+  const costUSD=singleGPUdays*24*USD_PER_GPU_HOUR;
+  $('#c1out1').textContent=fmtSci(C)+' FLOPs';
+  $('#c1out2').textContent=fmtDays(wallDays);
+  $('#c1out3').textContent=fmtUSD(costUSD);
+  const ratio=D/N;
+  let zone;
+  if(ratio<15) zone='파라미터에 비해 데이터가 다소 적습니다(언더트레인 위험) — Chinchilla 권장 비율(약 20 토큰/파라미터)보다 낮습니다.';
+  else if(ratio<=25) zone='Chinchilla가 권장하는 연산-최적 비율(약 20 토큰/파라미터) 부근입니다.';
+  else zone='파라미터에 비해 데이터가 풍부합니다(추론 비용 절감에는 유리, "오버트레인" 경향).';
+  $('#c1note').innerHTML='토큰/파라미터 비율 ≈ '+ratio.toFixed(1)+'. '+zone+' GPU 대수를 늘리면 벽시계 시간은 줄어들지만, 총 비용은 (통신 오버헤드를 무시하면) 거의 그대로입니다 — 같은 총 연산량을 나눠서 할 뿐이기 때문입니다. <span class="badge b-syn">종합·해석</span>';
+}
+[c1n,c1d,c1g,c1m].forEach(el=>el.addEventListener('input',calc1));
+calc1();
+
+/* ---------- calc 2: quantization memory ---------- */
+const c2n=$('#c2nExp');
+function calc2(){
+  const N=Math.pow(10,+c2n.value);
+  $('#c2nLab').textContent=fmtCount(N)+' params';
+  const bytesFor={fp32:4,fp16:2,int8:1,int4:0.5};
+  const gb=b=>(N*b)/1e9;
+  const gpus80=g=>Math.max(1,Math.ceil(g/80));
+  const fp32=gb(bytesFor.fp32), fp16=gb(bytesFor.fp16), int8=gb(bytesFor.int8), int4=gb(bytesFor.int4);
+  $('#c2fp32').textContent=fmtGB(fp32);
+  $('#c2fp16').textContent=fmtGB(fp16);
+  $('#c2int8').textContent=fmtGB(int8);
+  $('#c2int4').textContent=fmtGB(int4);
+  $('#c2note').innerHTML='H100(80GB) 기준 필요 GPU 대수 — FP32: '+gpus80(fp32)+'대 · FP16: '+gpus80(fp16)+'대 · INT8: '+gpus80(int8)+'대 · INT4: '+gpus80(int4)+'대. (배치·활성화·KV 캐시 등은 제외한 가중치 저장 메모리만 계산한 값입니다.) <span class="badge b-syn">종합·해석</span>';
+}
+c2n.addEventListener('input',calc2);
+calc2();
+
+/* ---------- calc 3: LoRA parameter savings ---------- */
+const c3d=$('#c3d'), c3r=$('#c3r'), c3l=$('#c3l');
+function calc3(){
+  const d=+c3d.value, r=+c3r.value, L=+c3l.value;
+  $('#c3dLab').textContent=d.toLocaleString();
+  $('#c3rLab').textContent=r;
+  $('#c3lLab').textContent=L;
+  const matricesPerLayer=4; // Q,K,V,O
+  const loraParamsPerMatrix=r*(d+d);
+  const totalLora=loraParamsPerMatrix*matricesPerLayer*L;
+  const fullPerMatrix=d*d;
+  const totalFull=fullPerMatrix*matricesPerLayer*L;
+  const reduction=totalFull/totalLora;
+  const approxModelTotal=12*L*d*d; // standard order-of-magnitude transformer param estimate (attention + FFN)
+  const pct=totalLora/approxModelTotal*100;
+  $('#c3out1').textContent=fmtCount(totalLora)+' params';
+  $('#c3out2').textContent=reduction.toFixed(0)+'배 적음';
+  $('#c3out3').textContent=pct.toFixed(3)+'%';
+  $('#c3note').innerHTML='이 설정에서 전체 미세조정이라면 Q,K,V,O 네 행렬만으로도 '+fmtCount(totalFull)+'개 파라미터를 학습해야 하지만, LoRA는 '+fmtCount(totalLora)+'개면 충분합니다. 전체 모델 파라미터는 12×L×d² 근사식으로 약 '+fmtCount(approxModelTotal)+'개로 추정했습니다(표준적인 트랜스포머 파라미터 근사, 임베딩 등은 제외) <span class="badge b-syn">종합·해석</span>.';
+}
+[c3d,c3r,c3l].forEach(el=>el.addEventListener('input',calc3));
+calc3();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

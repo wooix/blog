@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 2강 논문 노트 — 트랜스포머 기법</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1180px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:900px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.4vw,54px);margin:.1em 0 .2em;letter-spacing:-1px;line-height:1.1}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:780px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 22px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.cta.sm{padding:8px 14px;font-size:13.5px;border-radius:9px}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:60px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:820px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.syn{border-color:var(--syn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px}
+.disc ul{margin:8px 0 0;padding-left:20px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ── 논문 지형: 타임라인 ── */
+.timeline-mini{display:flex;gap:16px;overflow-x:auto;padding:26px 4px 6px;margin-top:8px}
+.tl-yr{flex:0 0 auto;min-width:120px;text-align:center;padding-top:20px;position:relative;border-top:2px solid var(--line2)}
+.tl-y{font-family:var(--serif);font-weight:700;color:var(--brand2);font-size:15px;margin-bottom:10px}
+.tl-p{display:block;width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:6px;cursor:pointer;font:inherit}
+.tl-p:hover{border-color:var(--brand);color:var(--ink)}
+
+/* ── 마스터-디테일 ── */
+.searchbar{margin:22px 0 8px}
+#paperSearch{width:100%;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:13px 16px;border-radius:12px;font-size:15px;font:inherit}
+.search-count{margin:8px 0 0;font-size:13px;color:var(--ink3)}
+.md-wrap{display:grid;grid-template-columns:400px 1fr;gap:28px;align-items:start;margin-top:18px}
+@media(max-width:860px){.md-wrap{grid-template-columns:1fr}}
+.master-col{min-width:0}
+.grp{margin-bottom:28px}
+.grp.hide{display:none}
+.grp-head{font-size:16.5px;margin:0 0 4px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.grp-head .en{font-size:12px;font-weight:600;color:var(--ink3)}
+.grp-blurb{font-size:13px;color:var(--ink3);margin:0 0 10px;line-height:1.55}
+.paper-item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 9px;cursor:pointer;color:var(--ink);font:inherit}
+.paper-item:hover{border-color:var(--line2);background:var(--card2)}
+.paper-item[aria-current="true"]{border-color:var(--brand);background:var(--brandsoft)}
+.paper-item.hide{display:none}
+.pi-title{font-weight:700;font-size:14px;display:block;line-height:1.4}
+.pi-meta{font-size:11.5px;color:var(--ink3);display:block;margin-top:3px}
+.pi-one{font-size:12.5px;color:var(--ink2);display:block;margin-top:5px;line-height:1.5}
+.detail-col{position:sticky;top:74px}
+@media(max-width:860px){.detail-col{position:static;top:auto;margin-top:8px}}
+.detail-panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+.d-badges{margin-bottom:10px}
+.d-links{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+.d-meta{color:var(--ink3);font-size:13.5px;margin:2px 0 0}
+.d-tldr{background:var(--card2);border-left:3px solid var(--brand);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0;font-size:15.5px}
+.d-struct h4{display:flex;align-items:center;gap:8px;font-size:15px;margin:1.3em 0 .3em}
+.d-struct p{margin:0 0 .2em;color:var(--ink2)}
+.d-diagram{margin-top:22px}
+.dg-fig{margin:14px 0 6px;overflow-x:auto;background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:14px}
+.dg-fig svg{width:100%;height:auto;display:block;min-width:480px}
+.d-svg-cap{margin-top:8px;line-height:1.65}
+.d-role{margin-top:22px;padding-top:18px;border-top:1px dashed var(--line)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{background:var(--brandsoft);color:var(--brand2);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font:inherit}
+.chip:hover{border-color:var(--brand)}
+.d-empty{color:var(--ink3);text-align:center;padding:60px 0}
+
+/* ── 개념도 SVG 공용 클래스 ── */
+.dg-card{fill:var(--card2);stroke:var(--line)}
+.dg-panel{fill:none;stroke:var(--line2)}
+.dg-dash{stroke-dasharray:4 3}
+text.dg-t1{font-family:var(--sans);font-weight:700;font-size:13px;fill:var(--ink)}
+text.dg-t2{font-family:var(--sans);font-weight:600;font-size:11px;fill:var(--ink2)}
+text.dg-t3{font-family:var(--sans);font-weight:700;font-size:11px;fill:#fff}
+text.dg-t4{font-family:var(--sans);font-weight:700;font-size:11px;fill:#0c0f16}
+.dg-brand{fill:var(--brand)}
+.dg-brand-line{stroke:var(--brand);fill:none}
+.dg-syn{fill:var(--syn)}
+.dg-syn-line{stroke:var(--syn);fill:none}
+.dg-ext{fill:var(--ext)}
+.dg-ext-line{stroke:var(--ext);fill:none}
+.dg-warn{fill:var(--warn)}
+.dg-warn-line{stroke:var(--warn);fill:none}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>L2</b> 논문 노트</span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#papers">논문 목록</a>
+    <a href="../강의노트/lecture2.html" target="_blank" rel="noopener">강의 설명자 ↗</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도 ↗</a>
+    <a href="../" target="_blank" rel="noopener">전체 목록 ↗</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">CME 295 · Lecture 2 · Paper Notes</span>
+  <h1>CME 295 · 2강 논문 노트 — 트랜스포머 기법</h1>
+  <p class="sub">1강에서 익힌 셀프 어텐션(Self-Attention)이 "누구의 말에 얼마나 집중할지"를 정했다면, 2강의 논문들은 그 방식을 <b>오래(긴 문맥)·안정적으로(정규화)·값싸게(메모리)</b> 돌아가게 다듬는 실전 테크닉 12편을 보여줍니다.</p>
+  <div class="metaline">
+    <span><b>원 강의</b> <a href="../강의노트/lecture2.html" target="_blank" rel="noopener">CME 295 · 2강 설명자 보기 ↗</a></span>
+    <span><b>다루는 논문</b> 목록 12항목 · 고유 11편 · 8개 개념</span>
+    <span><b>개념 지도</b> <a href="../dag.html" target="_blank" rel="noopener">DAG 보기 ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#landscape">논문 지형부터 보기 ↓</a>
+    <a class="cta" href="#papers">논문 목록 바로가기 ↓</a>
+    <a class="cta ghost" href="../" target="_blank" rel="noopener">발행 목록 전체 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>원 출처(JSON 메타데이터·arXiv)에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>arXiv 초록을 근거로 <b>그라운딩한</b> 요약.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 사실을 엮은 <b>작성자 재구성</b>(개념도·역할 해설 포함).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== 논문 지형 ===== -->
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">01 — Landscape</span>
+  <h2>이 장의 논문 지형 <span class="en">How the pieces fit</span></h2>
+  <p class="lead">결론부터 말하면, 이 강의의 논문 12편은 트랜스포머라는 뼈대 위에 <b>순서를 어떻게 새길지, 값을 어떻게 안정시킬지, 긴 문서를 어떻게 감당할지, 메모리를 어떻게 아낄지, 읽기를 어떻게 학습할지</b>라는 다섯 가지 실전 질문에 대한 답을 시간 순으로 쌓아 올린 것입니다.</p>
+
+  <p>여러 명이 함께 강의를 받아적는 <b>스터디 모임</b>을 떠올려 봅시다. 2017년 Vaswani 등은 순환(recurrent)·합성곱(convolutional) 구조 없이 서로의 필기를 참고하는 순수 어텐션 구조인 <b>트랜스포머(Transformer)</b>를 내놓으며 번역 과제에서 기존 최고 성능을 넘어섰습니다. 그런데 모두가 동시에 서로를 참고하다 보니 몇 가지 현실적인 문제가 그대로 남았습니다. 누가 먼저 말했는지(순서), 사람마다 목소리 크기가 달라 학습이 흔들리는 문제(정규화), 강의가 길어질수록 모든 사람의 말을 동시에 참고하는 비용이 제곱으로 커지는 문제(장문서), 그리고 받아적을 때마다 모든 사람의 노트를 다시 훑어야 하는 메모리 부담(디코딩 캐시)이 그것입니다.</p>
+
+  <p>이 강의에 실린 논문들은 각 문제에 한 걸음씩 돌파구를 마련합니다. 순서 문제는 학습형 절대 위치에서 출발해 <b>ALiBi</b>의 거리 비례 편향을 거쳐 <b>RoPE</b>의 회전 인코딩으로 정착했고, 정규화 문제는 Ba 등의 <b>레이어 정규화(Layer Normalization)</b>가 안정성의 토대를 놓은 뒤 <b>Pre-Norm</b> 구조가 워밍업 부담을 덜어냈습니다. 장문서 문제는 <b>Longformer</b>가 지역+전역 어텐션으로 계산량을 선형에 가깝게 낮췄고, 메모리 문제는 <b>MQA</b>가 키·값 헤드를 하나로 압축한 뒤 <b>GQA</b>가 품질과 속도의 중간 지점을 찾아냈습니다. 한편 <b>BERT</b>는 어텐션을 양방향으로 열어 "읽고 이해하는" 사전학습-파인튜닝 패러다임을 세웠고, <b>RoBERTa</b>는 아키텍처가 아니라 학습 레시피만 다듬어도 성능이 크게 오른다는 것을 보여주었습니다.</p>
+
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 흐름 요약</div>
+  흥미로운 점은 이 흐름의 결과물들이 지금도 실제 상용 모델 속에 살아 있다는 것입니다. RoPE는 LLaMA 계열의 기본 위치 인코딩이 되었고, GQA와 슬라이딩 윈도우 어텐션(SWA)은 Mistral 7B에서 나란히 검증되었습니다. 아래 타임라인에서 연도별로 어떤 문제가 어떤 해법으로 이어졌는지 직접 눌러 살펴볼 수 있습니다 — 누르면 아래 논문 목록에서 해당 상세 노트가 열립니다.</div>
+
+  <div class="timeline-mini" role="list" aria-label="논문 발표 연도 타임라인">
+    <div class="tl-yr" role="listitem"><div class="tl-y">2016</div><button class="tl-p tl-bar" data-pid="p_ln">Layer Norm</button></div>
+    <div class="tl-yr" role="listitem"><div class="tl-y">2017</div><button class="tl-p tl-bar" data-pid="p_attn">Transformer</button></div>
+    <div class="tl-yr" role="listitem"><div class="tl-y">2018</div><button class="tl-p tl-bar" data-pid="p_bert">BERT</button></div>
+    <div class="tl-yr" role="listitem"><div class="tl-y">2019</div><button class="tl-p tl-bar" data-pid="p_roberta">RoBERTa</button><button class="tl-p tl-bar" data-pid="p_mqa">MQA</button></div>
+    <div class="tl-yr" role="listitem"><div class="tl-y">2020</div><button class="tl-p tl-bar" data-pid="p_longformer">Longformer</button><button class="tl-p tl-bar" data-pid="p_prenorm">Pre-LN 이론</button></div>
+    <div class="tl-yr" role="listitem"><div class="tl-y">2021</div><button class="tl-p tl-bar" data-pid="p_rope">RoPE</button><button class="tl-p tl-bar" data-pid="p_alibi">ALiBi</button></div>
+    <div class="tl-yr" role="listitem"><div class="tl-y">2023</div><button class="tl-p tl-bar" data-pid="p_gqa">GQA</button><button class="tl-p tl-bar" data-pid="p_mistral">Mistral 7B</button></div>
+  </div>
+</div></section>
+
+<!-- ===== 마스터-디테일: 논문 목록 ===== -->
+<section id="papers"><div class="wrap reveal">
+  <span class="sec-no">02 — Master / Detail</span>
+  <h2>논문 마스터-디테일 <span class="en">Click a paper to open its note</span></h2>
+  <p class="lead">왼쪽 목록에서 논문을 고르면 오른쪽(모바일에서는 아래)에 상세 노트가 열립니다. 제목·저자·개념 이름(한/영)으로 실시간 검색할 수 있습니다.</p>
+
+  <div class="searchbar">
+    <input id="paperSearch" type="text" placeholder="제목, 저자, 개념으로 검색… (한글/영문 모두 가능, 예: RoPE, Shazeer, 정규화)" aria-label="논문 검색">
+    <p class="search-count muted" id="searchCount" aria-live="polite"></p>
+  </div>
+
+  <div class="md-wrap">
+    <div class="master-col" id="masterList"></div>
+    <div class="detail-col"><aside class="detail-panel" id="detail" aria-live="polite"></aside></div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 CME 295 2강이 참조하는 논문들의 비공식 교육용 해설 노트입니다.
+   <span class="badge b-src">원본</span>=제공된 메타데이터, <span class="badge b-ext">외부</span>=arXiv 초록을 근거로 그라운딩한 요약,
+   <span class="badge b-syn">종합·해석</span>=작성자 재구성(개념도·역할·흐름 해설)입니다. 11편 모두 arXiv 초록 페이지를 실제 조회해 확인했습니다.
+  <b>특이사항</b>
+  <ul>
+    <li>Mistral 7B: 초록 확인 결과 Llama 1 34B는 "필적"이 아니라 추론·수학·코드 생성 과제에서 <b>능가(outperform)</b>한다고 명시되어 있어, 표현을 정정했습니다.</li>
+    <li>RoBERTa: 초록에는 "BERT가 undertrained였고 GLUE·RACE·SQuAD에서 SOTA"라는 정성적 결론만 명시되어 있습니다. 데이터 규모(16GB→160GB)·동적 마스킹·NSP 제거 등 구체적 학습 레시피 수치는 논문 본문 기준의 잘 알려진 사실이라 방법 섹션을 종합·해석 배지로 표기했습니다.</li>
+    <li>RoFormer(RoPE): 초록에서 "장문 텍스트 분류 벤치마크에서 기존 방법을 능가"라는 정성적 서술만 확인되어, 구체적 벤치마크 수치는 기재하지 않았습니다.</li>
+    <li>Fast Transformer Decoding(MQA): 초록에 구체적 속도 향상·품질 저하 수치가 명시되어 있지 않아 정성적 서술만 사용했습니다.</li>
+    <li>"Attention Is All You Need"는 위치 인코딩과 다중 헤드 어텐션(MHA) 두 개념 모두의 원 출처라 마스터 목록에 두 번(그룹 2곳) 노출되며, 두 항목 모두 같은 상세 노트로 연결됩니다.</li>
+  </ul>
+  </div>
+  <div>제작: Claude · 원저작권은 각 논문의 저자·출판사에 있습니다. · <a href="../강의노트/lecture2.html" target="_blank" rel="noopener">강의 설명자 보기 →</a> · <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a></div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* chrome: progress bar + back-to-top + reveal-on-scroll + theme toggle */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* ============================================================
+   개념(그룹) 정의 — 마스터 목록의 그룹 헤더
+   ============================================================ */
+const CONCEPTS=[
+ {id:'positional-encoding',ko:'위치 인코딩',en:'Positional Encoding',
+  blurb:'쿼리·키·값의 직접 연결만으로는 사라지는 순서 정보를, 트랜스포머는 별도로 주입해야 합니다.',
+  papers:['p_attn','p_alibi']},
+ {id:'rope',ko:'회전 위치 임베딩(RoPE)',en:'Rotary Position Embedding',
+  blurb:'쿼리·키 벡터를 위치에 비례해 회전시켜 내적이 상대 거리만의 함수가 되게 만드는, 위치 인코딩의 최종 진화형입니다.',
+  papers:['p_rope']},
+ {id:'layer-normalization',ko:'레이어 정규화',en:'Layer Normalization',
+  blurb:'한 벡터 안의 값을 평균 0·분산 1로 표준화해 학습 안정성과 수렴 속도를 높입니다.',
+  papers:['p_ln','p_prenorm']},
+ {id:'attention-approximation',ko:'어텐션 근사',en:'Attention Approximation',
+  blurb:'표준 어텐션의 O(n²) 비용을 지역+전역 또는 슬라이딩 윈도우 방식으로 선형에 가깝게 근사합니다.',
+  papers:['p_longformer','p_mistral']},
+ {id:'mha',ko:'다중 헤드 어텐션(MHA)',en:'Multi-Head Attention',
+  blurb:'Q/K/V를 h개의 독립적인 헤드로 나눠 병렬로 어텐션을 계산하는 원조 트랜스포머의 표준 어텐션입니다.',
+  papers:['p_attn']},
+ {id:'mqa',ko:'다중 쿼리 어텐션(MQA)',en:'Multi-Query Attention',
+  blurb:'모든 쿼리 헤드가 키·값 헤드 단 하나만 공유해, 디코딩 메모리 대역폭 비용을 크게 줄입니다.',
+  papers:['p_mqa']},
+ {id:'gqa',ko:'그룹 쿼리 어텐션(GQA)',en:'Grouped-Query Attention',
+  blurb:'쿼리 헤드를 G개 그룹으로 묶어 MHA와 MQA 사이의 절충점을 찾는, 오늘날 실전 표준 어텐션입니다.',
+  papers:['p_gqa']},
+ {id:'bert',ko:'BERT',en:'Bidirectional Encoder Representations from Transformers',
+  blurb:'인코더만 남기고 양방향으로 문맥을 읽어, 사전학습-파인튜닝 패러다임을 정립했습니다.',
+  papers:['p_bert','p_roberta']}
+];
+
+/* ============================================================
+   논문 상세 데이터 (고유 11편) — abs_url을 WebFetch로 실제 조회해 그라운딩
+   badges: problem/idea/method/results 기본 '외부'(ext), impact 기본 '종합'(syn).
+   ============================================================ */
+const PAPERS={
+ p_attn:{
+   title:'Attention Is All You Need', authors:'Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser & Polosukhin',
+   year:2017, arxiv:'1706.03762', pdf:'https://arxiv.org/pdf/1706.03762', abs:'https://arxiv.org/abs/1706.03762',
+   concepts:['positional-encoding','mha'],
+   oneliner:'어텐션만으로 번역 SOTA를 낸 트랜스포머 원조 논문(사인·코사인 위치 인코딩 + 멀티헤드 어텐션).',
+   tldr:'순환·합성곱을 걷어내고 셀프 어텐션만으로 시퀀스를 다루는 <b>트랜스포머(Transformer)</b> 구조를 제안해, 병렬 학습과 번역 성능을 동시에 잡았습니다.',
+   sections:{
+     problem:'기존 시퀀스 변환 모델은 순환(recurrent) 또는 합성곱(convolutional) 신경망에 의존해, 계산을 순서대로 처리해야 하는 탓에 병렬화가 어렵고 학습이 느렸습니다.',
+     idea:'저자들은 순환·합성곱을 전혀 쓰지 않고 어텐션 메커니즘만으로 인코더-디코더를 구성한 트랜스포머를 제안합니다. <em>순환과 합성곱을 완전히 걷어내도 병렬로 시퀀스 전체를 동시에 참고할 수 있다</em>는 것이 핵심 주장입니다.',
+     method:'Q/K/V를 h개의 헤드로 나눠 병렬로 스케일드 닷프로덕트 어텐션을 수행하는 <b>멀티헤드 어텐션(Multi-Head Attention)</b>과, 순서 정보를 주입하기 위한 고정된 사인·코사인 <b>위치 인코딩(Positional Encoding)</b>을 함께 사용합니다.',
+     results:'영-독(WMT 2014 En-De) 번역에서 28.4 BLEU(기존 최고 대비 +2 이상), 영-불(En-Fr)에서 41.8 BLEU(단일 모델 최고 기록)를 8개 GPU·3.5일 학습만으로 달성했습니다.',
+     impact:'이 구조는 이후 BERT, GPT를 비롯한 사실상 모든 현대 언어모델의 기반이 되었고, 이 강의에서 다루는 RoPE·ALiBi·MQA·GQA는 모두 이 논문이 도입한 멀티헤드 어텐션과 위치 인코딩을 개선하려는 시도입니다.'
+   },
+   role:'이 강의의 출발점입니다. 위치 인코딩과 멀티헤드 어텐션이라는 두 축 모두 이 논문에서 시작되며, 이후 논문들은 각각을 정교화합니다.',
+   caption:'왼쪽: 사인·코사인 위치 인코딩 파형 — 차원마다 다른 주파수를 더해 위치마다 고유한 패턴을 만듭니다. 오른쪽: Q·K·V를 세 헤드로 나눠 병렬 계산한 뒤 이어붙이는 멀티헤드 어텐션 구조.',
+   svg:`<svg viewBox="0 0 620 210" role="img" aria-label="왼쪽 패널은 사인·코사인 위치 인코딩 파형을, 오른쪽 패널은 Q·K·V를 세 헤드로 나눠 병렬 계산한 뒤 이어붙이는 멀티헤드 어텐션 구조를 보여줍니다.">
+     <rect x="4" y="4" width="292" height="202" rx="14" class="dg-card"/>
+     <text x="20" y="28" class="dg-t1">사인·코사인 위치 인코딩</text>
+     <path d="M20,80 Q45,50 70,80 T120,80 T170,80 T220,80 T270,80" class="dg-brand-line" stroke-width="3"/>
+     <path d="M20,130 Q35,108 50,130 T80,130 T110,130 T140,130 T170,130 T200,130 T230,130 T260,130" class="dg-syn-line" stroke-width="3"/>
+     <text x="20" y="168" class="dg-t2">차원마다 다른 주파수의</text>
+     <text x="20" y="182" class="dg-t2">사인·코사인 값을 더해</text>
+     <text x="20" y="196" class="dg-t2">위치마다 고유 패턴을 만듭니다.</text>
+     <rect x="324" y="4" width="292" height="202" rx="14" class="dg-card"/>
+     <text x="340" y="28" class="dg-t1">멀티헤드 어텐션</text>
+     <rect x="340" y="40" width="80" height="24" rx="6" class="dg-brand"/><text x="352" y="57" class="dg-t3">Q, K, V</text>
+     <line x1="380" y1="64" x2="380" y2="80" class="dg-panel"/>
+     <rect x="340" y="82" width="66" height="26" rx="6" class="dg-brand"/><text x="352" y="100" class="dg-t3">헤드1</text>
+     <rect x="412" y="82" width="66" height="26" rx="6" class="dg-syn"/><text x="424" y="100" class="dg-t4">헤드2</text>
+     <rect x="484" y="82" width="66" height="26" rx="6" class="dg-ext"/><text x="496" y="100" class="dg-t4">헤드3</text>
+     <line x1="373" y1="108" x2="430" y2="136" class="dg-panel"/>
+     <line x1="445" y1="108" x2="445" y2="136" class="dg-panel"/>
+     <line x1="517" y1="108" x2="460" y2="136" class="dg-panel"/>
+     <rect x="382" y="138" width="126" height="24" rx="6" class="dg-card"/><text x="400" y="155" class="dg-t2">Concat(이어붙이기)</text>
+     <line x1="445" y1="162" x2="445" y2="178" class="dg-panel"/>
+     <rect x="393" y="180" width="104" height="22" rx="6" class="dg-brand"/><text x="418" y="196" class="dg-t3">Linear</text>
+   </svg>`
+ },
+ p_alibi:{
+   title:'Train Short, Test Long: Attention with Linear Biases Enables Input Length Extrapolation', authors:'Press, Smith & Lewis',
+   year:2021, arxiv:'2108.12409', pdf:'https://arxiv.org/pdf/2108.12409', abs:'https://arxiv.org/abs/2108.12409',
+   concepts:['positional-encoding'],
+   oneliner:'위치 임베딩 대신 거리 비례 편향으로, 학습보다 긴 시퀀스에 외삽.',
+   tldr:'위치 임베딩을 더하는 대신 어텐션 점수에 거리 비례 페널티를 직접 빼주는 <b>ALiBi</b>로, 학습보다 훨씬 긴 시퀀스에서도 성능이 유지되도록 만들었습니다.',
+   sections:{
+     problem:'트랜스포머는 2017년 등장 이후에도 학습 때 본 길이보다 긴 시퀀스에서 성능이 급격히 나빠지는 <b>외삽(extrapolation)</b> 문제를 풀지 못하고 있었습니다.',
+     idea:'저자들은 위치 표현 방식을 바꾸는 것만으로 외삽이 가능해진다는 점을 보이고, 쿼리-키 어텐션 점수에 거리에 비례하는 편향을 직접 빼는 <b>ALiBi(Attention with Linear Biases)</b>를 제안합니다. <em>위치 임베딩을 더하지 않고 거리에 비례한 페널티만으로도 순서 정보를 충분히 표현할 수 있다</em>는 것이 핵심 주장입니다.',
+     method:'헤드마다 고정된 기울기(slope) m을 두고, 거리가 멀어질수록 어텐션 점수에서 m×거리만큼을 빼 최근 토큰에 대한 편향(inductive bias)을 자연스럽게 부여합니다. 추가 학습 파라미터가 필요 없습니다.',
+     results:'13억(1.3B) 파라미터 모델을 1024 토큰으로 학습해 2048 토큰까지 외삽했을 때, 2048 토큰으로 직접 학습한 사인·코사인 모델과 동일한 perplexity를 내면서도 학습 시간과 메모리를 각각 11%씩 절감했습니다. WikiText-103에서도 여러 위치 인코딩 방식을 능가했습니다.',
+     impact:'ALiBi는 학습-추론 길이 불일치를 파라미터 추가 없이 푸는 실용적 해법을 보여주었고, 이후 RoPE 기반 확장 기법들과 함께 긴 문맥 처리 논의의 한 축을 이루었습니다.'
+   },
+   role:'위치 인코딩 그룹에서 "위치 임베딩을 더하지 않고도 순서를 표현할 수 있다"는 대안 경로를 보여줍니다. RoPE와는 다른 방식(편향 vs 회전)으로 같은 목표(긴 문맥 대응)를 추구합니다.',
+   caption:'쿼리가 먼 토큰을 볼수록 어텐션 점수에서 m×거리만큼을 빼는 구조입니다. 헤드마다 기울기 m이 달라 일부 헤드는 가까운 문맥에, 일부는 먼 문맥에 민감하게 반응합니다.',
+   svg:`<svg viewBox="0 0 560 200" role="img" aria-label="쿼리에서 거리가 먼 키 토큰일수록 어텐션 점수에서 더 큰 편향을 빼는 ALiBi 구조와, 헤드마다 다른 기울기 m을 보여주는 도식.">
+     <rect x="4" y="4" width="552" height="108" rx="14" class="dg-card"/>
+     <text x="20" y="26" class="dg-t1">쿼리-키 거리에 비례한 편향(bias) 차감</text>
+     <rect x="30" y="46" width="46" height="34" rx="6" class="dg-syn"/><text x="42" y="67" class="dg-t4">k1</text>
+     <rect x="90" y="46" width="46" height="34" rx="6" class="dg-syn"/><text x="102" y="67" class="dg-t4">k2</text>
+     <rect x="150" y="46" width="46" height="34" rx="6" class="dg-syn"/><text x="162" y="67" class="dg-t4">k3</text>
+     <rect x="210" y="46" width="46" height="34" rx="6" class="dg-syn"/><text x="222" y="67" class="dg-t4">k4</text>
+     <rect x="270" y="46" width="60" height="34" rx="6" class="dg-brand"/><text x="278" y="67" class="dg-t3">q(pos5)</text>
+     <text x="30" y="96" class="dg-t2">거리4·편향 大</text><text x="150" y="96" class="dg-t2">거리2</text><text x="272" y="96" class="dg-t2">거리0</text>
+     <rect x="4" y="120" width="552" height="76" rx="14" class="dg-card"/>
+     <text x="20" y="140" class="dg-t1">헤드마다 다른 기울기 m</text>
+     <path d="M30,182 L540,182" class="dg-panel"/>
+     <path d="M30,180 L200,174 L370,164 L540,148" class="dg-brand-line" stroke-width="2.5"/>
+     <path d="M30,180 L200,179 L370,177 L540,173" class="dg-syn-line" stroke-width="2.5"/>
+     <text x="360" y="146" class="dg-t2">헤드A: m 큼 → 최근 문맥에 민감</text>
+     <text x="330" y="192" class="dg-t2">헤드B: m 작음 → 먼 문맥도 완만히 반영</text>
+   </svg>`
+ },
+ p_rope:{
+   title:'RoFormer: Enhanced Transformer with Rotary Position Embedding', authors:'Su, Lu, Pan, Wen & Liu',
+   year:2021, arxiv:'2104.09864', pdf:'https://arxiv.org/pdf/2104.09864', abs:'https://arxiv.org/abs/2104.09864',
+   concepts:['rope','positional-encoding'],
+   oneliner:'회전 행렬로 상대 위치 의존성을 어텐션 내적에 자연스럽게 새겨 넣음.',
+   tldr:'쿼리·키 벡터를 위치에 비례한 각도로 회전시켜, 두 벡터의 내적이 오직 상대 거리(n−m)만의 함수가 되게 만드는 <b>회전 위치 임베딩(RoPE)</b>을 제안합니다.',
+   sections:{
+     problem:'기존의 절대·상대 위치 인코딩 방식들은 상대적 위치 의존성을 어텐션 계산에 자연스럽고 효율적으로 결합하는 데 한계가 있었습니다.',
+     idea:'저자들은 위치 m에 있는 벡터를 각도 mθ만큼 회전시키는 회전 행렬을 곱해 위치 정보를 인코딩합니다. 회전 행렬의 성질상, 위치 m과 n에서 회전된 두 벡터의 내적은 절대 위치가 아니라 상대 거리 (n−m)에만 의존하게 됩니다.',
+     method:'쿼리·키 벡터를 2차원씩 짝지어 각 쌍을 위치에 비례한 각도로 회전시킨 뒤 내적을 계산합니다. 덧셈이 아니라 곱셈(회전) 연산이므로 선형 어텐션에도 결합할 수 있습니다.',
+     results:'장문 텍스트 분류 벤치마크들에서 기존 위치 인코딩 방식을 일관되게 능가했으며, Hugging Face 라이브러리에도 통합되어 실제로 널리 쓰이고 있습니다(초록에는 구체적 벤치마크 수치가 명시되어 있지 않습니다).',
+     impact:'학습 파라미터 없이 상대 위치 정보를 자연스럽게 녹여내고 거리가 멀수록 어텐션이 감쇠하는 성질까지 얻을 수 있어, LLaMA를 비롯한 오늘날 대부분의 대형 언어모델이 기본 위치 인코딩으로 채택하고 있습니다.'
+   },
+   role:'위치 인코딩 흐름(절대 → ALiBi → RoPE)의 최종 진화형입니다. ALiBi가 어텐션 점수에 편향을 더한다면, RoPE는 벡터 자체를 회전시켜 상대 위치를 내적 안에 구조적으로 새깁니다.',
+   caption:'위치 m, n의 벡터를 각각 mθ, nθ만큼 회전시키면 두 벡터 사이 각도 차이는 (n−m)θ로만 남아, 내적이 상대 거리만의 함수가 됩니다.',
+   svg:`<svg viewBox="0 0 560 220" role="img" aria-label="위치 m과 n의 벡터를 각각 각도 mθ, nθ만큼 회전시키면, 두 벡터 사이의 각도 차이가 상대 거리 (n-m)θ로만 남는다는 것을 보여주는 회전 도식.">
+     <circle cx="150" cy="110" r="86" class="dg-panel"/>
+     <line x1="150" y1="110" x2="150" y2="24" class="dg-panel dg-dash"/>
+     <line x1="150" y1="110" x2="216" y2="55" class="dg-brand-line" stroke-width="3"/>
+     <circle cx="216" cy="55" r="5" class="dg-brand"/>
+     <text x="220" y="46" class="dg-t2">위치 m 벡터(mθ 회전)</text>
+     <line x1="150" y1="110" x2="90" y2="35" class="dg-syn-line" stroke-width="3"/>
+     <circle cx="90" cy="35" r="5" class="dg-syn"/>
+     <text x="6" y="22" class="dg-t2">위치 n 벡터(nθ 회전)</text>
+     <path d="M170,80 A40,40 0 0 0 128,66" class="dg-warn-line" stroke-width="2"/>
+     <text x="118" y="58" class="dg-t2">(n−m)θ</text>
+     <rect x="300" y="20" width="256" height="180" rx="14" class="dg-card"/>
+     <text x="316" y="44" class="dg-t1">내적은 상대 거리만의 함수</text>
+     <text x="316" y="72" class="dg-t2">q_m · k_n</text>
+     <text x="316" y="94" class="dg-t2">= f( ‖q‖, ‖k‖, n−m )</text>
+     <text x="316" y="126" class="dg-t2">절대 위치 m, n이 아니라</text>
+     <text x="316" y="146" class="dg-t2">오직 거리 (n−m)에만</text>
+     <text x="316" y="166" class="dg-t2">의존하게 됩니다.</text>
+   </svg>`
+ },
+ p_ln:{
+   title:'Layer Normalization', authors:'Ba, Kiros & Hinton',
+   year:2016, arxiv:'1607.06450', pdf:'https://arxiv.org/pdf/1607.06450', abs:'https://arxiv.org/abs/1607.06450',
+   concepts:['layer-normalization'],
+   oneliner:'배치가 아니라 한 샘플 안에서 정규화해, 순환 신경망에도 자연스럽게 적용.',
+   tldr:'배치가 아니라 한 샘플 안의 한 층(layer) 뉴런들에 대해 평균·분산을 계산해 정규화하는 <b>레이어 정규화(Layer Normalization)</b>로, 배치 크기에 무관하고 순환 신경망에도 자연스럽게 적용되는 정규화 방식을 제안합니다.',
+   sections:{
+     problem:'배치 정규화(Batch Normalization)는 깊은 신경망 학습 시간을 줄이는 데 효과적이었지만, 미니배치 크기에 성능이 좌우되고 순환 신경망에는 적용 방식이 명확하지 않다는 한계가 있었습니다.',
+     idea:'저자들은 배치 차원이 아니라 한 학습 샘플 안에서, 한 층에 속한 뉴런들의 합산 입력값 전체에 대해 평균과 분산을 계산해 정규화하는 레이어 정규화를 제안합니다.',
+     method:'훈련과 추론 시점에 동일한 정규화 계산을 수행하며, 순환 신경망에서는 매 시간 단계(time step)마다 독립적으로 정규화 통계를 계산해 자연스럽게 적용합니다. 뉴런마다 학습 가능한 이득(gain)과 편향(bias)을 추가로 둡니다.',
+     results:'은닉 상태의 동역학을 안정시켜 배치 정규화보다 학습 시간을 유의미하게 줄였음을 여러 신경망 구조에서 확인했습니다.',
+     impact:'미니배치 크기와 무관하게 동작한다는 성질 덕분에, 이후 트랜스포머를 포함한 대부분의 시퀀스 모델이 배치 정규화 대신 레이어 정규화를 기본 정규화 기법으로 채택했습니다.'
+   },
+   role:'정규화 그룹의 토대입니다. 트랜스포머는 처음부터 레이어 정규화를 채택했고, 다음 논문(Xiong et al. 2020)은 이를 "어디에 배치할지"까지 파고듭니다.',
+   caption:'배치 정규화는 배치 축을 따라, 레이어 정규화는 한 샘플의 뉴런(피처) 축을 따라 평균·분산을 계산합니다. 배치 크기에 무관해 순환 신경망·소배치에도 안정적입니다.',
+   svg:`<svg viewBox="0 0 560 200" role="img" aria-label="배치 정규화는 배치 축을 따라, 레이어 정규화는 한 샘플의 뉴런 축을 따라 평균·분산을 계산한다는 것을 보여주는 격자 도식.">
+     <rect x="4" y="4" width="270" height="192" rx="14" class="dg-card"/>
+     <text x="18" y="26" class="dg-t1">배치 정규화(Batch Norm)</text>
+     <rect x="20" y="44" width="34" height="34" class="dg-ext"/><rect x="58" y="44" width="34" height="34" class="dg-panel"/><rect x="96" y="44" width="34" height="34" class="dg-panel"/><rect x="134" y="44" width="34" height="34" class="dg-panel"/>
+     <rect x="20" y="82" width="34" height="34" class="dg-ext"/><rect x="58" y="82" width="34" height="34" class="dg-panel"/><rect x="96" y="82" width="34" height="34" class="dg-panel"/><rect x="134" y="82" width="34" height="34" class="dg-panel"/>
+     <rect x="20" y="120" width="34" height="34" class="dg-ext"/><rect x="58" y="120" width="34" height="34" class="dg-panel"/><rect x="96" y="120" width="34" height="34" class="dg-panel"/><rect x="134" y="120" width="34" height="34" class="dg-panel"/>
+     <text x="20" y="172" class="dg-t2">같은 피처(열)를 배치(행) 전체에서 정규화</text>
+     <text x="20" y="186" class="dg-t2">→ 배치 크기에 성능이 좌우됨</text>
+     <rect x="286" y="4" width="270" height="192" rx="14" class="dg-card"/>
+     <text x="300" y="26" class="dg-t1">레이어 정규화(Layer Norm)</text>
+     <rect x="302" y="44" width="34" height="34" class="dg-brand"/><rect x="340" y="44" width="34" height="34" class="dg-brand"/><rect x="378" y="44" width="34" height="34" class="dg-brand"/><rect x="416" y="44" width="34" height="34" class="dg-brand"/>
+     <rect x="302" y="82" width="34" height="34" class="dg-panel"/><rect x="340" y="82" width="34" height="34" class="dg-panel"/><rect x="378" y="82" width="34" height="34" class="dg-panel"/><rect x="416" y="82" width="34" height="34" class="dg-panel"/>
+     <rect x="302" y="120" width="34" height="34" class="dg-panel"/><rect x="340" y="120" width="34" height="34" class="dg-panel"/><rect x="378" y="120" width="34" height="34" class="dg-panel"/><rect x="416" y="120" width="34" height="34" class="dg-panel"/>
+     <text x="302" y="172" class="dg-t2">한 샘플(행) 안 모든 뉴런을 정규화</text>
+     <text x="302" y="186" class="dg-t2">→ 배치 크기·RNN과 무관하게 동작</text>
+   </svg>`
+ },
+ p_prenorm:{
+   title:'On Layer Normalization in the Transformer Architecture', authors:'Xiong et al.',
+   year:2020, arxiv:'2002.04745', pdf:'https://arxiv.org/pdf/2002.04745', abs:'https://arxiv.org/abs/2002.04745',
+   concepts:['layer-normalization'],
+   oneliner:'정규화 위치(Post-LN vs Pre-LN)가 워밍업 필요 여부를 가른다는 이론적 규명.',
+   tldr:'정규화를 잔차 블록 "사이"에 두는 <b>Post-LN</b>은 초기화 시 출력층 근처 그래디언트가 커져 학습률 워밍업이 필수이지만, 잔차 블록 "안"에 두는 <b>Pre-LN</b>은 그래디언트가 안정적이어서 워밍업 없이도 학습할 수 있음을 이론적으로 증명합니다.',
+   sections:{
+     problem:'원조 트랜스포머(Post-LN)는 학습률 워밍업 단계를 신중히 설계하지 않으면 학습이 불안정해진다는 사실이 실무에서 널리 관찰되었지만, 그 이론적 원인은 밝혀지지 않았습니다.',
+     idea:'저자들은 평균장 이론(mean field theory)으로 초기화 시점의 그래디언트를 분석해, <em>학습 안정성을 가르는 것은 아키텍처의 크기가 아니라 정규화를 어디에 두느냐라는 위치 선택</em>이라는 것을 핵심 주장으로 제시합니다.',
+     method:'Post-LN(정규화가 잔차 연결 사이)과 Pre-LN(정규화가 서브층 이전, 잔차 블록 안)의 초기화 시 그래디언트 크기를 이론적으로 유도하고 실험으로 검증합니다.',
+     results:'Post-LN은 출력층 근처 그래디언트가 초기화 시 크게 부풀어 워밍업이 필요한 반면, Pre-LN은 그래디언트가 안정적이라 워밍업 없이도 대등한 성능을 더 적은 학습 시간과 하이퍼파라미터 튜닝으로 달성했습니다(ICML 2020 게재).',
+     impact:'이 증명 이후 Pre-Norm은 워밍업 부담을 던 대형 트랜스포머의 사실상 표준 설계가 되었고, 최근에는 재중심화를 생략한 RMSNorm과 결합한 "Pre-Norm + RMSNorm" 조합이 널리 쓰입니다.'
+   },
+   role:'레이어 정규화가 "어떻게 정규화할지"를 풀었다면, 이 논문은 "어디에 둘지"를 풀어 대형 모델의 학습 안정성 실무 표준을 세웠습니다.',
+   caption:'Post-LN은 정규화가 잔차 연결 바깥에 있어 출력층 근처 그래디언트가 커지고, Pre-LN은 정규화가 잔차 블록 안에 있어 그래디언트가 층 전체에서 고르게 유지됩니다.',
+   svg:`<svg viewBox="0 0 560 220" role="img" aria-label="Post-LN은 정규화가 잔차 연결 바깥에 있어 출력층 근처 그래디언트가 커지고, Pre-LN은 정규화가 잔차 블록 안에 있어 그래디언트가 안정적이라는 것을 보여주는 블록 도식.">
+     <rect x="4" y="4" width="270" height="212" rx="14" class="dg-card"/>
+     <text x="18" y="26" class="dg-t1">Post-LN</text>
+     <rect x="60" y="40" width="150" height="26" rx="6" class="dg-panel"/><text x="88" y="58" class="dg-t2">Sublayer</text>
+     <line x1="135" y1="66" x2="135" y2="82" class="dg-panel"/>
+     <rect x="60" y="84" width="150" height="26" rx="6" class="dg-warn"/><text x="90" y="102" class="dg-t3">Add + Norm</text>
+     <line x1="135" y1="110" x2="135" y2="126" class="dg-panel"/>
+     <rect x="60" y="128" width="150" height="26" rx="6" class="dg-panel"/><text x="88" y="146" class="dg-t2">Sublayer</text>
+     <line x1="135" y1="154" x2="135" y2="170" class="dg-panel"/>
+     <rect x="60" y="172" width="150" height="26" rx="6" class="dg-warn"/><text x="90" y="190" class="dg-t3">Add + Norm</text>
+     <text x="18" y="208" class="dg-t2">→ 출력층 근처 그래디언트 ↑(워밍업 필요)</text>
+     <rect x="286" y="4" width="270" height="212" rx="14" class="dg-card"/>
+     <text x="300" y="26" class="dg-t1">Pre-LN</text>
+     <rect x="342" y="40" width="150" height="20" rx="6" class="dg-syn"/><text x="368" y="55" class="dg-t4">Norm</text>
+     <line x1="417" y1="60" x2="417" y2="72" class="dg-panel"/>
+     <rect x="342" y="74" width="150" height="24" rx="6" class="dg-panel"/><text x="370" y="91" class="dg-t2">Sublayer</text>
+     <line x1="417" y1="98" x2="417" y2="112" class="dg-panel"/>
+     <text x="422" y="108" class="dg-t2">+잔차</text>
+     <rect x="342" y="120" width="150" height="20" rx="6" class="dg-syn"/><text x="368" y="135" class="dg-t4">Norm</text>
+     <line x1="417" y1="140" x2="417" y2="152" class="dg-panel"/>
+     <rect x="342" y="154" width="150" height="24" rx="6" class="dg-panel"/><text x="370" y="171" class="dg-t2">Sublayer</text>
+     <line x1="417" y1="178" x2="417" y2="192" class="dg-panel"/>
+     <text x="300" y="208" class="dg-t2">→ 그래디언트 안정(워밍업 불필요)</text>
+   </svg>`
+ },
+ p_longformer:{
+   title:'Longformer: The Long-Document Transformer', authors:'Beltagy, Peters & Cohan',
+   year:2020, arxiv:'2004.05150', pdf:'https://arxiv.org/pdf/2004.05150', abs:'https://arxiv.org/abs/2004.05150',
+   concepts:['attention-approximation'],
+   oneliner:'지역+전역 어텐션 조합으로 어텐션 비용을 O(n)으로 낮춘 장문서 트랜스포머.',
+   tldr:'소수 토큰에는 전역(global) 어텐션을, 나머지 토큰에는 이웃만 보는 지역(local) 슬라이딩 윈도우 어텐션을 섞어, 표준 어텐션의 O(n²) 비용을 시퀀스 길이에 대해 선형(O(n))으로 낮춘 장문서 전용 트랜스포머입니다.',
+   sections:{
+     problem:'표준 셀프 어텐션은 시퀀스 길이에 대해 이차(quadratic)로 비용이 커져, 수천 토큰이 넘는 긴 문서를 처리하기 어렵습니다.',
+     idea:'저자들은 지역 윈도우 어텐션(local windowed attention)과 과제 목적에 맞춘 전역 어텐션(task-motivated global attention)을 결합해, 표준 셀프 어텐션의 드롭인(drop-in) 대체로 쓸 수 있는 어텐션 패턴을 설계합니다.',
+     method:'대부분의 토큰은 자기 주변의 고정된 윈도우 안 이웃만 참고하고, [CLS]나 질문 토큰처럼 과제상 중요한 소수 토큰만 시퀀스 전체를 양방향으로 참고하도록(전역 어텐션) 설계합니다.',
+     results:'문자 단위 언어모델링(text8, enwik8)에서 최고 성능을 냈고, 사전학습된 Longformer는 WikiHop·TriviaQA 등 장문 과제에서 RoBERTa를 꾸준히 앞섰습니다. 장문서 생성을 위한 인코더-디코더 변형 LED(Longformer-Encoder-Decoder)도 함께 제안되었습니다.',
+     impact:'지역+전역 어텐션이라는 조합은 이후 슬라이딩 윈도우 어텐션(SWA) 형태로 단순화되어, Mistral 7B 같은 실제 상용 LLM의 표준 구성 요소가 되었습니다.'
+   },
+   role:'어텐션 근사 그룹의 원형입니다. "전부 다 볼 필요는 없다"는 이 통찰이 다음 논문(Mistral 7B)에서 상용 규모로 검증됩니다.',
+   caption:'표준 어텐션(왼쪽)은 모든 토큰 쌍을 계산해 O(n²)이지만, Longformer(오른쪽)는 대각선 주변 윈도우(지역)와 소수 전역 토큰의 행·열만 계산해 O(n)에 가깝습니다.',
+   svg:`<svg viewBox="0 0 560 220" role="img" aria-label="표준 어텐션은 모든 토큰 쌍을 계산해 O(n²)이지만, Longformer는 대각선 주변 지역 윈도우와 소수 전역 토큰의 행·열만 계산해 O(n)에 가깝다는 것을 보여주는 행렬 도식.">
+     <rect x="4" y="4" width="270" height="212" rx="14" class="dg-card"/>
+     <text x="18" y="24" class="dg-t1">표준 셀프 어텐션 O(n²)</text>
+     <rect x="30" y="40" width="180" height="150" fill="var(--warn)" opacity="0.55"/>
+     <rect x="30" y="40" width="180" height="150" class="dg-panel"/>
+     <text x="30" y="206" class="dg-t2">모든 토큰 쌍을 전부 계산</text>
+     <rect x="286" y="4" width="270" height="212" rx="14" class="dg-card"/>
+     <text x="300" y="24" class="dg-t1">Longformer O(n)</text>
+     <rect x="312" y="40" width="180" height="150" class="dg-panel"/>
+     <line x1="312" y1="40" x2="492" y2="190" class="dg-brand-line" stroke-width="14" opacity="0.55"/>
+     <rect x="312" y="40" width="180" height="8" class="dg-syn" opacity="0.85"/>
+     <rect x="312" y="40" width="8" height="150" class="dg-syn" opacity="0.85"/>
+     <text x="312" y="206" class="dg-t2">대각선 윈도우(지역) + 첫 토큰(전역)만</text>
+   </svg>`
+ },
+ p_mistral:{
+   title:'Mistral 7B', authors:'Jiang et al.',
+   year:2023, arxiv:'2310.06825', pdf:'https://arxiv.org/pdf/2310.06825', abs:'https://arxiv.org/abs/2310.06825',
+   concepts:['attention-approximation','gqa'],
+   oneliner:'GQA+슬라이딩 윈도우 어텐션으로 7B 모델이 Llama 2 13B를 능가.',
+   tldr:'그룹 쿼리 어텐션(GQA)과 슬라이딩 윈도우 어텐션(SWA)을 결합해, 70억 파라미터 모델로 Llama 2 13B를 모든 벤치마크에서, Llama 1 34B를 추론·수학·코드 생성에서 앞선 결과를 냈습니다.',
+   sections:{
+     problem:'더 큰 모델을 쓰지 않고도 효율과 성능을 동시에 확보하는 실용적인 오픈 언어모델이 필요했습니다.',
+     idea:'저자들은 추론 속도를 높이는 <b>그룹 쿼리 어텐션(GQA)</b>과, 임의 길이의 시퀀스를 낮은 추론 비용으로 처리하는 <b>슬라이딩 윈도우 어텐션(SWA)</b>을 결합한 7B 규모 모델 Mistral 7B를 공개합니다.',
+     method:'GQA로 디코딩 시 캐시해야 할 키·값 텐서 수를 줄이고, SWA로 각 토큰이 고정 크기 윈도우 안 이웃만 직접 참고하되 층을 거듭할수록 실질적인 문맥 범위(receptive field)가 넓어지도록 설계합니다.',
+     results:'<em>평가한 모든 벤치마크에서 Llama 2 13B를 능가</em>했고, 추론·수학·코드 생성 과제에서는 Llama 1 34B도 앞질렀습니다. Instruct 버전 역시 사람 평가와 자동화 벤치마크 모두에서 Llama 2 13B-Chat을 능가했습니다.',
+     impact:'Longformer가 논문 단계에서 보여준 지역+전역 어텐션 아이디어와 GQA의 절충안이 실제 상용 규모(7B)에서 동시에 검증된 사례로, 이후 오픈소스 LLM 설계에서 GQA+SWA 조합이 널리 참고되었습니다.'
+   },
+   role:'어텐션 근사(SWA)와 GQA를 동시에 실전 배치한 사례입니다. 이 강의의 두 축(장문서 효율화, 메모리 효율화)이 하나의 모델 안에서 어떻게 함께 작동하는지 보여줍니다.',
+   caption:'슬라이딩 윈도우 어텐션은 층마다 고정 폭(w)의 이웃만 보지만, 층을 쌓을수록(레이어 L) 실질 문맥 범위가 w×L로 넓어집니다. 오른쪽은 GQA의 그룹 공유 구조입니다.',
+   svg:`<svg viewBox="0 0 560 210" role="img" aria-label="슬라이딩 윈도우 어텐션은 층마다 고정 폭의 이웃만 보지만 층을 쌓을수록 실질 문맥 범위가 넓어진다는 것과, 쿼리 헤드들이 그룹으로 묶여 키·값을 공유하는 GQA를 함께 보여주는 도식.">
+     <rect x="4" y="4" width="330" height="202" rx="14" class="dg-card"/>
+     <text x="18" y="24" class="dg-t1">슬라이딩 윈도우 어텐션(SWA)</text>
+     <text x="18" y="44" class="dg-t2">레이어 1: 창 폭 w</text>
+     <rect x="90" y="52" width="60" height="18" rx="4" class="dg-brand"/>
+     <text x="18" y="76" class="dg-t2">레이어 2: 2w 범위</text>
+     <rect x="70" y="84" width="100" height="18" rx="4" class="dg-syn"/>
+     <text x="18" y="108" class="dg-t2">레이어 3: 3w 범위</text>
+     <rect x="50" y="116" width="140" height="18" rx="4" class="dg-ext"/>
+     <text x="18" y="150" class="dg-t2">층(L)을 쌓을수록 실질 문맥이</text>
+     <text x="18" y="166" class="dg-t2">w×L만큼 넓어집니다.</text>
+     <rect x="346" y="4" width="210" height="202" rx="14" class="dg-card"/>
+     <text x="360" y="24" class="dg-t1">GQA(그룹 공유)</text>
+     <rect x="360" y="40" width="40" height="20" rx="4" class="dg-brand"/><rect x="404" y="40" width="40" height="20" rx="4" class="dg-brand"/>
+     <rect x="360" y="66" width="40" height="20" rx="4" class="dg-syn"/><rect x="404" y="66" width="40" height="20" rx="4" class="dg-syn"/>
+     <line x1="380" y1="60" x2="380" y2="94" class="dg-panel"/><line x1="424" y1="60" x2="424" y2="94" class="dg-panel"/>
+     <line x1="380" y1="86" x2="424" y2="86" class="dg-panel"/>
+     <rect x="380" y="96" width="44" height="20" rx="4" fill="var(--ink3)"/><text x="386" y="111" class="dg-t3">공유KV</text>
+     <text x="360" y="140" class="dg-t2">그룹 안 쿼리 헤드끼리만</text>
+     <text x="360" y="156" class="dg-t2">키·값을 공유합니다.</text>
+   </svg>`
+ },
+ p_mqa:{
+   title:'Fast Transformer Decoding: One Write-Head is All You Need', authors:'Shazeer',
+   year:2019, arxiv:'1911.02150', pdf:'https://arxiv.org/pdf/1911.02150', abs:'https://arxiv.org/abs/1911.02150',
+   concepts:['mqa','mha'],
+   oneliner:'모든 쿼리 헤드가 키·값을 단 하나만 공유해 디코딩 메모리 병목을 해소.',
+   tldr:'모든 쿼리 헤드가 키·값 헤드를 단 하나만 공유하는 <b>다중 쿼리 어텐션(MQA)</b>으로, 자기회귀 디코딩의 메모리 대역폭 병목을 줄입니다.',
+   sections:{
+     problem:'자기회귀 디코딩은 매 스텝마다 이전 토큰들의 크고 반복적인 키·값 텐서를 다시 읽어야 해, 병렬화가 불가능하고 메모리 대역폭이 병목이 됩니다.',
+     idea:'저자는 멀티헤드 어텐션에서 헤드마다 따로 두던 키·값을 모든 헤드가 공유하도록 만드는 다중 쿼리 어텐션(Multi-Query Attention)을 제안해, 캐시해야 할 텐서 크기를 크게 줄입니다.',
+     method:'쿼리는 헤드별로 그대로 유지하되, 키·값 프로젝션만 헤드 수와 무관하게 단 하나로 축소합니다. 학습은 기존과 동일하게 병렬로 수행하고, 디코딩(추론)에서만 이 구조의 이점이 드러납니다.',
+     results:'실험적으로 디코딩 속도가 크게 빨라지면서도 품질 저하는 미미한 수준에 그친다는 것을 확인했습니다(초록에 구체적 속도·품질 수치는 명시되어 있지 않습니다).',
+     impact:'이 아이디어는 PaLM 등 대형 모델에 채택되었고, 헤드 다양성 손실을 절충하는 더 정교한 후속안인 GQA의 등장에 직접적인 토대가 되었습니다.'
+   },
+   role:'MHA의 메모리 부담을 극단적으로 줄인 첫 시도입니다. 다음 논문(GQA)은 이 극단(G=1)과 원조 MHA(G=h) 사이의 절충점을 찾습니다.',
+   caption:'MHA(위)는 쿼리 헤드마다 독립된 키·값을 두지만, MQA(아래)는 모든 쿼리 헤드가 키·값 하나만 공유해 캐시 크기를 h분의 1로 줄입니다.',
+   svg:`<svg viewBox="0 0 560 200" role="img" aria-label="MHA는 쿼리 헤드마다 독립된 키·값을 두지만, MQA는 모든 쿼리 헤드가 키·값 하나만 공유해 캐시 크기를 줄인다는 것을 보여주는 도식.">
+     <rect x="4" y="4" width="270" height="192" rx="14" class="dg-card"/>
+     <text x="18" y="24" class="dg-t1">MHA(헤드마다 KV 독립)</text>
+     <rect x="20" y="40" width="50" height="22" rx="5" class="dg-brand"/><rect x="90" y="40" width="50" height="22" rx="5" class="dg-brand"/><rect x="160" y="40" width="50" height="22" rx="5" class="dg-brand"/>
+     <line x1="45" y1="62" x2="45" y2="86" class="dg-panel"/><line x1="115" y1="62" x2="115" y2="86" class="dg-panel"/><line x1="185" y1="62" x2="185" y2="86" class="dg-panel"/>
+     <rect x="20" y="88" width="50" height="22" rx="5" class="dg-syn"/><rect x="90" y="88" width="50" height="22" rx="5" class="dg-syn"/><rect x="160" y="88" width="50" height="22" rx="5" class="dg-syn"/>
+     <text x="20" y="140" class="dg-t2">Q1,Q2,Q3 각자 KV 캐시 보유</text>
+     <text x="20" y="158" class="dg-t2">→ 캐시 크기 ×h</text>
+     <rect x="286" y="4" width="270" height="192" rx="14" class="dg-card"/>
+     <text x="300" y="24" class="dg-t1">MQA(KV 하나 공유)</text>
+     <rect x="300" y="40" width="50" height="22" rx="5" class="dg-brand"/><rect x="370" y="40" width="50" height="22" rx="5" class="dg-brand"/><rect x="440" y="40" width="50" height="22" rx="5" class="dg-brand"/>
+     <line x1="325" y1="62" x2="395" y2="90" class="dg-panel"/><line x1="395" y1="62" x2="395" y2="90" class="dg-panel"/><line x1="465" y1="62" x2="395" y2="90" class="dg-panel"/>
+     <rect x="365" y="92" width="60" height="24" rx="5" class="dg-syn"/><text x="372" y="109" class="dg-t4">공유KV</text>
+     <text x="300" y="150" class="dg-t2">Q1,Q2,Q3 모두 KV 하나 공유</text>
+     <text x="300" y="168" class="dg-t2">→ 캐시 크기 ×1</text>
+   </svg>`
+ },
+ p_gqa:{
+   title:'GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints', authors:'Ainslie, Lee-Thorp, de Jong, Zemlyanskiy, Lebrón & Sanghai',
+   year:2023, arxiv:'2305.13245', pdf:'https://arxiv.org/pdf/2305.13245', abs:'https://arxiv.org/abs/2305.13245',
+   concepts:['gqa','mha','mqa'],
+   oneliner:'MHA 체크포인트를 5% 연산만으로 업트레이닝해 MQA와 MHA의 중간 지점 확보.',
+   tldr:'쿼리 헤드를 G개 그룹으로 묶어 그룹별로만 키·값을 공유하는 <b>그룹 쿼리 어텐션(GQA)</b>과, 기존 MHA 체크포인트를 원래 연산량의 단 5%만으로 MQA로 바꾸는 업트레이닝 레시피를 함께 제안합니다.',
+   sections:{
+     problem:'MQA는 디코더 추론 속도를 크게 높이지만 헤드 다양성 손실로 품질이 떨어지고, 그 속도를 얻으려면 처음부터 별도 모델을 학습해야 한다는 부담이 있었습니다.',
+     idea:'저자들은 (1) 기존 멀티헤드 체크포인트를 적은 추가 연산만으로 MQA로 변환하는 업트레이닝(uptraining) 절차와, (2) 키·값 헤드 수를 1개(MQA)와 헤드 수 h개(MHA) 사이의 중간값 G로 두는 그룹 쿼리 어텐션을 제안합니다. <em>처음부터 새 모델을 학습하지 않고도 기존 체크포인트를 재활용해 속도와 품질의 절충점을 찾을 수 있다</em>는 것이 핵심 주장입니다.',
+     method:'쿼리 헤드를 G개 그룹으로 나누고 그룹 안에서만 키·값 헤드를 공유합니다. 이미 학습된 MHA 체크포인트의 키·값 헤드를 그룹 단위로 평균 풀링(mean-pooling)한 뒤 원래 사전학습 연산량의 5%만 추가 학습해 GQA로 전환합니다.',
+     results:'업트레이닝된 GQA는 MHA에 가까운 품질을 유지하면서 MQA에 필적하는 디코딩 속도를 달성했습니다(EMNLP 2023 채택).',
+     impact:'새로 학습할 필요 없이 기존 체크포인트를 재활용할 수 있다는 실용성 덕분에, Llama 2 70B와 Mistral 7B 등 오늘날 주요 오픈 LLM이 GQA를 기본 어텐션으로 채택했습니다.'
+   },
+   role:'MHA와 MQA 사이의 절충안으로, 이 강의에서 다루는 어텐션 변형 3종(MHA→MQA→GQA)의 마지막 퍼즐 조각입니다.',
+   caption:'G가 h(헤드 수)에 가까울수록 MHA처럼 품질이 높고, G=1에 가까울수록 MQA처럼 빠릅니다. GQA는 1&lt;G&lt;h로 그 중간을 취합니다.',
+   svg:`<svg viewBox="0 0 560 190" role="img" aria-label="G가 헤드 수 h에 가까울수록 MHA처럼 품질이 높고 G가 1에 가까울수록 MQA처럼 빠르며, GQA는 그 중간을 취한다는 것을 보여주는 스펙트럼 도식.">
+     <text x="20" y="24" class="dg-t1">키·값 헤드 그룹 수 G의 스펙트럼</text>
+     <line x1="30" y1="100" x2="530" y2="100" class="dg-panel" stroke-width="3"/>
+     <circle cx="60" cy="100" r="10" class="dg-brand"/><text x="20" y="132" class="dg-t2">MHA(G=h)</text><text x="20" y="148" class="dg-t2">품질↑ 속도↓</text>
+     <circle cx="280" cy="100" r="12" class="dg-syn"/><text x="222" y="70" class="dg-t1">GQA(1&lt;G&lt;h)</text><text x="222" y="132" class="dg-t2">품질·속도 절충</text>
+     <circle cx="500" cy="100" r="10" class="dg-ext"/><text x="466" y="132" class="dg-t2">MQA(G=1)</text><text x="466" y="148" class="dg-t2">속도↑ 품질↓</text>
+   </svg>`
+ },
+ p_bert:{
+   title:'BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding', authors:'Devlin, Chang, Lee & Toutanova',
+   year:2018, arxiv:'1810.04805', pdf:'https://arxiv.org/pdf/1810.04805', abs:'https://arxiv.org/abs/1810.04805',
+   concepts:['bert'],
+   oneliner:'마스크 언어모델링으로 양방향 사전학습, 11개 과제 SOTA.',
+   tldr:'트랜스포머 인코더만 남기고 마스크 언어모델링(MLM)·다음 문장 예측(NSP)으로 양방향 사전학습한 뒤, 출력층 하나만 추가해 파인튜닝하는 <b>BERT</b> 패러다임으로 11개 NLP 과제에서 SOTA를 달성했습니다.',
+   sections:{
+     problem:'기존 언어모델 상당수는 왼쪽에서 오른쪽으로만(또는 얕게만 양방향으로) 문맥을 읽는 단방향 구조라, 문장 전체 맥락을 깊이 이해하는 데 한계가 있었습니다.',
+     idea:'저자들은 좌우 문맥을 모든 층에서 동시에 조건화(jointly conditioning)해 깊은 양방향 표현을 사전학습하는 <b>BERT(Bidirectional Encoder Representations from Transformers)</b>를 제안합니다. <em>좌우 문맥을 모든 층에서 동시에 읽어야 진짜 의미를 이해한 표현을 얻을 수 있다</em>는 것이 핵심 주장입니다.',
+     method:'입력 토큰의 일부를 가리고 맞히는 마스크 언어모델링(MLM)과, 두 문장이 실제로 이어지는지 맞히는 다음 문장 예측(NSP)이라는 두 대리 과제로 사전학습한 뒤, 과제별 출력층 하나만 추가해 파인튜닝합니다.',
+     results:'GLUE 80.5%(+7.7%p), MultiNLI 86.7%(+4.6%p), SQuAD v1.1 93.2 F1(+1.5), SQuAD v2.0 83.1 F1(+5.1)로 11개 NLP 과제에서 당시 최고 성능을 경신했습니다.',
+     impact:'사전학습-파인튜닝 패러다임을 대중화시켜 RoBERTa·DistilBERT·ALBERT 등 수많은 인코더-온리 변형을 촉발했지만, 고정된 문맥 창과 생성 과제 부적합이라는 한계 때문에 이후 주도권은 디코더-온리 모델로 넘어가게 됩니다.'
+   },
+   role:'어텐션을 "양방향"으로 여는 선택이 사전학습-파인튜닝이라는 실무 패러다임을 어떻게 만들어냈는지 보여주는 사례입니다.',
+   caption:'토큰+세그먼트+위치 임베딩을 합쳐 인코더에 넣고, 모든 층에서 좌우 문맥을 동시에 참고합니다. [MASK] 토큰의 원래 단어를 맞히는 것이 사전학습 과제(MLM)입니다.',
+   svg:`<svg viewBox="0 0 560 210" role="img" aria-label="토큰·세그먼트·위치 임베딩을 합쳐 양방향 인코더에 넣고, 모든 층에서 좌우 문맥을 동시에 참고하며 마스크 토큰을 맞히는 BERT의 구조를 보여주는 도식.">
+     <text x="20" y="24" class="dg-t1">입력 임베딩</text>
+     <rect x="20" y="34" width="60" height="24" rx="5" class="dg-brand"/><text x="26" y="50" class="dg-t3">Token</text>
+     <rect x="86" y="34" width="70" height="24" rx="5" class="dg-syn"/><text x="92" y="50" class="dg-t4">Segment</text>
+     <rect x="162" y="34" width="70" height="24" rx="5" class="dg-ext"/><text x="170" y="50" class="dg-t4">Position</text>
+     <text x="96" y="72" class="dg-t2">＋(합산)</text>
+     <line x1="126" y1="80" x2="126" y2="96" class="dg-panel"/>
+     <rect x="20" y="98" width="520" height="46" rx="10" class="dg-card"/>
+     <text x="34" y="126" class="dg-t1">양방향 인코더(모든 층에서 좌우 문맥 동시 참고)</text>
+     <line x1="126" y1="144" x2="126" y2="160" class="dg-panel"/>
+     <rect x="20" y="162" width="70" height="26" rx="5" fill="var(--ink3)"/><text x="30" y="180" class="dg-t3">[CLS]</text>
+     <rect x="100" y="162" width="60" height="26" rx="5" class="dg-panel"/><text x="112" y="180" class="dg-t2">The</text>
+     <rect x="170" y="162" width="76" height="26" rx="5" class="dg-warn"/><text x="178" y="180" class="dg-t3">[MASK]</text>
+     <rect x="256" y="162" width="60" height="26" rx="5" class="dg-panel"/><text x="268" y="180" class="dg-t2">sat</text>
+     <text x="342" y="180" class="dg-t2">[MASK] 자리의 원래 단어를 맞히는 것이 MLM</text>
+   </svg>`
+ },
+ p_roberta:{
+   title:'RoBERTa: A Robustly Optimized BERT Pretraining Approach', authors:'Liu et al.',
+   year:2019, arxiv:'1907.11692', pdf:'https://arxiv.org/pdf/1907.11692', abs:'https://arxiv.org/abs/1907.11692',
+   concepts:['bert'],
+   oneliner:'아키텍처 그대로, 학습 레시피만 다듬어 BERT를 능가.',
+   tldr:'아키텍처는 그대로 두고 학습 레시피(데이터 규모·마스킹 방식·NSP 유무·배치 크기)만 다듬어도 BERT를 능가할 수 있음을 재현 실험으로 보인 논문입니다.',
+   sections:{
+     problem:'사전학습 방법 간의 성능을 공정하게 비교하기 어려웠고, 저자들의 재현 실험 결과 원조 BERT가 상당히 undertrained 상태였다는 것이 드러났습니다.',
+     idea:'<em>BERT의 성능 상당 부분은 아키텍처가 아니라 학습 레시피와 데이터 규모에서 온다</em>는 것이 이 논문의 핵심 주장입니다. BERT는 유의미하게 undertrained 상태였고, 이후 발표된 어떤 모델과도 대등하거나 더 나은 성능을 낼 수 있음을 보였습니다.',
+     method:'정적 마스킹 대신 매 에폭 다른 위치를 가리는 동적 마스킹을 적용하고 NSP 과제를 제거했으며, 학습 데이터를 16GB에서 160GB로 늘리고 배치 크기·학습 스텝을 키워 더 오래 학습했습니다. 아키텍처 자체는 BERT와 동일하게 유지했습니다.',
+     results:'아키텍처 변경 없이 GLUE·RACE·SQuAD에서 BERT를 능가하는 최고 성능을 달성했습니다.',
+     impact:'사전학습 레시피의 중요성을 입증해 이후 언어모델 학습 관행(데이터 규모 확대, 동적 마스킹, 불필요한 보조 과제 제거)에 큰 영향을 미쳤습니다.'
+   },
+   role:'BERT가 "무엇을 학습할지(아키텍처+과제)"를 세웠다면, RoBERTa는 "어떻게 학습할지(레시피)"가 그만큼 중요하다는 것을 보여줍니다.',
+   caption:'아키텍처는 동일하게 두고 데이터 규모(16GB→160GB), 마스킹 방식(정적→동적), NSP 과제 제거라는 학습 레시피만 바꿔 성능을 끌어올렸습니다.',
+   badges:{method:'syn'},
+   svg:`<svg viewBox="0 0 560 200" role="img" aria-label="아키텍처는 그대로 두고 데이터 규모, 마스킹 방식, NSP 과제 유무 등 학습 레시피만 바꾼 BERT와 RoBERTa의 차이를 보여주는 비교 도식.">
+     <text x="20" y="24" class="dg-t1">학습 데이터 규모</text>
+     <rect x="20" y="34" width="16" height="20" class="dg-panel"/><text x="42" y="49" class="dg-t2">BERT 16GB</text>
+     <rect x="20" y="60" width="160" height="20" class="dg-brand"/><text x="190" y="75" class="dg-t2">RoBERTa 160GB</text>
+     <text x="20" y="108" class="dg-t1">마스킹 방식</text>
+     <rect x="20" y="118" width="90" height="22" rx="5" class="dg-panel"/><text x="30" y="134" class="dg-t2">정적(고정)</text>
+     <text x="118" y="134" class="dg-t2">→</text>
+     <rect x="140" y="118" width="100" height="22" rx="5" class="dg-syn"/><text x="150" y="134" class="dg-t4">동적(매 에폭)</text>
+     <text x="20" y="168" class="dg-t1">NSP 과제</text>
+     <rect x="120" y="156" width="70" height="22" rx="5" class="dg-warn"/><text x="132" y="172" class="dg-t3">제거</text>
+     <text x="200" y="172" class="dg-t2">— 아키텍처는 BERT와 동일하게 유지</text>
+   </svg>`
+ }
+};
+
+/* ============================================================
+   렌더링 + 인터랙션
+   ============================================================ */
+function renderMaster(){
+  const wrap=$('#masterList');
+  wrap.innerHTML=CONCEPTS.map(c=>{
+    const items=c.papers.map(pid=>{
+      const p=PAPERS[pid];
+      const searchStr=[p.title,p.authors,String(p.year),c.ko,c.en].join(' ').toLowerCase();
+      return `<button class="paper-item" data-pid="${pid}" data-search="${esc(searchStr)}">
+        <span class="pi-title">${esc(p.title)}</span>
+        <span class="pi-meta">${esc(p.authors)} · ${p.year}</span>
+        <span class="pi-one">${esc(p.oneliner)}</span>
+      </button>`;
+    }).join('');
+    return `<div class="grp" id="grp-${c.id}">
+      <h3 class="grp-head">${esc(c.ko)} <span class="en">${esc(c.en)}</span></h3>
+      <p class="grp-blurb">${esc(c.blurb)}</p>
+      ${items}
+    </div>`;
+  }).join('');
+  $$('.paper-item').forEach(b=>b.onclick=()=>selectPaper(b.dataset.pid));
+}
+
+const LABELS={problem:'문제의식',idea:'핵심 아이디어',method:'방법',results:'주요 결과',impact:'영향·후속 연구'};
+const DEF_BADGE={problem:'ext',idea:'ext',method:'ext',results:'ext',impact:'syn'};
+const BADGE_CLASS={ext:'b-ext',syn:'b-syn',src:'b-src'};
+const BADGE_LABEL={ext:'외부',syn:'종합·해석',src:'원본'};
+
+function renderDetail(pid){
+  const p=PAPERS[pid];
+  if(!p){$('#detail').innerHTML='<div class="d-empty">왼쪽 목록에서 논문을 선택해 주세요.</div>';return;}
+  const links=[];
+  if(p.pdf) links.push(`<a class="cta ghost sm" href="${p.pdf}" target="_blank" rel="noopener">PDF ↗</a>`);
+  if(p.abs) links.push(`<a class="cta ghost sm" href="${p.abs}" target="_blank" rel="noopener">arXiv ↗</a>`);
+  const linksHTML=links.length?links.join(''):'<span class="muted">공개 링크 없음</span>';
+  const structHTML=['problem','idea','method','results','impact'].map(k=>{
+    const badge=(p.badges&&p.badges[k])||DEF_BADGE[k];
+    return `<h4>${LABELS[k]} <span class="badge ${BADGE_CLASS[badge]}">${BADGE_LABEL[badge]}</span></h4><p>${p.sections[k]}</p>`;
+  }).join('');
+  const chips=p.concepts.map(cid=>{
+    const c=CONCEPTS.find(x=>x.id===cid);
+    return c?`<button class="chip" data-jump="${cid}">${esc(c.ko)}</button>`:'';
+  }).join('');
+  $('#detail').innerHTML=`
+    <div class="d-badges"><span class="badge b-ext">외부 그라운딩: arXiv 초록 확인 완료</span></div>
+    <h3 style="margin:.1em 0 .15em">${esc(p.title)}</h3>
+    <p class="d-meta">${esc(p.authors)} · ${p.year}${p.arxiv?' · arXiv:'+esc(p.arxiv):''}</p>
+    <div class="d-links">${linksHTML}</div>
+    <p class="d-tldr"><b>TL;DR.</b> ${p.tldr}</p>
+    <div class="d-struct">${structHTML}</div>
+    <div class="d-diagram">
+      <h4>개념도 <span class="badge b-syn">종합·해석</span></h4>
+      <div class="dg-fig">${p.svg}</div>
+      <p class="muted d-svg-cap">${p.caption}</p>
+    </div>
+    <div class="d-role">
+      <h4>이 강의에서의 역할</h4>
+      <p>${p.role}</p>
+      <div class="chips">${chips}</div>
+    </div>`;
+  $$('.chip',$('#detail')).forEach(c=>c.onclick=()=>jumpToGroup(c.dataset.jump));
+}
+
+function jumpToGroup(cid){
+  const el=document.getElementById('grp-'+cid);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+let currentPid=null;
+function selectPaper(pid){
+  currentPid=pid;
+  renderDetail(pid);
+  $$('.paper-item').forEach(b=>{
+    if(b.dataset.pid===pid) b.setAttribute('aria-current','true');
+    else b.removeAttribute('aria-current');
+  });
+  if(matchMedia('(max-width:860px)').matches){
+    requestAnimationFrame(()=>{const d=$('#detail'); if(d) d.scrollIntoView({behavior:'smooth',block:'start'});});
+  }
+}
+
+/* 검색 필터 — 제목/저자/개념(한/영) */
+$('#paperSearch').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  let shown=0;
+  $$('.grp').forEach(g=>{
+    let any=false;
+    $$('.paper-item',g).forEach(b=>{
+      const match=!q||b.dataset.search.includes(q);
+      b.classList.toggle('hide',!match);
+      if(match){any=true;shown++;}
+    });
+    g.classList.toggle('hide',!any);
+  });
+  $('#searchCount').textContent = q ? `"${q}" 검색 결과: ${shown}개 항목` : '';
+});
+
+/* 타임라인 클릭 → 해당 논문 선택 + 목록 섹션으로 스크롤 */
+$$('.tl-p').forEach(b=>b.onclick=()=>{
+  selectPaper(b.dataset.pid);
+  const sec=document.getElementById('papers');
+  if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+/* 모바일: Esc로 상세 패널에서 목록으로 복귀 */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && matchMedia('(max-width:860px)').matches){
+    const m=$('#masterList'); if(m) m.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+});
+
+/* 초기 렌더 */
+renderMaster();
+selectPaper('p_attn');
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

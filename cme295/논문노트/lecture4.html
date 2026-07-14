@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 4강 논문 노트 — LLM 학습</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1200px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600;margin-left:10px}
+@media(max-width:1000px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.4vw,54px);margin:.1em 0 .2em;letter-spacing:-1px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:800px;margin:0 0 22px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:60px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:18px;color:var(--ink2);max-width:820px}
+h3{font-size:21px;margin:1.6em 0 .5em}h4{font-size:16px;margin:1.2em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+p{margin:0 0 1em}
+.quote{font-family:var(--serif);font-size:18px;line-height:1.6;border-left:3px solid var(--line2);padding:4px 0 4px 18px;margin:14px 0;font-style:italic}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.syn{border-color:var(--syn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+/* landscape timeline (CSS) */
+.tl-scroll{overflow-x:auto;margin:30px 0 8px;padding-bottom:10px}
+.tl-row{display:flex;gap:0;min-width:max-content}
+.tl-yr{flex:0 0 172px;border-right:2px solid var(--line2);padding:0 16px 0 0;margin-right:16px;position:relative}
+.tl-yr:last-child{border-right:none;margin-right:0}
+.tl-yr .yr{font-family:var(--serif);font-weight:800;font-size:22px;color:var(--brand2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tl-yr .yr::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--brand);display:inline-block}
+.tl-yr .pp{font-size:12.5px;color:var(--ink2);background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-bottom:7px;line-height:1.45;font-weight:600}
+/* master-detail */
+.md-wrap{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start;margin-top:10px}
+@media(max-width:900px){.md-wrap{grid-template-columns:1fr}}
+.master{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;position:sticky;top:72px;max-height:calc(100vh - 96px);overflow:auto}
+@media(max-width:900px){.master{position:static;max-height:none}}
+#paperSearch{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line2);background:var(--bg3);color:var(--ink);font-size:14.5px;margin-bottom:14px;font:inherit}
+#paperSearch:focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+.searchhint{font-size:12px;color:var(--ink3);margin:-8px 0 12px}
+.mgroup{margin-bottom:4px}
+.mgroup-h{font-size:11.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--ink3);padding:12px 8px 6px;border-top:1px dashed var(--line)}
+.mgroup:first-of-type .mgroup-h{border-top:none;padding-top:2px}
+.mitem{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:10px;padding:10px 10px;cursor:pointer;color:var(--ink);font:inherit;margin-bottom:2px}
+.mitem:hover{background:var(--bg3)}
+.mitem.active{background:var(--brandsoft);border-color:var(--brand)}
+.mitem .mt{font-weight:700;font-size:14px;line-height:1.4}
+.mitem .ma{font-size:12px;color:var(--ink3);margin-top:3px}
+.mitem .ms{font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.5}
+.nohit{font-size:13.5px;color:var(--ink3);padding:14px 8px}
+.detail{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px}
+@media(max-width:900px){.detail{margin-top:4px}}
+.backtolist{display:none;margin-bottom:14px;font-size:13px;font-weight:700;color:var(--brand2);background:var(--bg3);border:1px solid var(--line2);border-radius:9px;padding:8px 12px;cursor:pointer}
+@media(max-width:900px){.backtolist{display:inline-flex;align-items:center;gap:6px}}
+.dpane{display:none}
+.dpane.active{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dmeta h3{margin:0 0 6px;font-size:23px;letter-spacing:-.3px}
+.dsub{font-size:13.5px;color:var(--ink3)}
+.dlinks{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 6px}
+.dlinks a{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);padding:8px 14px;border-radius:10px;font-size:13.5px;font-weight:700}
+.dlinks a:hover{background:var(--brandsoft);text-decoration:none}
+.tldr{font-size:16.5px;font-weight:700;background:var(--brandsoft);border:1px solid var(--brand);border-radius:12px;padding:14px 18px;margin:18px 0}
+.dsec{margin:20px 0}
+.dl{font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.dsec p{margin:0 0 .6em;color:var(--ink2)}
+.dsec p:last-child{margin-bottom:0}
+.diagram{margin:24px 0;background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:16px}
+.diagram svg{width:100%;height:auto;display:block}
+.diagram figcaption{font-size:13px;color:var(--ink3);margin-top:10px;line-height:1.6}
+.drole{margin-top:22px;border-top:1px dashed var(--line);padding-top:18px}
+.drole p{color:var(--ink2)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{font-size:12.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);border-radius:999px;padding:4px 12px;color:var(--ink2)}
+/* footer + misc */
+footer{padding:44px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.footlinks{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>4강 논문 노트</b></span>
+  <nav>
+    <a href="#landscape">논문 지형</a>
+    <a href="#library">논문 목록</a>
+    <a href="../강의노트/lecture4.html" target="_blank" rel="noopener">강의 설명자 ↗</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도 ↗</a>
+    <a href="../" target="_blank" rel="noopener">전체 목록 ↗</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">CME 295 · 4강 부속 자료 · 논문 노트</span>
+  <h1>CME 295 · 4강 논문 노트 — LLM 학습</h1>
+  <p class="sub">프리트레이닝부터 LoRA까지 — 이 강의가 딛고 선 열 편의 논문을 마스터-디테일(master-detail) 구조로 정리했습니다. 왼쪽에서 논문을 고르면 오른쪽에 상세 요약이 펼쳐집니다.</p>
+  <div class="metaline">
+    <span><b>원 강의</b> <a href="../강의노트/lecture4.html" target="_blank" rel="noopener">4강 강의 설명자 보기 ↗</a></span>
+    <span><b>다루는 논문</b> 10편 (개념 항목 11건)</span>
+    <span><b>개념 지도</b> <a href="../dag.html" target="_blank" rel="noopener">전체 강의 DAG 보기 ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#library">논문 목록 보기 ↓</a>
+    <a class="cta ghost" href="../강의노트/lecture4.html" target="_blank" rel="noopener">강의 설명자 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>원 논문 초록·본문에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>논문 초록을 근거로 정리한 <b>사실 요약</b>.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 논문을 엮은 <b>작성자의 해석·도식화</b>(원 논문의 직접 주장이 아님).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== 이 장의 논문 지형 ===== -->
+<section id="landscape"><div class="wrap reveal">
+  <span class="sec-no">01 — 이 장의 논문 지형</span>
+  <h2>재료를 마련하고, 비율을 가늠하고, 다시 데워내기 <span class="en">The Shape of LLM Training</span></h2>
+  <p class="lead">새로운 요리를 배우는 사람을 떠올려 봅시다. 처음에는 온갖 재료와 조리법을 몸에 익히는 시간이 필요합니다 — 이 강의가 다루는 <b>LLM 학습(LLM Training)</b> 역시 같은 모양을 하고 있습니다.</p>
+
+  <p>거대 언어모델(LLM, Large Language Model)을 사람이 쓸 만한 결과물로 빚어내기까지는 몇 단계가 차례로 필요합니다. 먼저 재료를 마련하는 단계인 <b>프리트레이닝(Pretraining)</b>이 있고, 재료와 시간의 비율을 가늠하는 감각인 <b>스케일링 법칙(Scaling Laws)</b>이 있으며, 큰 솥과 좁은 주방을 실제로 돌리는 요령인 <b>하드웨어 최적화(Hardware Optimization)</b>가 있습니다. 마지막으로 완성된 요리를 손님 한 명 한 명의 입맛에 맞춰 다시 데워내는 손질 — <b>SFT(Supervised Fine-Tuning, 지도 미세조정)</b>와 <b>LoRA</b>·<b>QLoRA</b> — 가 뒤따릅니다. 자전거를 처음 배울 때 균형이 핵심이듯, LLM 학습에서도 몸집(파라미터 수)만 키운다고 저절로 좋아지는 것은 아니라는 점을 이 장의 논문들이 하나씩 보여줍니다.</p>
+
+  <div class="callout"><div class="h"><span class="badge b-syn">종합·해석</span> 결론부터 말하면</div>
+  이 장의 논문 열 편은 크게 세 흐름으로 묶입니다. 첫째는 <i>"모델을 얼마나 키우고 무엇을 얼마나 먹여야 하는가"</i>를 규명한 스케일링 법칙 계열(Kaplan et al., Hoffmann et al.)이고, 둘째는 그렇게 커진 모델을 실제 하드웨어 위에서 현실적인 시간과 비용으로 돌리기 위한 학습 최적화 계열(혼합 정밀도 학습, ZeRO, FlashAttention)이며, 셋째는 학습이 끝난 거대 모델을 저렴하게 다시 조리해 원하는 용도에 맞추는 미세조정 계열(지시문 튜닝, LoRA, QLoRA)입니다. GPT-3와 Llama 3는 이 세 흐름이 실제 모델로 구현된 대표 사례로 함께 다룹니다.</div>
+
+  <p>시간 순으로 따라가면 이야기가 더 선명해집니다. Kaplan 등(2020)이 처음으로 손실이 파라미터·데이터·연산량 각각에 대해 매끄러운 거듭제곱 법칙(power law)을 따른다는 것을 보이며 "크게 만들수록 좋다"는 감각을 정량화했습니다. 그런데 Hoffmann 등(2022)의 Chinchilla 논문은 이 처방에 균열을 냅니다 — 실제로는 파라미터뿐 아니라 데이터도 같은 비율로 함께 키워야 한다는 것이었습니다. 한편 같은 시기 GPT-3(2020)는 스케일링이 실제로 무엇을 가능하게 하는지 few-shot 학습(적은 예시만으로 과제를 수행하는 방식)으로 실증했고, Llama 3(2024)는 그 재현 가능성을 오픈 웨이트로 증명했습니다. 이렇게 거대해진 모델을 실제로 학습시키려면 하드웨어 병목도 함께 풀어야 했는데, Mixed Precision Training(2017)이 먼저 길을 열었고, ZeRO(2019)가 GPU 간 메모리 중복을 없앴으며, FlashAttention(2022)이 어텐션 연산의 진짜 병목이 연산량이 아니라 메모리 이동이라는 점을 짚어냈습니다. 학습이 끝난 모델을 사람이 원하는 형태로 바꾸는 후반부는 FLAN(2021)의 지시문 튜닝(instruction tuning)에서 시작해, LoRA(2021)가 미세조정 비용 자체를 줄였고, QLoRA(2023)가 여기에 양자화(Quantization)를 더해 개인용 GPU까지 문턱을 낮췄습니다.</p>
+
+  <div class="tl-scroll"><div class="tl-row">
+    <div class="tl-yr"><div class="yr">2017</div><div class="pp">Mixed Precision Training <span class="en">FP16 학습 안정화</span></div></div>
+    <div class="tl-yr"><div class="yr">2019</div><div class="pp">ZeRO <span class="en">메모리 중복 제거</span></div></div>
+    <div class="tl-yr"><div class="yr">2020</div><div class="pp">GPT-3 <span class="en">few-shot 실증</span></div><div class="pp">Scaling Laws (Kaplan) <span class="en">거듭제곱 법칙</span></div></div>
+    <div class="tl-yr"><div class="yr">2021</div><div class="pp">LoRA <span class="en">저랭크 적응</span></div><div class="pp">FLAN <span class="en">지시문 튜닝</span></div></div>
+    <div class="tl-yr"><div class="yr">2022</div><div class="pp">Chinchilla <span class="en">compute-optimal</span></div><div class="pp">FlashAttention <span class="en">IO-aware</span></div></div>
+    <div class="tl-yr"><div class="yr">2023</div><div class="pp">QLoRA <span class="en">4비트 + LoRA</span></div></div>
+    <div class="tl-yr"><div class="yr">2024</div><div class="pp">Llama 3 <span class="en">오픈 웨이트 재현</span></div></div>
+  </div></div>
+  <p class="muted">※ 연대기 배열은 각 논문의 발표(제출) 연도를 기준으로 한 <span class="badge b-syn">종합·해석</span>입니다.</p>
+</div></section>
+
+<!-- ===== 마스터-디테일: 논문 목록 ===== -->
+<section id="library"><div class="wrap reveal">
+  <span class="sec-no">02 — 논문 목록</span>
+  <h2>열 편의 논문, 하나씩 펼쳐보기 <span class="en">Master–Detail Paper Notes</span></h2>
+  <p class="lead">왼쪽 목록에서 논문 제목을 클릭(또는 Enter)하면 오른쪽 패널에 그 논문의 상세 요약과 개념도가 펼쳐집니다. 제목·저자·개념으로 검색할 수 있습니다.</p>
+
+  <div class="md-wrap">
+    <!-- MASTER -->
+    <nav class="master" aria-label="논문 목록 및 검색">
+      <input type="text" id="paperSearch" placeholder="제목·저자·개념으로 검색… (한/영)" aria-label="논문 검색">
+      <div class="searchhint" id="searchCount"></div>
+      <div id="masterList">
+
+        <div class="mgroup" data-group="pretraining">
+          <div class="mgroup-h">프리트레이닝 <span class="en">Pretraining</span></div>
+          <button class="mitem active" data-key="gpt3" data-search="language models are few-shot learners gpt-3 gpt3 brown openai 프리트레이닝 pretraining 스케일링 법칙 scaling laws 퓨샷 few-shot">
+            <div class="mt">Language Models are Few-Shot Learners</div>
+            <div class="ma">Brown et al. · 2020 · arXiv:2005.14165</div>
+            <div class="ms">모델을 충분히 키우면 미세조정 없이 프롬프트 속 예시 몇 개만으로 과제를 수행할 수 있음을 보인 GPT-3 논문.</div>
+          </button>
+          <button class="mitem" data-key="llama3" data-search="the llama 3 herd of models llama3 meta 프리트레이닝 pretraining 스케일링 법칙 scaling laws 오픈 웨이트 open weight">
+            <div class="mt">The Llama 3 Herd of Models</div>
+            <div class="ma">Meta LLaMA team · 2024 · arXiv:2407.21783</div>
+            <div class="ms">4,050억 파라미터·약 15조 토큰 규모의 오픈 웨이트 모델군으로 대규모 프리트레이닝을 재현 가능하게 문서화.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="scaling-laws">
+          <div class="mgroup-h">스케일링 법칙 <span class="en">Scaling Laws</span></div>
+          <button class="mitem" data-key="kaplan" data-search="scaling laws for neural language models kaplan 스케일링 법칙 거듭제곱 법칙 power law 프리트레이닝 pretraining">
+            <div class="mt">Scaling Laws for Neural Language Models</div>
+            <div class="ma">Kaplan et al. · 2020 · arXiv:2001.08361</div>
+            <div class="ms">테스트 손실이 파라미터·데이터·연산량에 대해 매끄러운 거듭제곱 법칙을 따른다는 것을 보인 첫 스케일링 법칙 논문.</div>
+          </button>
+          <button class="mitem" data-key="chinchilla" data-search="training compute-optimal large language models hoffmann chinchilla 친칠라 스케일링 법칙 scaling laws compute-optimal 프리트레이닝 pretraining">
+            <div class="mt">Training Compute-Optimal Large Language Models</div>
+            <div class="ma">Hoffmann et al. · 2022 · arXiv:2203.15556</div>
+            <div class="ms">파라미터 수와 학습 토큰 수를 같은 비율로 늘려야 함을 보여 Chinchilla 모델로 실증한 스케일링 법칙 수정판.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="quantization">
+          <div class="mgroup-h">양자화 <span class="en">Quantization</span></div>
+          <button class="mitem" data-key="qlora" data-search="qlora efficient finetuning of quantized llms dettmers 양자화 quantization nf4 저랭크 lora">
+            <div class="mt">QLoRA: Efficient Finetuning of Quantized LLMs</div>
+            <div class="ma">Dettmers et al. · 2023 · arXiv:2305.14314</div>
+            <div class="ms">얼려둔 원 가중치를 4비트 NF4로 양자화하고 그 위에 LoRA 어댑터만 학습해 미세조정 메모리를 크게 절감.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="hardware-optimization">
+          <div class="mgroup-h">하드웨어 최적화 <span class="en">Hardware Optimization</span></div>
+          <button class="mitem" data-key="zero" data-search="zero memory optimizations toward training trillion parameter models rajbhandari deepspeed 하드웨어 최적화 hardware optimization 병렬화 parallelism">
+            <div class="mt">ZeRO: Memory Optimizations Toward Training Trillion Parameter Models</div>
+            <div class="ma">Rajbhandari et al. · 2019 · arXiv:1910.02054</div>
+            <div class="ms">옵티마이저 상태·그래디언트·파라미터의 GPU 간 중복 저장을 단계적으로 없애 초대형 모델 학습을 가능케 함.</div>
+          </button>
+          <button class="mitem" data-key="mixedprec" data-search="mixed precision training micikevicius fp16 loss scaling 하드웨어 최적화 hardware optimization 혼합 정밀도">
+            <div class="mt">Mixed Precision Training</div>
+            <div class="ma">Micikevicius et al. · 2017 · arXiv:1710.03740</div>
+            <div class="ms">FP16 순전파·역전파에 FP32 마스터 가중치와 손실 스케일링을 결합해 정확도 손실 없이 학습 속도를 높임.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="flash-attention">
+          <div class="mgroup-h">플래시어텐션 <span class="en">FlashAttention</span></div>
+          <button class="mitem" data-key="flashattn" data-search="flashattention fast and memory-efficient exact attention with io-awareness dao 플래시어텐션 어텐션 attention io-aware 타일링">
+            <div class="mt">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</div>
+            <div class="ma">Dao et al. · 2022 · arXiv:2205.14135</div>
+            <div class="ms">블록 단위 타일링과 역전파 재계산으로 정확히 같은 어텐션 결과를 훨씬 빠르게 얻는 IO-aware 알고리즘.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="sft">
+          <div class="mgroup-h">지도 미세조정(SFT) <span class="en">Supervised Fine-Tuning</span></div>
+          <button class="mitem" data-key="flan" data-search="finetuned language models are zero-shot learners wei flan 지도 미세조정 sft 지시문 튜닝 instruction tuning">
+            <div class="mt">Finetuned Language Models Are Zero-Shot Learners</div>
+            <div class="ma">Wei et al. · 2022 · arXiv:2109.01652</div>
+            <div class="ms">여러 과제를 자연어 지시문으로 바꿔 미세조정하는 지시문 튜닝으로 제로샷 성능을 크게 끌어올린 FLAN 논문.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="lora">
+          <div class="mgroup-h">LoRA <span class="en">Low-Rank Adaptation</span></div>
+          <button class="mitem" data-key="lora" data-search="lora low-rank adaptation of large language models hu 저랭크 적응 파라미터 효율적 미세조정 peft">
+            <div class="mt">LoRA: Low-Rank Adaptation of Large Language Models</div>
+            <div class="ma">Hu et al. · 2021 · arXiv:2106.09685</div>
+            <div class="ms">원 가중치는 고정하고 두 저랭크 행렬만 학습해 더하는 파라미터 효율적 미세조정 기법.</div>
+          </button>
+        </div>
+
+        <div class="mgroup" data-group="qlora2">
+          <div class="mgroup-h">QLoRA <span class="en">QLoRA</span></div>
+          <button class="mitem" data-key="qlora" data-search="qlora efficient finetuning of quantized llms dettmers qlora 큐로라 양자화 quantization lora">
+            <div class="mt">QLoRA: Efficient Finetuning of Quantized LLMs</div>
+            <div class="ma">Dettmers et al. · 2023 · arXiv:2305.14314</div>
+            <div class="ms">LoRA에 4비트 양자화(NF4)를 결합해 메모리를 한 번 더 줄인 기법. (양자화 그룹과 동일 논문)</div>
+          </button>
+        </div>
+
+      </div>
+    </nav>
+
+    <!-- DETAIL -->
+    <div class="detail" id="detailHost">
+      <button class="backtolist" id="backToList" type="button">↑ 목록으로</button>
+
+      <!-- 1. GPT-3 -->
+      <article class="dpane active" data-key="gpt3">
+        <div class="dmeta"><h3>Language Models are Few-Shot Learners</h3>
+        <div class="dsub">Brown et al. (OpenAI) · 2020 · arXiv:2005.14165</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2005.14165" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 모델을 충분히 키우면, 그래디언트 업데이트나 별도의 미세조정 없이 프롬프트에 넣은 몇 개의 예시(few-shot)만으로 다양한 과제를 해낼 수 있습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>당시 자연어처리 모델은 과제마다 수천~수만 개의 라벨링 데이터로 미세조정해야 쓸 만한 성능이 나왔고, 새 과제를 만날 때마다 이 과정을 반복해야 했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>논문은 <i>"scaling up language models greatly improves task-agnostic, few-shot performance"</i>라는 문장으로 핵심 주장을 요약합니다. 모델 규모를 충분히 키우면 추가 학습 없이 프롬프트 속 몇 개의 예시만으로 새로운 과제를 수행할 수 있다는 것입니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>1,750억 개 파라미터의 <b>GPT-3</b>를 다음 토큰 예측(next-token prediction)만으로 사전학습시킨 뒤, 추가 학습 없이 프롬프트에 과제 설명과 예시 몇 개를 넣는 zero-shot·one-shot·few-shot 방식으로 평가했습니다. 이전 세대의 비-희소(non-sparse) 언어모델보다 10배 큰 규모입니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>번역·질의응답·문장완성은 물론, 단어 뒤섞기 복원이나 세 자리 산술처럼 즉석에서 추론이 필요한 과제까지 프롬프트만으로 경쟁력 있는 성능을 보였습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>이 결과는 "사전학습 후 프롬프트/미세조정"이라는 지금의 표준 파이프라인을 사실상 확정지었고, 이후 스케일링 법칙 연구(Kaplan, Chinchilla)와 오픈 웨이트 재현 시도(Llama 시리즈)를 촉발한 기준점이 되었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 230" role="img" aria-label="기존 방식은 과제마다 데이터를 모아 별도로 미세조정하지만, GPT-3 방식은 한 번의 대규모 사전학습 뒤 프롬프트 속 예시만으로 여러 과제를 곧바로 수행한다는 것을 보여주는 비교 흐름도">
+            <text x="10" y="24" font-size="13" font-weight="700" fill="var(--ink3)">기존 방식</text>
+            <rect x="10" y="34" width="120" height="46" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="70" y="62" font-size="12" fill="var(--ink)" text-anchor="middle">사전학습 모델</text>
+            <line x1="130" y1="57" x2="168" y2="57" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="168,57 158,52 158,62" fill="var(--ink3)"/>
+            <rect x="170" y="34" width="140" height="46" rx="8" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+            <text x="240" y="56" font-size="11.5" fill="var(--ink)" text-anchor="middle">과제 A 라벨 데이터</text>
+            <text x="240" y="70" font-size="11.5" fill="var(--ink)" text-anchor="middle">로 미세조정</text>
+            <line x1="310" y1="57" x2="348" y2="57" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="348,57 338,52 338,62" fill="var(--ink3)"/>
+            <rect x="350" y="34" width="110" height="46" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="405" y="62" font-size="12" fill="var(--ink)" text-anchor="middle">과제 A 전용 모델</text>
+            <text x="470" y="62" font-size="11.5" fill="var(--warn)">과제마다 반복 ↻</text>
+
+            <text x="10" y="118" font-size="13" font-weight="700" fill="var(--brand2)">GPT-3 방식</text>
+            <rect x="10" y="128" width="150" height="52" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="85" y="150" font-size="12" fill="var(--ink)" text-anchor="middle">대규모 사전학습</text>
+            <text x="85" y="166" font-size="11" fill="var(--ink2)" text-anchor="middle">175B · 다음 토큰 예측</text>
+            <line x1="160" y1="154" x2="198" y2="154" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="198,154 188,149 188,159" fill="var(--brand)"/>
+            <rect x="200" y="128" width="150" height="52" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+            <text x="275" y="150" font-size="12" fill="var(--ink)" text-anchor="middle">프롬프트 속 예시</text>
+            <text x="275" y="166" font-size="11" fill="var(--ink2)" text-anchor="middle">zero/one/few-shot</text>
+            <line x1="350" y1="154" x2="388" y2="154" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="388,154 378,149 378,159" fill="var(--brand)"/>
+            <rect x="390" y="122" width="230" height="64" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="505" y="148" font-size="12" fill="var(--ink)" text-anchor="middle">번역 · 질의응답</text>
+            <text x="505" y="164" font-size="12" fill="var(--ink)" text-anchor="middle">문장완성 · 추론형 과제</text>
+            <text x="505" y="178" font-size="11" fill="var(--ok)" text-anchor="middle">추가 학습 없이 즉시 수행</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 기존 미세조정 파이프라인과 GPT-3의 프롬프트 기반 few-shot 방식을 대조한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>프리트레이닝(Pretraining) 개념을 대표하는 실증 사례로, 다음 토큰 예측 하나의 목적함수만으로 방대한 능력이 나타날 수 있음을 보여줍니다.</p>
+        <div class="chips"><span class="chip">프리트레이닝</span><span class="chip">스케일링 법칙</span></div></div>
+      </article>
+
+      <!-- 2. Llama 3 -->
+      <article class="dpane" data-key="llama3">
+        <div class="dmeta"><h3>The Llama 3 Herd of Models</h3>
+        <div class="dsub">Meta LLaMA 팀 (500명 이상 공저) · 2024 · arXiv:2407.21783</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2407.21783" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2407.21783" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 4,050억 파라미터·약 15조 토큰 규모의 오픈 웨이트 모델군으로, 폐쇄형 최상위 모델과 견줄 성능을 재현 가능한 형태로 문서화했습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>폐쇄형 최상위 모델과 오픈 웨이트(open-weight) 모델 사이의 성능 격차, 그리고 대규모 사전학습의 실무적 노하우가 비공개로 남아있던 상황이 배경입니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>논문은 <i>"modern AI systems are powered by foundation models"</i>라는 전제 위에서, 다국어·코딩·추론·도구 사용을 기본 지원하는 새로운 기초 모델군(herd), Llama 3를 공개합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>최대 4,050억 파라미터의 밀집(dense) 트랜스포머를 최대 128K 토큰 컨텍스트 윈도우로 학습시키고, 약 15조 토큰 규모 데이터로 사전학습한 뒤 사후 학습(post-training)을 진행했습니다. 이미지·비디오·음성까지 다루는 멀티모달 확장 실험도 별도로 보고합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>다수의 과제에서 GPT-4급 폐쇄형 모델과 비교 가능한 품질을 보고했으며, 405B 사전학습·사후학습 버전과 안전성 모델 Llama Guard 3을 함께 공개했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>데이터 큐레이션, 스케일링, 사후 학습 전반의 실무적 선택을 상세히 문서화함으로써, 이후 오픈소스 LLM 연구·산업 활용에 폭넓게 참조되는 기준점이 되었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 190" role="img" aria-label="데이터 확보에서 대규모 사전학습, 사후 학습, 멀티모달 확장까지 이어지는 Llama 3 파이프라인을 보여주는 흐름도">
+            <rect x="10" y="60" width="130" height="60" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="75" y="84" font-size="12" fill="var(--ink)" text-anchor="middle">데이터 큐레이션</text>
+            <text x="75" y="100" font-size="11" fill="var(--ink2)" text-anchor="middle">웹·코드 등</text>
+            <line x1="140" y1="90" x2="176" y2="90" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="176,90 166,85 166,95" fill="var(--ink3)"/>
+            <rect x="178" y="50" width="150" height="80" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="253" y="76" font-size="12" fill="var(--ink)" text-anchor="middle">사전학습</text>
+            <text x="253" y="92" font-size="11" fill="var(--ink2)" text-anchor="middle">405B · 15T 토큰</text>
+            <text x="253" y="108" font-size="11" fill="var(--ink2)" text-anchor="middle">128K 컨텍스트</text>
+            <line x1="328" y1="90" x2="366" y2="90" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="366,90 356,85 356,95" fill="var(--brand)"/>
+            <rect x="368" y="60" width="130" height="60" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+            <text x="433" y="84" font-size="12" fill="var(--ink)" text-anchor="middle">사후 학습</text>
+            <text x="433" y="100" font-size="11" fill="var(--ink2)" text-anchor="middle">post-training</text>
+            <line x1="498" y1="90" x2="536" y2="90" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="536,90 526,85 526,95" fill="var(--ink3)"/>
+            <rect x="538" y="60" width="94" height="60" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="585" y="84" font-size="12" fill="var(--ink)" text-anchor="middle">멀티모달</text>
+            <text x="585" y="100" font-size="11" fill="var(--ink2)" text-anchor="middle">이미지·영상·음성</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> Llama 3의 데이터 준비 → 사전학습 → 사후학습 → 멀티모달 확장 파이프라인을 단순화한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>스케일링 법칙(파라미터-데이터 비율)이 실무에 적용된 최신 사례이자, 오픈 웨이트로 대규모 프리트레이닝을 재현한 대표 모델입니다.</p>
+        <div class="chips"><span class="chip">프리트레이닝</span><span class="chip">스케일링 법칙</span></div></div>
+      </article>
+
+      <!-- 3. Kaplan Scaling Laws -->
+      <article class="dpane" data-key="kaplan">
+        <div class="dmeta"><h3>Scaling Laws for Neural Language Models</h3>
+        <div class="dsub">Kaplan et al. · 2020 · arXiv:2001.08361</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2001.08361" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 모델 크기·데이터 크기·연산량 각각을 늘리면 손실이 매끄러운 거듭제곱 법칙(power law)을 따라 줄어들며, 이는 일곱 자릿수가 넘는 규모 범위에서 성립합니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>모델을 얼마나 크게, 얼마나 오래 학습시켜야 성능이 좋아지는지에 대한 정량적 기준이 없었습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>논문의 핵심 문장은 <i>"loss scales as a power-law with model size, dataset size, and the amount of compute used for training"</i>입니다 — 모델 크기·데이터셋 크기·학습 연산량 각각에 대해 손실이 거듭제곱 법칙을 따른다는 것입니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>트랜스포머 언어모델을 다양한 파라미터 수·데이터 크기·연산량 조합으로 학습시켜 손실 곡선을 측정했고, 그 추세가 7자릿수 이상의 규모 범위에서 매끄럽게 유지됨을 확인했습니다. 네트워크의 너비·깊이 같은 아키텍처 세부사항은 넓은 범위 안에서 영향이 작다는 것도 함께 확인했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>더 큰 모델일수록 표본 효율이 훨씬 높았습니다. 정해진 연산 예산에서는 수렴 이전에 학습을 멈추더라도, 상대적으로 적은 데이터로 매우 큰 모델을 학습하는 쪽이 손실을 최소화한다는 결론에 따라, 이 논문은 파라미터 수를 데이터보다 더 크게 늘리는 쪽을 권장했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>스케일링을 정량적 설계 도구로 만든 시초라는 평가를 받지만, "파라미터를 데이터보다 더 키워야 한다"는 처방 자체는 이후 Chinchilla(Hoffmann et al., 2022)에 의해 수정되었습니다 — 파라미터와 데이터를 동등한 비율로 함께 키워야 한다는 방향으로요.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 210" role="img" aria-label="로그-로그 축에서 테스트 손실이 파라미터 수, 데이터 크기, 연산량 각각에 대해 직선(거듭제곱 법칙)으로 감소하는 모습을 보여주는 세 개의 미니 그래프">
+            <text x="320" y="20" font-size="13" font-weight="700" fill="var(--ink2)" text-anchor="middle">log(손실) vs log(규모) — 세 변수 모두 직선(거듭제곱 법칙)</text>
+            <g transform="translate(10,34)">
+              <line x1="0" y1="130" x2="0" y2="0" stroke="var(--line2)"/>
+              <line x1="0" y1="130" x2="180" y2="130" stroke="var(--line2)"/>
+              <path d="M5,20 L175,120" stroke="var(--brand)" stroke-width="3" fill="none"/>
+              <text x="90" y="150" font-size="11.5" fill="var(--ink2)" text-anchor="middle">파라미터 수 ↑</text>
+            </g>
+            <g transform="translate(230,34)">
+              <line x1="0" y1="130" x2="0" y2="0" stroke="var(--line2)"/>
+              <line x1="0" y1="130" x2="180" y2="130" stroke="var(--line2)"/>
+              <path d="M5,25 L175,118" stroke="var(--syn)" stroke-width="3" fill="none"/>
+              <text x="90" y="150" font-size="11.5" fill="var(--ink2)" text-anchor="middle">데이터 크기 ↑</text>
+            </g>
+            <g transform="translate(450,34)">
+              <line x1="0" y1="130" x2="0" y2="0" stroke="var(--line2)"/>
+              <line x1="0" y1="130" x2="180" y2="130" stroke="var(--line2)"/>
+              <path d="M5,15 L175,122" stroke="var(--gold)" stroke-width="3" fill="none"/>
+              <text x="90" y="150" font-size="11.5" fill="var(--ink2)" text-anchor="middle">연산량 ↑</text>
+            </g>
+            <text x="320" y="200" font-size="12" fill="var(--ink3)" text-anchor="middle">세 축 모두 규모를 키울수록 손실이 매끄럽게, 예측 가능하게 줄어듭니다.</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 실제 수치가 아닌, 세 변수 각각에 대해 손실이 거듭제곱 법칙(로그-로그 직선)을 따른다는 논문의 정성적 주장을 도식화한 것입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>스케일링 법칙 개념의 첫 논문으로, 이후 Chinchilla가 그 처방을 수정하는 출발점이 됩니다.</p>
+        <div class="chips"><span class="chip">스케일링 법칙</span><span class="chip">프리트레이닝</span></div></div>
+      </article>
+
+      <!-- 4. Chinchilla -->
+      <article class="dpane" data-key="chinchilla">
+        <div class="dmeta"><h3>Training Compute-Optimal Large Language Models</h3>
+        <div class="dsub">Hoffmann et al. · 2022 · arXiv:2203.15556</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2203.15556" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2203.15556" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 정해진 연산 예산에서는 파라미터 수와 학습 토큰 수를 거의 같은 비율로 늘려야 손실을 최소화하며, 기존 대형 모델들은 상당히 과소학습되어 있었습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>Kaplan et al.(2020)의 스케일링 법칙 처방을 따라 업계는 파라미터 수 위주로 모델을 키웠지만, 이 논문은 그 처방 자체를 대규모로 재검증할 필요가 있다고 문제를 제기합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>400여 개 모델을 다양한 크기·데이터 조합으로 학습시켜 재검증한 결과, 연구진은 <i>"모델 크기와 훈련 토큰 수를 동등하게 확대해야 한다"</i>고 결론짓습니다 — 모델 크기가 2배가 되면 학습 데이터도 2배가 되어야 한다는 것입니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>기존 Gopher(2,800억 파라미터)와 같은 연산 예산 위에서, 대신 파라미터 수를 700억으로 줄이고 학습 데이터를 4배 늘린 <b>Chinchilla</b> 모델을 학습시켜 비교했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>Chinchilla는 MMLU 벤치마크에서 67.5% 정확도를 기록해 Gopher 대비 7%포인트 이상 개선했습니다. 파라미터 수는 훨씬 작지만 더 적은 연산으로 미세조정·추론 모두에서 우월한 성능을 보였습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>"현재의 대규모 언어모델들은 상당히 과소 훈련되었다"는 이 결론은 이후 LLaMA를 비롯한 여러 모델의 파라미터-데이터 비율 설계에 직접적인 영향을 주었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 210" role="img" aria-label="같은 연산 예산 위에서 파라미터 수 위주로 키운 Gopher와, 파라미터와 데이터를 균형 있게 배분한 Chinchilla를 저울 그림으로 비교하는 도식">
+            <text x="320" y="24" font-size="13" font-weight="700" fill="var(--ink2)" text-anchor="middle">같은 연산 예산, 다른 배분</text>
+            <line x1="120" y1="60" x2="520" y2="60" stroke="var(--line2)" stroke-width="4"/>
+            <circle cx="120" cy="60" r="8" fill="var(--line2)"/>
+            <g>
+              <rect x="60" y="80" width="140" height="50" rx="8" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+              <text x="130" y="100" font-size="12" fill="var(--ink)" text-anchor="middle">Gopher</text>
+              <text x="130" y="116" font-size="11" fill="var(--ink2)" text-anchor="middle">280B 파라미터 · 데이터 적음</text>
+            </g>
+            <text x="320" y="105" font-size="16" fill="var(--ink3)" text-anchor="middle">vs</text>
+            <g>
+              <rect x="440" y="80" width="140" height="50" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+              <text x="510" y="100" font-size="12" fill="var(--ink)" text-anchor="middle">Chinchilla</text>
+              <text x="510" y="116" font-size="11" fill="var(--ink2)" text-anchor="middle">70B 파라미터 · 데이터 4배</text>
+            </g>
+            <line x1="60" y1="80" x2="200" y2="80" stroke="var(--ext-bd)" stroke-width="2"/>
+            <line x1="440" y1="80" x2="580" y2="80" stroke="var(--syn-bd)" stroke-width="2"/>
+            <line x1="130" y1="80" x2="120" y2="60" stroke="var(--line2)" stroke-width="2"/>
+            <line x1="510" y1="80" x2="120" y2="60" stroke="var(--line2)" stroke-width="2"/>
+            <text x="320" y="170" font-size="12" fill="var(--ok)" text-anchor="middle">Chinchilla: 더 적은 파라미터 + 더 많은 데이터 = MMLU 67.5% (Gopher 대비 +7%p↑)</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 같은 연산 예산에서 파라미터 위주 배분(Gopher)과 균형 배분(Chinchilla)을 저울처럼 대조한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>스케일링 법칙의 수정판이자 프리트레이닝 실무 설계 기준으로, "모델을 키울수록 데이터도 같이 키워야 한다"는 원칙을 확립합니다.</p>
+        <div class="chips"><span class="chip">스케일링 법칙</span><span class="chip">프리트레이닝</span></div></div>
+      </article>
+
+      <!-- 5. ZeRO -->
+      <article class="dpane" data-key="zero">
+        <div class="dmeta"><h3>ZeRO: Memory Optimizations Toward Training Trillion Parameter Models</h3>
+        <div class="dsub">Rajbhandari et al. · 2019 · arXiv:1910.02054</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/1910.02054" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/1910.02054" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 데이터 병렬 학습에서 각 GPU가 중복 저장하던 옵티마이저 상태·그래디언트·파라미터를 단계적으로 나누어 저장해, 기존엔 불가능했던 1,000억~1조 파라미터급 모델을 학습 가능하게 만들었습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>대규모 딥러닝 모델은 정확도 향상을 제공하지만, 데이터 병렬화(data parallelism)만으로는 각 GPU가 옵티마이저 상태·그래디언트·파라미터 전부를 중복으로 들고 있어야 해 수십억~수조 파라미터 모델 학습이 메모리 벽에 부딪힙니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>논문은 <i>"ZeRO eliminates memory redundancies in data- and model-parallel training while retaining low communication volume and high computational granularity"</i>라고 밝힙니다 — 통신량을 낮게 유지하면서 메모리 중복을 제거하는 <b>ZeRO(Zero Redundancy Optimizer)</b>를 제안합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 방법</div>
+        <p>구체적으로는 옵티마이저 상태, 그래디언트, 파라미터라는 세 가지 학습 상태를 GPU 간에 단계적으로(흔히 ZeRO-1 → ZeRO-2 → ZeRO-3로 불리는 단계) 나누어 저장함으로써 중복을 없애는 방식입니다. 이 단계별 구분은 논문 본문 및 이후 DeepSpeed 문서 등 후속 자료에 상세히 기술되어 있으며, 초록 자체는 "낮은 통신량을 유지하며 중복을 제거한다"는 개괄적 표현만 제공합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>기존 최고 수준 대비 학습 가능 모델 크기 8배, 성능 10배 향상을 보고했고, 100B 파라미터 이상 모델(예: Turing-NLG 17B) 학습에 성공했습니다. 1조 파라미터급 모델 학습 가능성도 함께 제시합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>ZeRO는 이후 DeepSpeed, PyTorch FSDP 등 널리 쓰이는 분산학습 라이브러리의 핵심 구성요소가 되었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 230" role="img" aria-label="GPU 세 대에 걸쳐 옵티마이저 상태, 그래디언트, 파라미터가 단계적으로 분할되는 ZeRO-1, ZeRO-2, ZeRO-3 단계를 비교하는 도식">
+            <text x="320" y="18" font-size="13" font-weight="700" fill="var(--ink2)" text-anchor="middle">GPU 3대 — 무엇을 나누어 저장하는가</text>
+            <!-- header row -->
+            <text x="150" y="40" font-size="11.5" fill="var(--ink3)" text-anchor="middle">데이터 병렬 (중복)</text>
+            <text x="320" y="40" font-size="11.5" fill="var(--ink3)" text-anchor="middle">ZeRO-2 (Pos+g)</text>
+            <text x="490" y="40" font-size="11.5" fill="var(--ink3)" text-anchor="middle">ZeRO-3 (Pos+g+p)</text>
+            <!-- col 1: full duplication -->
+            <g transform="translate(60,50)">
+              <rect x="0" y="0" width="60" height="130" rx="6" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+              <rect x="66" y="0" width="60" height="130" rx="6" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+              <rect x="132" y="0" width="60" height="130" rx="6" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+              <text x="30" y="20" font-size="9.5" text-anchor="middle" fill="var(--ink)">옵티마이저</text>
+              <text x="30" y="60" font-size="9.5" text-anchor="middle" fill="var(--ink)">그래디언트</text>
+              <text x="30" y="100" font-size="9.5" text-anchor="middle" fill="var(--ink)">파라미터</text>
+              <text x="96" y="20" font-size="9.5" text-anchor="middle" fill="var(--ink)">옵티마이저</text>
+              <text x="96" y="60" font-size="9.5" text-anchor="middle" fill="var(--ink)">그래디언트</text>
+              <text x="96" y="100" font-size="9.5" text-anchor="middle" fill="var(--ink)">파라미터</text>
+              <text x="162" y="20" font-size="9.5" text-anchor="middle" fill="var(--ink)">옵티마이저</text>
+              <text x="162" y="60" font-size="9.5" text-anchor="middle" fill="var(--ink)">그래디언트</text>
+              <text x="162" y="100" font-size="9.5" text-anchor="middle" fill="var(--ink)">파라미터</text>
+            </g>
+            <!-- col 2: ZeRO-2 partitions optimizer+grad, keeps params replicated -->
+            <g transform="translate(260,50)">
+              <rect x="0" y="0" width="30" height="40" rx="5" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+              <rect x="33" y="0" width="30" height="40" rx="5" fill="var(--card2)" stroke="var(--line2)"/>
+              <rect x="66" y="0" width="30" height="40" rx="5" fill="var(--card2)" stroke="var(--line2)"/>
+              <text x="48" y="55" font-size="9" text-anchor="middle" fill="var(--ink3)">옵티마이저+G 분할</text>
+              <rect x="0" y="70" width="96" height="60" rx="6" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+              <text x="48" y="105" font-size="9.5" text-anchor="middle" fill="var(--ink)">파라미터(복제)</text>
+            </g>
+            <!-- col 3: ZeRO-3 partitions everything -->
+            <g transform="translate(430,50)">
+              <rect x="0" y="0" width="30" height="130" rx="5" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+              <rect x="33" y="0" width="30" height="130" rx="5" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+              <rect x="66" y="0" width="30" height="130" rx="5" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+              <text x="48" y="150" font-size="9.5" text-anchor="middle" fill="var(--ok)">세 상태 모두 분할</text>
+            </g>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 데이터 병렬(전량 복제) → ZeRO-2(옵티마이저·그래디언트 분할) → ZeRO-3(파라미터까지 분할)로 갈수록 GPU당 메모리 중복이 줄어드는 흐름을 단순화한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>하드웨어 최적화 개념의 핵심 사례로, 대형 모델을 여러 GPU에 나누어 학습시키는 표준 기법의 기반을 제공합니다.</p>
+        <div class="chips"><span class="chip">하드웨어 최적화</span><span class="chip">프리트레이닝</span></div></div>
+      </article>
+
+      <!-- 6. Mixed Precision -->
+      <article class="dpane" data-key="mixedprec">
+        <div class="dmeta"><h3>Mixed Precision Training</h3>
+        <div class="dsub">Micikevicius et al. · 2017 (ICLR 2018) · arXiv:1710.03740</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/1710.03740" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/1710.03740" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 순전파·역전파를 FP16으로 계산해 메모리와 속도를 아끼되, FP32 마스터 가중치와 손실 스케일링을 결합해 정확도 손실 없이 학습을 안정화했습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>초록은 <i>"As model sizes grow, the memory and compute requirements for training these models also increases"</i>라고 짚습니다. FP32(32비트 단일 정밀도)만으로 학습하면 메모리·연산 비용이 비쌌지만, FP16(16비트 반정밀도)만 쓰면 그래디언트가 표현 범위 밖으로 사라지는 소실(underflow) 문제로 학습이 불안정해졌습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>가중치·활성화·그래디언트를 IEEE 반정밀도(FP16)로 저장해 메모리 사용량을 절반 가까이 줄이는 <b>혼합 정밀도 학습(Mixed Precision Training)</b>을 제안합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>그래디언트 누적을 위해 <i>"maintaining a single-precision copy of the weights that accumulates the gradients after each optimizer step"</i> — 즉 FP32 마스터 가중치 사본을 별도로 유지하고, FP16의 좁은 표현 범위로 인한 그래디언트 소실을 막기 위해 손실 값을 미리 키워두는 손실 스케일링(loss scaling)을 적용합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>CNN·RNN·GAN 등 다양한 아키텍처와 과제에서 FP32 단독 학습과 동등한 정확도를 유지하면서 메모리 사용량을 거의 2배 절감했고, 1억 개 이상의 파라미터를 가진 대규모 모델까지 적용 가능함을 보였습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>이 기법은 이후 거의 모든 대규모 딥러닝 학습의 표준 구성요소가 되었고, ZeRO·FlashAttention 등 후속 최적화 기법들이 딛고 선 토대가 되었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 190" role="img" aria-label="FP32 마스터 가중치를 유지한 채 순전파와 역전파는 FP16으로 계산하고, 손실 스케일링으로 그래디언트 소실을 막은 뒤 다시 FP32 가중치를 업데이트하는 흐름도">
+            <rect x="20" y="20" width="180" height="46" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="110" y="48" font-size="12" fill="var(--ink)" text-anchor="middle">FP32 마스터 가중치</text>
+            <line x1="110" y1="66" x2="110" y2="96" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="110,96 105,86 115,86" fill="var(--ink3)"/>
+            <text x="130" y="90" font-size="10" fill="var(--ink3)">FP16 사본</text>
+            <rect x="20" y="100" width="180" height="46" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="110" y="128" font-size="12" fill="var(--ink)" text-anchor="middle">FP16 순전파·역전파</text>
+            <line x1="200" y1="123" x2="238" y2="123" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="238,123 228,118 228,128" fill="var(--brand)"/>
+            <rect x="240" y="100" width="150" height="46" rx="8" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+            <text x="315" y="122" font-size="11.5" fill="var(--ink)" text-anchor="middle">손실 스케일링</text>
+            <text x="315" y="137" font-size="10.5" fill="var(--ink2)" text-anchor="middle">그래디언트 소실 방지</text>
+            <line x1="390" y1="123" x2="428" y2="123" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="428,123 418,118 418,128" fill="var(--brand)"/>
+            <rect x="430" y="100" width="180" height="46" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+            <text x="520" y="122" font-size="11.5" fill="var(--ink)" text-anchor="middle">FP32로 그래디언트</text>
+            <text x="520" y="137" font-size="11" fill="var(--ink2)" text-anchor="middle">누적 · 마스터 가중치 업데이트</text>
+            <line x1="520" y1="100" x2="200" y2="45" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="360" y="180" font-size="11.5" fill="var(--ok)" text-anchor="middle">계산은 FP16(빠름), 정밀도가 중요한 순간만 FP32 — 메모리 최대 2배 절감</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> FP32 마스터 가중치와 FP16 연산, 손실 스케일링이 맞물리는 학습 루프를 단순화한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>하드웨어 최적화의 기반 기법으로, ZeRO·FlashAttention과 함께 대규모 모델 학습을 현실적인 시간·비용으로 가능하게 만드는 조합의 한 축입니다.</p>
+        <div class="chips"><span class="chip">하드웨어 최적화</span><span class="chip">프리트레이닝</span></div></div>
+      </article>
+
+      <!-- 7. FlashAttention -->
+      <article class="dpane" data-key="flashattn">
+        <div class="dmeta"><h3>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</h3>
+        <div class="dsub">Dao et al. · 2022 · arXiv:2205.14135</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2205.14135" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 근사 없이 정확히 같은 어텐션 결과를 내면서도, 블록 단위 타일링과 역전파 재계산으로 GPU 메모리 이동을 줄여 실행 시간을 최대 수 배 단축했습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>트랜스포머의 셀프 어텐션(self-attention)은 시간·메모리 복잡도가 시퀀스 길이에 대해 이차함수적으로 증가하고, 중간 결과 행렬을 느린 HBM(High Bandwidth Memory, 고대역폭 메모리)에 반복해서 읽고 쓰는 것이 실제 병목이었습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>GPU 메모리 계층 간 읽기·쓰기를 고려한 IO-인식(IO-aware) 알고리즘을 제안합니다. Q·K·V를 블록 단위로 나눠 빠른 온칩 SRAM에서 계산하는 <b>타일링(tiling)</b>과, 역전파 시 중간값을 저장하는 대신 다시 계산하는 <b>재계산(recomputation)</b>을 결합했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>근사 없이 정확한 어텐션 값을 그대로 재현하면서, HBM 접근 횟수 자체를 최소화하는 방향으로 계산 순서를 재구성했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>BERT-large(시퀀스 길이 512)에서 15% 속도 향상, GPT-2(시퀀스 1K)에서 3배, Long Range Arena 벤치마크(1K~4K)에서 2.4배 속도 향상을 보였습니다. Path-X(16K)에서 61.4%, Path-256(64K)에서 63.1%의 정확도를 달성해, 더 긴 컨텍스트 처리로 모델 품질 자체도 함께 향상되었습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>FlashAttention은 이후 대부분의 LLM 학습·추론 프레임워크에 기본 탑재되는 표준 기법이 되어, 긴 컨텍스트 처리의 실질적인 하한선을 낮췄습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 220" role="img" aria-label="느리고 큰 HBM과 빠르고 작은 SRAM 사이에서, Q K V를 블록 단위로 나누어 SRAM에서 계산하고 결과만 HBM에 쓰는 타일링 흐름을 보여주는 도식">
+            <rect x="20" y="20" width="600" height="46" rx="8" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+            <text x="320" y="48" font-size="12.5" fill="var(--ink)" text-anchor="middle">HBM (High Bandwidth Memory) — 크지만 느림 · 전체 Q, K, V, 어텐션 행렬 저장</text>
+            <line x1="120" y1="66" x2="120" y2="96" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="120,96 115,86 125,86" fill="var(--ink3)"/>
+            <text x="150" y="88" font-size="10" fill="var(--ink3)">블록 단위로 로드</text>
+            <line x1="520" y1="96" x2="520" y2="66" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="520,66 515,76 525,76" fill="var(--ink3)"/>
+            <text x="500" y="88" font-size="10" fill="var(--ink3)" text-anchor="end">결과만 저장</text>
+            <rect x="120" y="100" width="400" height="70" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="320" y="126" font-size="12.5" fill="var(--ink)" text-anchor="middle">SRAM (온칩) — 작지만 빠름</text>
+            <text x="320" y="146" font-size="11" fill="var(--ink2)" text-anchor="middle">블록 Qᵢ · Kⱼ · Vⱼ 로 어텐션 타일 계산</text>
+            <text x="320" y="162" font-size="11" fill="var(--ok)" text-anchor="middle">역전파 시 저장 대신 재계산 (recomputation)</text>
+            <text x="320" y="200" font-size="11.5" fill="var(--ink3)" text-anchor="middle">FLOPs는 다소 늘어도, 느린 HBM 이동이 줄어 실행 시간이 크게 단축됩니다.</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> HBM과 SRAM 사이의 속도 차이, 블록 단위 타일링과 재계산이 실제 병목(메모리 이동)을 줄이는 원리를 단순화한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>플래시어텐션(FlashAttention) 개념 자체의 원 논문으로, 어텐션 연산의 실제 병목이 연산량이 아니라 메모리 이동이라는 관점을 제시합니다.</p>
+        <div class="chips"><span class="chip">플래시어텐션</span><span class="chip">하드웨어 최적화</span></div></div>
+      </article>
+
+      <!-- 8. FLAN -->
+      <article class="dpane" data-key="flan">
+        <div class="dmeta"><h3>Finetuned Language Models Are Zero-Shot Learners</h3>
+        <div class="dsub">Wei et al. · 2021년 9월 제출, 2022년 2월 최종 수정 · arXiv:2109.01652</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2109.01652" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2109.01652" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 다양한 과제를 자연어 지시문 형태로 바꿔 미세조정하면, 학습에 쓰이지 않은 새로운 과제에서도 제로샷(zero-shot) 성능이 크게 향상됩니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>사전학습만 마친 언어모델은 지시를 따르기보다 다음 텍스트를 이어 쓰는 경향이 강해, 실제 과제에서 사람이 원하는 형태로 답하지 못하는 경우가 많았습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>다양한 자연어 과제를 자연어 지시문 형태로 변환한 데이터로 모델을 미세조정하는 <b>지시문 튜닝(instruction tuning)</b>을 제안합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>1,370억 파라미터 사전학습 모델을 60개 이상의 NLP 과제(태스크 클러스터)로 재구성한 지시문 데이터로 미세조정해 <b>FLAN</b> 모델을 만들었습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>평가한 25개 과제 중 20개에서, 미세조정되지 않은 1,750억 파라미터 GPT-3의 제로샷 성능을 넘어섰습니다. ANLI·RTE·BoolQ 등 6개 벤치마크에서는 GPT-3의 퓨샷(few-shot) 성능까지 능가했습니다. 미세조정에 사용한 과제 클러스터 수, 모델 규모, 자연어 지시문 사용이 성공의 핵심 요인으로 확인되었습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>이 연구는 이후 InstructGPT, ChatGPT 등 지시를 따르는 어시스턴트형 LLM 개발의 토대를 놓았습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 200" role="img" aria-label="여러 NLP 과제 클러스터를 자연어 지시문으로 변환해 미세조정한 뒤, 학습에 쓰이지 않은 새로운 과제를 제로샷으로 수행하는 FLAN의 흐름도">
+            <rect x="10" y="30" width="150" height="70" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="85" y="55" font-size="11.5" fill="var(--ink)" text-anchor="middle">60여 개 NLP 과제</text>
+            <text x="85" y="72" font-size="11" fill="var(--ink2)" text-anchor="middle">번역·요약·분류…</text>
+            <text x="85" y="88" font-size="10.5" fill="var(--ink3)" text-anchor="middle">(과제 클러스터)</text>
+            <line x1="160" y1="65" x2="198" y2="65" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="198,65 188,60 188,70" fill="var(--ink3)"/>
+            <rect x="200" y="30" width="150" height="70" rx="8" fill="var(--ext-bg)" stroke="var(--ext-bd)"/>
+            <text x="275" y="58" font-size="11.5" fill="var(--ink)" text-anchor="middle">자연어 지시문으로</text>
+            <text x="275" y="75" font-size="11.5" fill="var(--ink)" text-anchor="middle">변환</text>
+            <line x1="350" y1="65" x2="388" y2="65" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="388,65 378,60 378,70" fill="var(--brand)"/>
+            <rect x="390" y="30" width="120" height="70" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="450" y="58" font-size="11.5" fill="var(--ink)" text-anchor="middle">지시문 튜닝</text>
+            <text x="450" y="75" font-size="11" fill="var(--ink2)" text-anchor="middle">137B 모델 미세조정</text>
+            <line x1="450" y1="100" x2="450" y2="130" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="450,130 445,120 455,120" fill="var(--brand)"/>
+            <rect x="320" y="134" width="260" height="50" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+            <text x="450" y="156" font-size="11.5" fill="var(--ink)" text-anchor="middle">FLAN 모델</text>
+            <text x="450" y="172" font-size="11" fill="var(--ok)" text-anchor="middle">학습에 없던 새 과제도 제로샷 수행</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 여러 과제를 지시문으로 통일해 미세조정하면 새 과제로 일반화된다는 FLAN의 흐름을 단순화한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>지도 미세조정(SFT)의 대표 형태인 지시문 튜닝의 원 논문으로, 프리트레이닝만 마친 모델을 실제 어시스턴트로 전환하는 핵심 과정을 보여줍니다.</p>
+        <div class="chips"><span class="chip">지도 미세조정(SFT)</span><span class="chip">프리트레이닝</span></div></div>
+      </article>
+
+      <!-- 9. LoRA -->
+      <article class="dpane" data-key="lora">
+        <div class="dmeta"><h3>LoRA: Low-Rank Adaptation of Large Language Models</h3>
+        <div class="dsub">Hu et al. · 2021 · arXiv:2106.09685</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2106.09685" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 원 가중치는 고정한 채 두 개의 작은 저랭크 행렬만 학습해 더하면, 학습 파라미터를 최대 1만 배 줄이면서도 전체 미세조정과 대등한 성능을 낼 수 있습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>모델 규모가 커질수록 과제별로 전체 파라미터를 미세조정해 각각 따로 저장하는 비용이 감당하기 어려워졌습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>미세조정 시 가중치의 변화량이 낮은 <b>고유 랭크(intrinsic rank)</b>를 갖는다는 가설 아래, <i>"사전학습된 모델 가중치를 동결하고 트랜스포머 아키텍처의 각 계층에 학습 가능한 저랭크 분해 행렬을 주입"</i>하는 <b>LoRA(Low-Rank Adaptation, 저랭크 적응)</b>를 제안합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>원 가중치 W는 그대로 고정하고, 이를 근사하는 두 개의 작은 저랭크 행렬 B·A(랭크 r이 원 차원보다 훨씬 작음)만 학습해 h = Wx + BAx 형태로 더합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>GPT-3 175B 기준 학습 가능 파라미터를 최대 1만 배, GPU 메모리 요구량을 3배 줄이면서도 RoBERTa·DeBERTa·GPT-2·GPT-3 전반에서 전체 미세조정과 동등하거나 더 나은 성능을 보였습니다. 추론 지연 증가 없이 행렬을 병합하는 것만으로 배포할 수 있습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>추가 추론 지연 없이 행렬만 교체해 과제를 전환할 수 있다는 특성 덕분에, 이후 PEFT(Parameter-Efficient Fine-Tuning, 파라미터 효율적 미세조정) 생태계 전반의 사실상 표준 기법이 되었고, QLoRA를 비롯한 여러 결합 기법의 토대가 되었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 200" role="img" aria-label="고정된 원 가중치 W와 학습 가능한 저랭크 행렬 B, A의 곱을 합쳐 최종 출력을 만드는 LoRA의 병렬 경로 도식">
+            <text x="320" y="20" font-size="13" font-weight="700" fill="var(--ink2)" text-anchor="middle">h = W x + B A x</text>
+            <rect x="60" y="40" width="130" height="110" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="125" y="90" font-size="14" fill="var(--ink)" text-anchor="middle">W</text>
+            <text x="125" y="110" font-size="10.5" fill="var(--ink3)" text-anchor="middle">고정(freeze)</text>
+            <text x="125" y="124" font-size="10" fill="var(--ink3)" text-anchor="middle">d × k, 큰 행렬</text>
+            <text x="220" y="100" font-size="16" fill="var(--ink3)">＋</text>
+            <rect x="250" y="55" width="40" height="80" rx="6" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="270" y="98" font-size="12" fill="var(--ink)" text-anchor="middle">B</text>
+            <text x="270" y="150" font-size="10" fill="var(--ink3)" text-anchor="middle">d × r</text>
+            <text x="300" y="100" font-size="14" fill="var(--ink3)">×</text>
+            <rect x="315" y="80" width="90" height="30" rx="6" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="360" y="100" font-size="12" fill="var(--ink)" text-anchor="middle">A</text>
+            <text x="360" y="125" font-size="10" fill="var(--ink3)" text-anchor="middle">r × k, r ≪ d,k</text>
+            <text x="435" y="100" font-size="16" fill="var(--ink3)">＝</text>
+            <rect x="460" y="55" width="150" height="80" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+            <text x="535" y="90" font-size="12" fill="var(--ink)" text-anchor="middle">업데이트된 가중치</text>
+            <text x="535" y="110" font-size="11" fill="var(--ok)" text-anchor="middle">학습 파라미터 최대 1만 배 ↓</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 원 가중치 W는 얼리고, 저랭크 행렬 B·A의 곱만 학습해 더하는 LoRA의 핵심 구조를 도식화한 것입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>파라미터 효율적 미세조정의 사실상 표준으로, SFT 이후 개인용 GPU에서도 대형 모델을 다룰 수 있게 하는 다리 역할을 합니다.</p>
+        <div class="chips"><span class="chip">LoRA</span><span class="chip">지도 미세조정(SFT)</span></div></div>
+      </article>
+
+      <!-- 10. QLoRA (shared detail for quantization + qlora groups) -->
+      <article class="dpane" data-key="qlora">
+        <div class="dmeta"><h3>QLoRA: Efficient Finetuning of Quantized LLMs</h3>
+        <div class="dsub">Dettmers, Pagnoni, Holtzman, Zettlemoyer · 2023 · arXiv:2305.14314</div></div>
+        <div class="dlinks">
+          <a href="https://arxiv.org/pdf/2305.14314" target="_blank" rel="noopener">📄 PDF</a>
+          <a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">🔗 arXiv</a>
+        </div>
+        <p class="tldr">TL;DR — 얼려둔 원 가중치를 4비트 NF4로 양자화해 저장하고 그 위에 LoRA 어댑터만 학습시켜, LLaMA 65B 미세조정에 필요한 메모리를 약 16배 줄였습니다.</p>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 문제의식</div>
+        <p>LoRA는 학습 파라미터 수는 줄였지만, 원본 가중치 전체를 여전히 고정밀도로 GPU 메모리에 올려야 해 대형 모델 미세조정에는 큰 메모리가 필요했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 핵심 아이디어</div>
+        <p>네 가지 혁신을 결합합니다 — ① 정규분포 가중치에 정보이론적으로 최적화된 4비트 자료형 <b>NF4(NormalFloat4)</b>, ② 양자화 상수 자체를 다시 양자화하는 <b>이중 양자화(double quantization)</b>, ③ 메모리 스파이크를 관리하는 페이징된 옵티마이저(paged optimizer), ④ 동결된 4비트 모델 위에 그래디언트를 흘려보내는 <b>LoRA 어댑터</b>.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 방법</div>
+        <p>얼려둔 원 가중치를 NF4로 양자화해 저장하고, 계산이 필요한 순간에만 높은 정밀도로 복원한 뒤 학습은 LoRA 어댑터에만 적용합니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-ext">외부</span> 주요 결과</div>
+        <p>650억 파라미터 모델을 단일 48GB GPU에서 미세조정하면서 전체 16비트 미세조정과 동등한 성능을 유지했습니다(약 16배 메모리 절감). 결과물인 <b>Guanaco</b> 모델은 단일 GPU 24시간 미세조정만으로 ChatGPT 성능의 99.3%에 도달했고, 기존 공개 모델들을 모두 능가했습니다.</p></div>
+
+        <div class="dsec"><div class="dl"><span class="badge b-syn">종합·해석</span> 영향·후속 연구</div>
+        <p>이를 통해 단일 소비자용 GPU에서도 수백억 파라미터급 모델의 미세조정이 가능해졌으며, 양자화와 파라미터 효율적 미세조정을 결합하는 이후 연구들의 표준 참조점이 되었습니다.</p></div>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 640 200" role="img" aria-label="원본 FP16 가중치를 4비트 NF4로 양자화해 고정하고, 그 위에 학습 가능한 LoRA 저랭크 어댑터를 얹어 순전파 시에만 높은 정밀도로 되돌리는 QLoRA의 흐름도">
+            <rect x="20" y="30" width="160" height="50" rx="8" fill="var(--bg3)" stroke="var(--line2)"/>
+            <text x="100" y="60" font-size="12" fill="var(--ink)" text-anchor="middle">원 가중치 (FP16)</text>
+            <line x1="100" y1="80" x2="100" y2="108" stroke="var(--ink3)" stroke-width="2"/>
+            <polygon points="100,108 95,98 105,98" fill="var(--ink3)"/>
+            <rect x="20" y="112" width="160" height="50" rx="8" fill="var(--src-bg)" stroke="var(--src-bd)"/>
+            <text x="100" y="134" font-size="11.5" fill="var(--ink)" text-anchor="middle">4비트 NF4 양자화</text>
+            <text x="100" y="150" font-size="10.5" fill="var(--ink2)" text-anchor="middle">고정(freeze) + 이중 양자화</text>
+
+            <text x="220" y="105" font-size="16" fill="var(--ink3)">＋</text>
+
+            <rect x="250" y="70" width="130" height="70" rx="8" fill="var(--brandsoft)" stroke="var(--brand)"/>
+            <text x="315" y="98" font-size="12" fill="var(--ink)" text-anchor="middle">LoRA 어댑터</text>
+            <text x="315" y="115" font-size="10.5" fill="var(--ink2)" text-anchor="middle">저랭크 B·A, 학습 가능</text>
+
+            <line x1="380" y1="105" x2="418" y2="105" stroke="var(--brand)" stroke-width="2"/>
+            <polygon points="418,105 408,100 408,110" fill="var(--brand)"/>
+
+            <rect x="420" y="60" width="200" height="90" rx="8" fill="var(--syn-bg)" stroke="var(--syn-bd)"/>
+            <text x="520" y="88" font-size="12" fill="var(--ink)" text-anchor="middle">순전파 시 즉석 복원</text>
+            <text x="520" y="106" font-size="11" fill="var(--ink2)" text-anchor="middle">(dequantize on-the-fly)</text>
+            <text x="520" y="124" font-size="11" fill="var(--ok)" text-anchor="middle">65B 모델 · 단일 48GB GPU</text>
+            <text x="520" y="140" font-size="10.5" fill="var(--ink3)" text-anchor="middle">메모리 약 16배 절감</text>
+          </svg>
+          <figcaption><span class="badge b-syn">종합·해석</span> 4비트로 얼린 원 가중치와 학습 가능한 LoRA 어댑터가 합쳐지고, 계산 순간에만 정밀도를 복원하는 QLoRA의 구조를 단순화한 도식입니다.</figcaption>
+        </figure>
+
+        <div class="drole"><div class="dl">이 강의에서의 역할</div>
+        <p>양자화(Quantization) 개념과 QLoRA 개념 양쪽의 핵심 논문입니다. LoRA의 저랭크 어댑터에 4비트 양자화를 결합해, 미세조정의 메모리 문턱을 개인용 GPU 수준까지 낮췄습니다.</p>
+        <div class="chips"><span class="chip">양자화</span><span class="chip">LoRA</span><span class="chip">QLoRA</span></div></div>
+      </article>
+
+    </div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="footlinks">
+    <a href="../강의노트/lecture4.html" target="_blank" rel="noopener">강의 설명자 보기 →</a>
+    <a href="../dag.html" target="_blank" rel="noopener">개념 지도(DAG) 보기 →</a>
+    <a href="../" target="_blank" rel="noopener">전체 강의 목록 →</a>
+  </div>
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 CME 295 4강("LLM 학습")이 참조하는 논문 열 편(개념 항목 11건, QLoRA는 양자화·QLoRA 두 개념에서 중복 등장)을 각 논문의 arXiv 초록을 근거로 정리한 비공식 학습 노트입니다.
+   <span class="badge b-src">원본</span>=논문 원문 인용, <span class="badge b-ext">외부</span>=초록 근거 사실 요약, <span class="badge b-syn">종합·해석</span>=작성자의 해석·도식화입니다.
+   ZeRO(1910.02054)의 ZeRO-1/2/3 단계별 분할 방식은 초록에 직접 명시되어 있지 않아, 논문 본문과 널리 통용되는 후속 설명을 근거로 보완했습니다(해당 절에 표시). Llama 3 논문은 500명이 넘는 공저자 그룹(Meta LLaMA team) 명의로 발표되었습니다. 그 외 수치는 모두 초록 조회로 확인했습니다.</div>
+  <div>제작: Claude · 원저작권은 각 논문 저자에게 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* chrome: progress bar, back-to-top, reveal-on-scroll, theme toggle */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');};
+
+/* master-detail: selection */
+const mitems=$$('.mitem');
+const dpanes=$$('.dpane');
+function selectPaper(key){
+  mitems.forEach(m=>m.classList.toggle('active',m.dataset.key===key));
+  dpanes.forEach(d=>d.classList.toggle('active',d.dataset.key===key));
+}
+mitems.forEach(m=>{
+  m.addEventListener('click',()=>{
+    selectPaper(m.dataset.key);
+    if(window.innerWidth<900){
+      const target=document.querySelector('.dpane[data-key="'+m.dataset.key+'"]');
+      if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+});
+
+/* search filter — matches title/authors/concept (한/영) via data-search */
+const searchInput=$('#paperSearch'),searchCount=$('#searchCount'),groups=$$('.mgroup');
+function runFilter(){
+  const q=searchInput.value.trim().toLowerCase();
+  let visible=0;
+  groups.forEach(g=>{
+    const items=$$('.mitem',g);
+    let groupVisible=0;
+    items.forEach(it=>{
+      const hit=!q||(it.dataset.search||'').toLowerCase().includes(q);
+      it.style.display=hit?'block':'none';
+      if(hit){groupVisible++;visible++;}
+    });
+    g.style.display=groupVisible>0?'block':'none';
+  });
+  searchCount.textContent=q?(visible+'건 일치'):'';
+}
+searchInput.addEventListener('input',runFilter);
+runFilter();
+
+/* mobile: back-to-list + Escape returns focus to search */
+const backToList=$('#backToList');
+if(backToList){
+  backToList.addEventListener('click',()=>{
+    searchInput.scrollIntoView({behavior:'smooth',block:'start'});
+    searchInput.focus();
+  });
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    searchInput.scrollIntoView({behavior:'smooth',block:'start'});
+    searchInput.focus();
+  }
+});
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

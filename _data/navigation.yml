@@ -1,0 +1,15 @@
+header:
+  - titles:
+      en: CME 295
+      ko: CME 295
+    url: /cme295/
+
+  - titles:
+      en: Archive
+      ko: 아카이브
+    url: /archive.html
+
+  - titles:
+      en: About
+      ko: 소개
+    url: /about/

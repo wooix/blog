@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 7강 — 에이전틱 LLM(Agentic LLMs): 검색·도구·행동 — 인터랙티브 해설</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,6vw,58px);margin:.1em 0 .2em;letter-spacing:-1.5px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:760px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* cascade (reused for RAG pipeline AND the ReAct loop widget) */
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:22px;margin:.2em 0 .1em}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden;background:var(--card)}
+.acc summary{padding:15px 18px;cursor:pointer;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .ar{margin-left:auto;transition:.2s;color:var(--ink3)}.acc[open] summary .ar{transform:rotate(90deg)}
+.acc .body{padding:0 18px 18px;color:var(--ink2)}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+/* similarity-search demo (custom widget) */
+.qbtn{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--ink2)}
+.qbtn.active{background:var(--brandsoft);border-color:var(--brand);color:var(--ink)}
+.qbtnrow{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+.qbtnrow .lbl{font-size:12.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;align-self:center;margin-right:4px}
+.simrow{display:flex;align-items:center;gap:12px;margin:9px 0}
+.simrow .stxt{flex:0 0 44%;font-size:13px;color:var(--ink2);font-family:var(--serif)}
+.simbar{flex:1;height:22px;background:var(--bg3);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.simbar>span{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--syn));transition:width .3s}
+.simscore{flex:0 0 46px;text-align:right;font-family:var(--serif);font-weight:700;font-size:13.5px;color:var(--gold)}
+@media(max-width:640px){.simrow{flex-wrap:wrap}.simrow .stxt{flex:1 1 100%}}
+/* formula box */
+.formula{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;font-family:var(--serif);font-size:17px;overflow-x:auto}
+.formula .fx{white-space:nowrap}
+table.simple{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+table.simple th,table.simple td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+table.simple th{background:var(--bg3);color:var(--ink2)}
+/* footer + misc */
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME295 <b>L7</b> · 에이전틱 LLM</span>
+  <nav>
+    <a href="#s1">개요</a>
+    <a href="#rag">RAG</a>
+    <a href="#retrieval">검색</a>
+    <a href="#advanced-rag">고급기법</a>
+    <a href="#function-calling">함수호출</a>
+    <a href="#agents">에이전트</a>
+    <a href="#safety">안전</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · Lecture 7 · 인터랙티브 해설</span>
+  <h1>CME 295 · 7강 — 에이전틱 LLM(Agentic LLMs): 검색·도구·행동</h1>
+  <p class="sub">모르는 것은 찾아보고(RAG), 계산은 도구에 맡기고(함수 호출), 문제를 풀 때까지 관찰·계획·행동을 반복하는(에이전트) — LLM이 "오픈북 시험"을 보는 법을 배웁니다.</p>
+  <div class="metaline">
+    <span><b>강의일</b> 2025년 11월 14일 (Fall 2025)</span>
+    <span><b>슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture7.pdf" target="_blank" rel="noopener">PDF 원본 ↗</a></span>
+    <span><b>영상</b> <a href="https://www.youtube.com/watch?v=h-7S6HNq0Vg" target="_blank" rel="noopener">YouTube 강의 ↗</a></span>
+    <span><b>강사</b> Afshine Amidi &amp; Shervine Amidi (Stanford ICME)</span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#s1">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://www.youtube.com/watch?v=h-7S6HNq0Vg" target="_blank" rel="noopener">영상으로 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>강의 슬라이드에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>인용·추가한 <b>외부 자료</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 내용을 엮은 <b>작성자 재구성</b>(비유·해설·데모용 수치 포함).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== S1 OVERVIEW ===== -->
+<section id="s1"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>개요: LLM에게 오픈북 시험을 허락하다 <span class="en">Why give an LLM an open book?</span></h2>
+  <p class="lead">시험에는 두 종류가 있습니다. 책을 덮고 순전히 기억으로 푸는 <b>암기 시험</b>과, 참고서와 계산기를 옆에 두고 푸는 <b>오픈북 시험</b>입니다.</p>
+  <p><i>결론부터 말하면</i>, 지금까지 다룬 LLM(Large Language Model, 거대 언어 모델)은 전형적인 암기 시험 응시자였습니다. 사전학습(pretraining) 때 외운 지식만으로 답을 내놓았고, 시험이 끝난 뒤 세상이 바뀌어도 알 도리가 없었습니다. 이번 7강은 LLM에게 오픈북 시험을 허락하는 세 가지 방법을 다룹니다. 필요한 사실은 참고서에서 찾아보고(<b>검색 증강 생성</b>, Retrieval-Augmented Generation, RAG), 계산이나 실제 작업은 전용 도구에 맡기고(<b>함수 호출</b>, Function Calling), 문제가 풀릴 때까지 관찰·계획·행동을 스스로 반복하는(<b>에이전트</b>, Agent) 능력입니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 지난 시간과의 연결</div>지난 6강에서는 <mark>추론(reasoning)</mark>, 즉 LLM이 답하기 전에 스스로 사고 과정을 길게 펼치는 능력을 다뤘습니다. 슬라이드는 LLM의 남은 약점을 이렇게 정리합니다: <i>"지식은 고정되어 있고(knowledge is static), 실제 행동을 할 수 없다(cannot perform actions)."</i> 이번 강의는 바로 이 두 가지 약점을 메우는 이야기입니다.</div>
+  <div class="grid g3">
+    <div class="card"><div class="icon">📖</div><h4>검색 증강 생성(RAG)</h4><p>모르는 사실은 외부 문서에서 찾아 프롬프트에 끼워 넣습니다. 참고서를 펼치는 것과 같습니다.</p></div>
+    <div class="card"><div class="icon">🛠️</div><h4>함수 호출</h4><p>계산·검색·메일 발송 같은 실제 작업은 전용 함수(도구)에 맡깁니다. 계산기를 손에 쥐는 것과 같습니다.</p></div>
+    <div class="card"><div class="icon">🔁</div><h4>에이전트 &amp; ReAct</h4><p>관찰하고, 계획하고, 행동하는 루프를 답이 나올 때까지 반복합니다. 시험 문제를 풀며 앞뒤 페이지를 오가는 것과 같습니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== MOTIVATION ===== -->
+<section id="motivation"><div class="wrap reveal">
+  <span class="sec-no">02 — Motivation</span>
+  <h2>왜 오픈북이 필요한가 <span class="en">The limits of a closed-book LLM</span></h2>
+  <p class="lead">아무리 똑똑한 학생이라도 암기만으로는 한계가 있습니다. LLM도 마찬가지입니다.</p>
+  <div class="grid g2">
+    <div class="card"><div class="icon">🗓️</div><h4>지식이 멈춰 있습니다</h4><p>LLM의 지식은 사전학습 데이터가 수집된 시점, 즉 <b>지식 마감일</b>(knowledge cutoff)에 고정됩니다. <span class="badge b-ext">외부</span> 2025년 11월 9일 촬영된 GPT-5 모델 카드 화면에는 지식 마감일이 2024년 9월 30일로 적혀 있었습니다 — 강의 시점 기준으로도 1년 이상 지난 정보입니다. <a href="https://openai.com/index/introducing-gpt-5/" target="_blank" rel="noopener">OpenAI, GPT-5 모델 카드 ↗</a></p></div>
+    <div class="card"><div class="icon">📏</div><h4>맥락 창이 유한합니다</h4><p>아무리 맥락 창(context window)이 커져도(같은 모델 카드 기준 40만 토큰) 회사 내부 문서 전체나 실시간 데이터를 통째로 넣을 수는 없습니다.</p></div>
+    <div class="card"><div class="icon">🌀</div><h4>정보가 많을수록 산만해집니다</h4><p><span class="badge b-ext">외부</span> "Needle in a Haystack" 테스트에 따르면, 맥락이 길어질수록, 특히 찾아야 할 사실이 문서 중간 깊숙이 있을수록 검색 정확도가 떨어졌습니다. <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack" target="_blank" rel="noopener">Kamradt, 2023, GitHub ↗</a></p></div>
+    <div class="card"><div class="icon">💳</div><h4>토큰 하나하나에 값이 매겨집니다</h4><p>API 요금은 입력·출력 토큰 수에 비례합니다. 맥락에 아무 문서나 욱여넣는 것은 곧 비용 낭비입니다. <span class="badge b-ext">외부</span> 2025년 11월 10일 기준 OpenAI 가격표, 참고용(변동 가능) <a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">OpenAI Pricing ↗</a></p></div>
+  </div>
+  <p>결국 필요한 것은 <i>"모든 걸 외우기"</i>가 아니라 <i>"필요할 때 정확한 페이지만 펼쳐 보기"</i>입니다. 이것이 RAG의 출발점입니다.</p>
+</div></section>
+
+<!-- ===== RAG BASICS ===== -->
+<section id="rag"><div class="wrap reveal">
+  <span class="sec-no">03 — RAG</span>
+  <h2>RAG란 무엇인가: 참고서를 옆에 두고 답하기 <span class="en">Retrieval-Augmented Generation</span></h2>
+  <p class="lead"><b>RAG</b>(Retrieval-Augmented Generation, 검색 증강 생성)는 이름 그대로 <b>검색</b>(Retrieval)한 정보로 <b>생성</b>(Generation)을 <b>증강</b>(Augmentation)하는 방법입니다. <span class="badge b-src">원본</span> <a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">Lewis et al., 2020 ↗</a></p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 핵심 아이디어</div>슬라이드의 정의는 간결합니다: <i>"프롬프트를 관련 있는 정보 조각으로 증강한다(augment prompt with relevant pieces of information)."</i> 지식을 파라미터 안에 욱여넣는 대신, 필요할 때마다 외부 저장소 𝒟(문서 모음)를 뒤져 관련 조각을 찾고, 이를 질문 앞에 덧붙여 LLM에게 건네줍니다.</div>
+  <h3>세 단계: 검색 → 증강 → 생성</h3>
+  <div class="grid g3">
+    <div class="card"><div class="icon">①</div><h4>검색(Retrieve)</h4><p>사용자 질문과 지식 베이스 사이의 <b>유사도 연산</b>으로 관련 문서를 찾습니다. 참고서 색인에서 관련 페이지를 찾는 일과 같습니다.</p></div>
+    <div class="card"><div class="icon">②</div><h4>증강(Augment)</h4><p>찾아낸 정보를 사용자 프롬프트 앞에 붙입니다. 책에서 찾은 페이지를 시험지 옆에 펼쳐두는 것과 같습니다.</p></div>
+    <div class="card"><div class="icon">③</div><h4>생성(Generate)</h4><p>증강된 프롬프트를 LLM에 넣어 응답을 만듭니다. 펼쳐둔 페이지를 참고해 답안을 쓰는 것과 같습니다.</p></div>
+  </div>
+  <h3>지식 베이스는 어떻게 만드나요?</h3>
+  <p>검색을 하려면 먼저 뒤질 대상이 있어야 합니다. <span class="badge b-src">원본</span> 슬라이드는 지식 베이스 구축을 세 단계로 그립니다.</p>
+  <div class="grid g3">
+    <div class="card"><div class="icon">📚</div><h4>수집(Collect)</h4><p>문서 1, 문서 2, … 원본 자료를 모읍니다.</p></div>
+    <div class="card"><div class="icon">✂️</div><h4>분할(Divide)</h4><p><b>청킹</b>(Chunking, 문서 분할)으로 각 문서를 검색하기 좋은 크기의 조각(청크, chunk)으로 나눕니다.</p></div>
+    <div class="card"><div class="icon">🧬</div><h4>임베딩(Embed)</h4><p>각 청크를 숫자 벡터로 바꿉니다. 예: <code>[0.48, 0.33, …, -0.51]</code></p></div>
+  </div>
+  <p class="muted">하이퍼파라미터: 임베딩 크기, 청크 크기, 청크 간 겹침(overlap) — 슬라이드에서 직접 언급된 조정 대상입니다.</p>
+</div></section>
+
+<!-- ===== RETRIEVAL (2 steps + tabs + mini search demo) ===== -->
+<section id="retrieval"><div class="wrap reveal">
+  <span class="sec-no">04 — Retrieval</span>
+  <h2>검색은 왜 2단계로 나뉘나요? <span class="en">Candidate retrieval + Ranking</span></h2>
+  <p class="lead">도서관에서 책을 찾을 때, 우리는 먼저 서가를 넓게 훑어 후보를 추린 다음(<b>재현율</b> 중시), 그중 몇 권만 실제로 펼쳐 읽어보며 진짜 필요한 책을 고릅니다(<b>정밀도</b> 중시). 검색도 똑같은 2단계 구조를 씁니다.</p>
+  <div class="grid g2">
+    <div class="card"><div class="icon">1️⃣</div><h4>1단계 — 후보 검색(Candidate Retrieval)</h4><p>목표는 <b>재현율</b>(Recall) 극대화입니다. 정답이 될 만한 후보를 넓게, 빠르게 모읍니다.</p></div>
+    <div class="card"><div class="icon">2️⃣</div><h4>2단계 — 재순위화(Ranking)</h4><p>목표는 <b>정밀도</b>(Precision) 극대화입니다. 추려진 소수의 후보만 정밀하게 다시 채점합니다.</p></div>
+  </div>
+
+  <h3>검색 방식 비교해보기</h3>
+  <p>1단계 후보 검색에는 크게 세 방식이 쓰입니다. 탭을 눌러 차이를 살펴보세요.</p>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="검색 방식 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>의미 기반(바이 인코더)</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>키워드 기반(BM25)</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>하이브리드</button>
+  </div>
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">의미 기반 검색 — 바이 인코더(Bi-encoder)</h3>
+    <p><span class="badge b-ext">외부</span> 질의와 청크를 <b>각각 따로</b> 인코더에 통과시켜 벡터로 만든 뒤, 두 벡터의 유사도를 잽니다. 이런 구조를 <b>바이 인코더</b>("bi-encoder")라 부르며, 대표적으로 Sentence-BERT가 있습니다. <a href="https://arxiv.org/abs/1908.10084" target="_blank" rel="noopener">Reimers &amp; Gurevych, 2019 ↗</a></p>
+    <p>도서관 색인에서 <b>제목만 훑어보며</b> 후보를 고르는 것과 같습니다 — 질의와 문서를 미리 따로따로 벡터로 바꿔두면(색인화), 새 질문이 올 때마다 저장된 벡터와 비교만 하면 되니 지식 베이스 전체를 대상으로도 매우 빠르게 훑을 수 있습니다. 다만 <i>표현이 비슷하면 실제 내용이 달라도 벡터가 가까워지는</i> 함정이 있습니다.</p>
+  </div>
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">키워드 기반 검색 — BM25</h3>
+    <p><span class="badge b-src">원본</span> <b>BM25</b>는 질의 단어가 문서에 얼마나(그리고 얼마나 희귀하게) 등장하는지를 세어 점수를 매기는 고전적인 키워드 매칭 알고리즘입니다.</p>
+    <p>색인에서 <b>정확한 단어</b>를 검색창에 입력하는 것과 같습니다 — 의미는 몰라도 정확한 이름·약어·숫자 일치는 절대 놓치지 않습니다. 다만 동의어나 문맥은 이해하지 못합니다.</p>
+  </div>
+  <div class="tabpane" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">하이브리드 검색(Hybrid Search)</h3>
+    <p><span class="badge b-src">원본</span> 의미 기반 검색과 BM25 점수를 함께 조합해 최종 후보를 뽑습니다. 색인을 훑는 눈과 검색창을 두드리는 손을 동시에 쓰는 셈입니다 — 서로의 약점을 보완합니다.</p>
+  </div>
+
+  <h3>직접 확인해보기: 왜 "Cuddly는 어디 있나요?"가 까다로운가</h3>
+  <p><span class="badge b-src">원본</span> 슬라이드는 재미있는 예시를 듭니다. 곰인형 "Cuddly"를 찾는 질문 <i>"Where is Cuddly?"</i>를 던졌을 때, 검색 방식에 따라 완전히 다른 문장이 상위로 올라옵니다. 아래에서 질의와 검색 방식을 바꿔가며 순위가 어떻게 뒤집히는지 직접 확인해보세요.</p>
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 이 데모에 대하여</div>문장 4개와 "어떤 방식이 어떤 문장을 고르는가"라는 결론은 강의 원본 예시를 그대로 재현했습니다. 다만 코사인 유사도 계산에 쓰인 벡터 값 자체는 이해를 돕기 위해 직접 구성한 3차원 예시입니다(실제 Sentence-BERT 임베딩은 수백 차원). 아래 막대 길이와 점수는 이 벡터로부터 <b>브라우저가 실시간으로 재계산</b>한 값입니다.</div>
+  <div class="card">
+    <div class="qbtnrow"><span class="lbl">질의</span>
+      <button class="qbtn active" id="simQCuddly" data-q="cuddly">"Cuddly는 어디 있나요?"</button>
+      <button class="qbtn" id="simQParis" data-q="paris">"파리는 어디에 있나요?"</button>
+    </div>
+    <div class="qbtnrow" id="simMBtns" role="group" aria-label="검색 방식 선택">
+      <span class="lbl">방식</span>
+      <button class="qbtn active" data-m="semantic">의미 기반</button>
+      <button class="qbtn" data-m="bm25">BM25</button>
+      <button class="qbtn" data-m="hybrid">하이브리드</button>
+    </div>
+    <div id="simResults" aria-live="polite"></div>
+    <p class="muted" id="simNote"></p>
+  </div>
+</div></section>
+
+<!-- ===== ADVANCED RAG (cascade + metrics) ===== -->
+<section id="advanced-rag"><div class="wrap reveal">
+  <span class="sec-no">05 — Advanced RAG</span>
+  <h2>고급 RAG 기법: 파이프라인 곳곳의 병목 풀기 <span class="en">Advanced RAG techniques</span></h2>
+  <p class="lead">오픈북 시험도 참고서를 <i>잘</i> 쓰는 사람과 서투르게 쓰는 사람의 점수 차가 큽니다. RAG 파이프라인의 5개 단계 각각에는 나름의 병목이 있고, 고급 RAG 기법들은 그 병목을 하나씩 풀어줍니다. 아래 스텝을 눌러가며 단계별 문제와 해법을 따라가 보세요.</p>
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">다음 →</button></div>
+
+  <h3>검색 품질을 재는 4가지 자</h3>
+  <p>오픈북 시험에서 "참고서를 잘 썼는지"를 두 질문으로 나눠 볼 수 있습니다 — <i>필요한 페이지를 빠짐없이 찾았는가</i>(재현율)와 <i>찾은 페이지가 전부 쓸모 있었는가</i>(정밀도). <span class="badge b-src">원본</span> 슬라이드는 이를 정량화하는 4가지 지표를 제시합니다.</p>
+
+  <h4>정규화 누적 이득(NDCG@k)</h4>
+  <p><b>NDCG</b>(Normalized Discounted Cumulative Gain at k)는 관련 있는 문서가 상위 k개 중 <b>얼마나 위쪽에 몰려 있는지</b>를 잽니다. 같은 정답이라도 1등에 있으면 만점에 가깝고, k번째 언저리에 있으면 점수가 깎입니다.</p>
+  <div class="formula"><span class="fx">DCG@k = Σ<sub>i=1</sub><sup>k</sup> rel<sub>i</sub> / log₂(i+1),&nbsp;&nbsp; rel<sub>i</sub> ∈ {0, 1}</span></div>
+  <div class="formula"><span class="fx">NDCG@k = DCG@k / IDCG@k</span> &nbsp;<span class="muted">(IDCG@k = 이상적인 순서로 정렬했을 때의 DCG@k)</span></div>
+
+  <h4>역순위(RR@k)</h4>
+  <p><b>RR</b>(Reciprocal Rank, 역순위)는 <i>"첫 정답을 만나기까지 몇 번 뒤졌는가"</i>를 잽니다. 색인에서 원하는 페이지를 단번에 찾으면 1점, 열 번째 만에 찾으면 0.1점입니다.</p>
+  <div class="formula"><span class="fx">RR = 1 / rank</span> &nbsp;<span class="muted">(rank = 첫 번째 관련 청크의 순위)</span></div>
+
+  <h4>재현율(Recall@k)과 정밀도(Precision@k)</h4>
+  <p><b>재현율</b>(Recall)은 <i>"존재하는 정답을 얼마나 빠짐없이 찾았는가"</i>, <b>정밀도</b>(Precision)는 <i>"가져온 것 중 얼마나 진짜 정답인가"</i>를 잽니다. 1단계 후보 검색은 재현율을, 2단계 재순위화는 정밀도를 각각 겨냥합니다.</p>
+  <div class="formula"><span class="fx">Recall@k = |상위 k개 중 관련 문서| / |전체 관련 문서|</span></div>
+  <div class="formula"><span class="fx">Precision@k = |상위 k개 중 관련 문서| / k</span></div>
+</div></section>
+
+<!-- ===== FUNCTION CALLING ===== -->
+<section id="function-calling"><div class="wrap reveal">
+  <span class="sec-no">06 — Tool calling</span>
+  <h2>함수 호출: LLM에게 계산기를 쥐여주다 <span class="en">Function (Tool) Calling</span></h2>
+  <p class="lead">오픈북 시험에서 참고서만큼 요긴한 것이 계산기입니다. RAG가 "찾아보기"를 담당한다면, <b>함수 호출</b>(Function Calling, 흔히 Tool Calling·도구 호출로도 부름)은 "실제로 해보기"를 담당합니다.</p>
+  <div class="quote">"Tool calling […] allows autonomous systems to complete complex tasks by dynamically accessing and [may act] upon external resources."<span class="src">— <span class="badge b-ext">외부</span> IBM, "Tool calling overview"</span></div>
+
+  <h3>예시로 보기: 근처 곰인형 찾기</h3>
+  <p><span class="badge b-src">원본</span> "Find a bear near me!"라는 요청을 받은 일반 LLM은 <i>"죄송해요, 근처에 어떤 곰이 있는지 몰라요"</i>라고 답할 수밖에 없습니다. 위치 정보에 접근할 방법이 없기 때문입니다. 슬라이드는 이를 <code>find_teddy_bear.py</code>라는 함수로 해결합니다 — GPS 좌표를 받아 외부 API를 호출하고, 가장 가까운 곰인형의 이름·거리·기분을 담은 구조화된 결과를 돌려주는, <b>설명이 잘 달린(docstring)</b> 파이썬 함수입니다.</p>
+
+  <h3>동작 원리: 세 걸음</h3>
+  <div class="grid g3">
+    <div class="card"><div class="icon">1️⃣</div><h4>인자 찾기</h4><p>LLM이 함수 API 명세와 사용자 요청을 보고, 어떤 함수를 어떤 인자로 불러야 할지 스스로 판단합니다. <code>find_teddy_bear(location=(37.42,-122.17))</code></p></div>
+    <div class="card"><div class="icon">2️⃣</div><h4>실제로 호출</h4><p>백엔드가 그 함수를 실제로 실행하고 결과(JSON 등)를 돌려받습니다. <code>{"name":"Teddy", …}</code></p></div>
+    <div class="card"><div class="icon">3️⃣</div><h4>결론 도출</h4><p>LLM이 함수 결과를 읽고 사람이 이해할 자연어 응답을 만듭니다.</p></div>
+  </div>
+
+  <h3>모델에게 도구 쓰는 법을 어떻게 가르치나요?</h3>
+  <div class="grid g2">
+    <div class="card"><div class="icon">🎓</div><h4>방법 1 — 학습(Training)</h4><p><span class="badge b-src">원본</span> "함수 API + 사용자 요청" → "정답 함수 호출"이라는 대화 기록 쌍으로 모델을 직접 파인튜닝합니다. <span class="badge b-ext">외부</span> 자기지도 방식으로 언제·어떻게 도구를 쓸지 스스로 학습하게 만든 초기 사례로 <b>Toolformer</b>가 있습니다. <a href="https://arxiv.org/abs/2302.04761" target="_blank" rel="noopener">Schick et al., 2023 ↗</a></p></div>
+    <div class="card"><div class="icon">💬</div><h4>방법 2 — 프롬프팅(Prompting)</h4><p><span class="badge b-src">원본</span> 함수 API에 자세한 사용 설명을 덧붙여 프롬프트로 그냥 건네줍니다. <i>"이런 설명은 누가 쓰나요?"</i> — 슬라이드의 답: 사람이 쓴 정답 예시(SFT pair)를 평가 기준 삼아, 강력한 추론 모델(reasoning model)에게 설명 자체를 작성시키는 방법도 있습니다.</p></div>
+  </div>
+
+  <h3>도구가 많아지면: 선택과 표준화</h3>
+  <p>실전에서는 곰인형 찾기·안아주기·선물 보내기·메시지 전송처럼 도구가 수십 개로 불어납니다. 모든 도구 설명을 매번 프롬프트에 다 넣으면 맥락이 넘치고 성능도 떨어집니다. <span class="badge b-src">원본</span> 슬라이드는 두 가지 해법을 제시합니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-ext">외부</span> 도구 라우팅(Tool Selection)</div>먼저 가벼운 <b>라우터</b>가 이번 요청에 <i>관련 있을 법한</i> 도구만 추려내고, 그 다음에야 LLM이 추려진 목록만 보고 최종 호출을 결정합니다. <a href="https://www.tdcommons.org/dpubs_series/7521/" target="_blank" rel="noopener">Robert et al., 2024 ↗</a></div>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 표준화: MCP(Model Context Protocol)</div>모든 LLM이 모든 도구와 각자 다른 방식으로 연결되면(LLM × 도구 조합마다 중복 구현) 비효율적입니다. <b>MCP</b>(Model Context Protocol, 모델 컨텍스트 프로토콜)는 "LLM ↔ 도구·데이터"를 잇는 <b>표준 규격</b>입니다. MCP 호스트 안의 클라이언트가 MCP 서버에 접속하면, 서버가 노출한 도구(Tools)·프롬프트(Prompts)·자원(Resources)을 통일된 방식으로 쓸 수 있습니다. <span class="badge b-ext">외부</span> <a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener">Anthropic, 2024 ↗</a></div>
+  <p class="muted">비유하자면 MCP는 사내 직원(LLM)과 여러 부서의 도구 창고를 잇는 <b>표준 사내 시스템</b>과 같습니다. 콘센트 규격이 통일되면 어떤 가전이든 꽂기만 하면 되는 것과 비슷합니다.</p>
+</div></section>
+
+<!-- ===== AGENTS + REACT ===== -->
+<section id="agents"><div class="wrap reveal">
+  <span class="sec-no">07 — Agents</span>
+  <h2>에이전트란 무엇인가: 답이 나올 때까지 스스로 반복하다 <span class="en">Agents &amp; the ReAct loop</span></h2>
+  <div class="quote">"An agent is a system that autonomously pursues goals and completes tasks on a user's behalf."<span class="src">— <span class="badge b-src">원본</span> 강의 슬라이드 정의</span></div>
+  <p class="lead">참고서(RAG)와 계산기(함수 호출)를 손에 쥐여줬다고 시험이 저절로 끝나지는 않습니다. 문제를 풀려면 <i>"뭘 알아야 하지? → 뭘 해야 하지? → 해보자 → 다시 확인"</i>을 답이 나올 때까지 반복해야 합니다. 이 반복 전략을 갖춘 시스템이 <b>에이전트</b>(Agent)입니다.</p>
+
+  <h3>세 가지 응답 방식 비교</h3>
+  <table class="simple">
+    <tr><th>방식</th><th>흐름</th><th>비유</th></tr>
+    <tr><td><b>전통적 방식</b></td><td>질문 → LLM → 답변</td><td>즉석 구술 시험</td></tr>
+    <tr><td><b>추론(6강)</b></td><td>질문 → LLM → (내부) 추론 → 답변</td><td>암산으로 오래 생각한 뒤 답하기</td></tr>
+    <tr><td><b>에이전트(7강)</b></td><td>질문 → LLM → 도구 호출 → LLM → … → 답변</td><td>참고서·계산기를 오가며 답을 완성하기</td></tr>
+  </table>
+
+  <h3>ReAct: 관찰하고, 계획하고, 행동하라 <span class="en">ReAct = Reason + Act</span></h3>
+  <p><span class="badge b-src">원본</span> <b>ReAct</b>("Re"ason + "Act")는 에이전트가 이 반복을 구조화하는 대표적인 프레임워크입니다. <a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">Yao et al., 2022 ↗</a> 매 사이클마다 세 단계를 거칩니다.</p>
+  <div class="grid g3">
+    <div class="card"><div class="icon">👀</div><h4>관찰(Observe)</h4><p>지금까지의 행동 결과와 스스로 아는 것을 종합해, <i>현재 무엇을 알고 무엇을 모르는지</i> 명시적으로 정리합니다.</p></div>
+    <div class="card"><div class="icon">🗺️</div><h4>계획(Plan)</h4><p>어떤 작업이 필요하고 어떤 도구를 호출해야 하는지 <b>구체적으로</b> 정합니다.</p></div>
+    <div class="card"><div class="icon">⚙️</div><h4>행동(Act)</h4><p>API를 호출하거나 문서 데이터베이스를 뒤지는 등, 계획을 실제로 <b>실행</b>합니다.</p></div>
+  </div>
+  <p>이 관찰 → 계획 → 행동 루프는 만족스러운 답이 나올 때까지 여러 번 돌 수 있습니다. 아래에서 슬라이드의 "테디베어가 추워요" 예시를 직접 단계별로 눌러 따라가 보세요.</p>
+
+  <div class="casc-track" id="reactTrack"></div>
+  <div class="casc-body" id="reactBody"></div>
+  <div class="casc-nav"><button class="sec" id="reactPrev">← 이전</button><button id="reactNext">다음 →</button></div>
+
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> "에이전틱" 관점</div>루프를 한 걸음 물러서서 보면, 입력(사용자 요청)이 들어가 출력(응답)이 나오는 하나의 검은 상자처럼 보입니다 — 슬라이드는 이를 "온도조절기 에이전트(Thermostat agent)"라 부릅니다. 내부에서 몇 번을 관찰·계획·행동했는지는 감춰진 채, 겉으로는 하나의 지능적인 행위자처럼 동작합니다.</div>
+
+  <h3>에이전트가 여럿이라면? <span class="en">Multi-agent systems &amp; A2A</span></h3>
+  <p><span class="badge b-src">원본</span> 온도조절기 에이전트 하나만 있는 게 아닙니다. 에너지 관리 에이전트, 재실(在室) 감지 에이전트, 공기질 에이전트처럼 <b>각자의 전문 영역</b>을 가진 에이전트가 여러 개 존재할 수 있습니다. 문제는 — 이들이 서로 어떻게 말을 걸 수 있을까요?</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 표준화: A2A(Agent2Agent Protocol)</div><b>A2A</b>(Agent2Agent, 에이전트 간 프로토콜)는 서로 다른 에이전트끼리 대화하기 위한 표준입니다. 각 에이전트는 <code>AgentCard</code>(이름·주소·버전·보유 기술 목록)로 자신을 소개하고, <code>AgentSkill</code>로 할 수 있는 일을 설명하며, <code>AgentExecutor</code>가 실제 실행을 맡습니다. <span class="badge b-ext">외부</span> <a href="https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/" target="_blank" rel="noopener">Google, 2025 ↗</a></div>
+  <p class="muted">MCP가 "직원(에이전트)과 도구 창고를 잇는 사내 시스템"이라면, A2A는 "여러 부서 직원들끼리 업무를 주고받는 사내 메신저"에 비유할 수 있습니다 — 하나는 수직(에이전트→도구), 다른 하나는 수평(에이전트↔에이전트) 연결입니다.</p>
+</div></section>
+
+<!-- ===== SAFETY + CLOSING ===== -->
+<section id="safety"><div class="wrap reveal">
+  <span class="sec-no">08 — Safety &amp; closing</span>
+  <h2>에이전트에게 손발을 줬다면, 안전장치도 함께 <span class="en">Safety and closing thoughts</span></h2>
+  <p class="lead">계산기를 쥐여준 학생이 시험 중 옆자리 답안을 몰래 촬영해 전송한다면 어떨까요? 실제 세계에 작용할 수 있는 에이전트에게는 이런 위험이 진짜로 존재합니다.</p>
+  <div class="callout warn"><div class="h"><span class="badge b-src">원본</span> 위험: 실제 세계에 미치는 피해</div>대표적인 예로 <b>데이터 유출(exfiltration)</b>이 있습니다 — 에이전트가 도구 접근 권한을 악용해 민감한 정보를 외부로 빼돌리는 시나리오입니다. <span class="badge b-ext">외부</span> ToolSword 연구는 입력·실행·출력의 세 단계에 걸쳐 LLM 도구 사용의 안전성 문제를 체계적으로 정리했습니다. <a href="https://arxiv.org/abs/2402.10753" target="_blank" rel="noopener">Ye et al., 2024 ↗</a></div>
+  <div class="grid g3">
+    <div class="card"><div class="icon">🎓</div><h4>학습 단계 조치</h4><p>안전 정렬(alignment) 학습으로 위험한 도구 사용을 거부하도록 훈련합니다.</p></div>
+    <div class="card"><div class="icon">🛡️</div><h4>추론 단계 안전장치</h4><p>실행 전 위험한 호출을 가로채는 인퍼런스 세이프가드를 둡니다.</p></div>
+    <div class="card"><div class="icon">📊</div><h4>벤치마크</h4><p><span class="badge b-ext">외부</span> Agent-SafetyBench 같은 벤치마크로 안전성을 정량 평가합니다. <a href="https://aclanthology.org/2024.emnlp-main.82/" target="_blank" rel="noopener">Chen et al., 2024 ↗</a></p></div>
+  </div>
+  <div class="callout warn"><div class="h"><span class="badge b-ext">외부</span> 강의 하루 전, 실제로 벌어진 일</div>2025년 11월 14일 (강의 당일)로부터 하루 전인 11월 13일, Anthropic은 <i>"최초로 보고된 AI 주도 사이버 스파이 작전을 저지했다"</i>고 발표했습니다. 국가 지원 해킹 조직이 Claude를 속여 침투 작업의 상당 부분을 자동으로 수행시킨 사례로, 안전장치의 중요성을 보여주는 시의적 사례입니다. <a href="https://www.anthropic.com/news/disrupting-AI-espionage" target="_blank" rel="noopener">Anthropic, 2025 ↗</a></div>
+
+  <h3 id="closing">마무리: 오늘 배운 것과 남은 과제</h3>
+  <p><span class="badge b-src">원본</span> 슬라이드가 던지는 다섯 가지 정리입니다.</p>
+  <ul>
+    <li><b>환각</b>(Hallucination)은 여전히 (큰) 문제입니다 — 근거를 줘도 LLM이 이를 무시하거나 지어낼 수 있습니다.</li>
+    <li><b>추론 능력이 병목</b>입니다 — 파인튜닝이 도움이 되지만 어렵고, 새로운 추론 능력은 언제나 반갑습니다.</li>
+    <li><b>평가가 어렵습니다</b> — "잘 답했다"를 자동으로 채점하기가 쉽지 않습니다(다음 강의 주제).</li>
+    <li>처음엔 <b>단순하게 시작</b>해 점진적으로 규모를 키우는 편이 좋습니다.</li>
+    <li>처음엔 <b>강력한 모델</b>로 시작하고, 크기 최적화는 나중에 하는 편이 좋습니다.</li>
+    <li><b>투명성/관측 가능성</b>(transparency/observability)이 사용자 신뢰와 디버깅에 도움이 됩니다.</li>
+  </ul>
+  <div class="callout syn"><div class="h"><span class="badge b-src">원본</span> 보너스: 일상 속 AI 에이전트</div>슬라이드는 개인적으로 가장 좋아하는 활용 사례로 <b>코딩 에이전트</b>를 꼽습니다 — 코드 편집기 옆 패널에서 <code>find_teddy_bear.py</code> 같은 파일의 정확성을 스스로 점검하고, API 응답 검증 누락이나 타입 힌트 호환성 같은 문제를 짚어주는 모습입니다.</div>
+</div></section>
+
+<!-- ===== QUIZ ===== -->
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">09 — Self-check</span>
+  <h2>자가 점검 <span class="en">Two quick checks</span></h2>
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 BM25에 대한 설명으로 옳은 것은?</div>
+    <button class="opt" data-correct="1">질의와 문서에 공통으로 등장하는 키워드를 기반으로 순위를 매기는 방법이다.</button>
+    <button class="opt">질의와 문서를 임베딩 공간의 벡터로 바꿔 코사인 유사도로 비교하는 방법이다.</button>
+    <button class="opt">질의-문서 쌍을 하나로 묶어 함께 인코딩해 정밀도를 높이는 재순위화 방법이다.</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 ReAct 루프에서 "관찰(Observe)" 단계가 하는 역할은?</div>
+    <button class="opt" data-correct="1">지금까지의 행동 결과와 아는 것을 종합해 현재 상태를 파악한다.</button>
+    <button class="opt">도구 API를 실제로 호출해 작업을 수행한다.</button>
+    <button class="opt">다음에 무엇을 해야 할지 구체적인 작업과 인자를 정한다.</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== GLOSSARY ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">10 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색… (예: BM25, MCP, 재현율)"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 (Fall 2025) 7강 슬라이드의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=슬라이드에서 직접 가져온 내용, <span class="badge b-ext">외부</span>=인용·추가한 외부 자료(출처 링크 병기),
+   <span class="badge b-syn">종합·해석</span>=작성자의 재구성·비유·데모용 수치. 검색 데모의 임베딩 벡터는 실제 모델 출력이 아닌 이해를 돕기 위한 예시이며,
+   가격·지식 마감일 등 시점 정보는 슬라이드 촬영 시점(2025년 11월) 기준으로 이후 변경되었을 수 있습니다. 6강 복습 내용(추론 모델, GRPO 등)은
+   이번 7강 범위를 벗어나 다루지 않았습니다.</div>
+  <div>제작: Claude · 원저작권은 각 출처(Stanford CME 295, Afshine &amp; Shervine Amidi, 그리고 본문에 링크된 각 논문·자료)에 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+/* esc(): ALWAYS wrap source-derived text before putting it in innerHTML — prevents HTML / script-tag injection from quotes or pasted source. Author-written markup may stay raw. */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* tabs — pointer + keyboard (arrow keys), roving tabindex + aria-selected */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* ===== cascade #1 — RAG pipeline (Query -> Embedding -> Retrieval -> Augmentation -> Generation) ===== */
+const CASC=[
+ {ic:'❓',src:'종합',s:'질의',stage:'0단계 · 입력',title:'사용자 프롬프트가 도착하다',
+  prob:'LLM 혼자서는 사전학습 이후의 사실이나 사내 문서처럼 <b>모르는 정보</b>를 답할 수 없습니다.',
+  sol:'질문을 그대로 생성에 쓰지 않고, 먼저 <b>검색 가능한 형태</b>로 바꿉니다.',
+  next:'질문과 문서를 같은 공간에 두기 위해 <b>임베딩</b> 단계로 넘어갑니다 →'},
+ {ic:'🧭',src:'외부',s:'임베딩',stage:'1단계 · 사전 준비',title:'문장을 벡터로 바꾸다',
+  prob:'컴퓨터는 문장을 그대로 비교할 수 없고, 질의와 문서가 쓰는 단어 자체가 다를 수도 있습니다(어휘 불일치).',
+  sol:'바이 인코더(예: Sentence-BERT)로 질의와 문서를 같은 벡터 공간에 투영합니다. HyDE처럼 질의에 대한 <b>가상의 답변</b>을 먼저 만들어 임베딩하면 어휘 불일치를 더 줄일 수 있습니다.',
+  next:'벡터가 준비되면 실제로 후보를 <b>검색</b>합니다 →'},
+ {ic:'🔍',src:'원본',s:'검색',stage:'2단계 · 후보 선별과 재순위화',title:'후보를 넓게 모으고, 좁게 추리다',
+  prob:'의미 기반 검색만 쓰면 정확한 키워드·고유명사 일치를 놓칠 수 있고("Cuddly" 예시), 키워드 검색만 쓰면 동의어와 문맥을 놓칩니다.',
+  sol:'1단계에서는 재현율을 높이려 의미 기반 검색과 BM25를 <b>하이브리드</b>로 함께 쓰고, 2단계에서는 크로스 인코더 재랭커로 정밀도를 높입니다.',
+  next:'상위로 추려진 청크만 골라 <b>증강</b> 단계로 넘어갑니다 →'},
+ {ic:'➕',src:'원본',s:'증강',stage:'3단계 · 프롬프트 구성',title:'프롬프트에 근거를 끼워 넣다',
+  prob:'청크를 문서에서 그대로 잘라내면 원래 맥락이 사라지고("이 회사"가 어느 회사인지 등), 너무 많이 넣으면 LLM이 쓸모없는 정보에 <b>정신이 팔립니다</b>.',
+  sol:'컨텍스추얼 리트리벌처럼 각 청크 앞에 짧은 맥락 요약을 붙이고, Recall@k·Precision@k로 몇 개(top-k)를 넣을지 조절합니다. 요약을 만드는 프롬프트는 문서 전체를 반복 재사용하므로 프롬프트 캐싱으로 비용을 줄일 수 있습니다.',
+  next:'근거가 준비된 프롬프트로 실제 답을 <b>생성</b>합니다 →'},
+ {ic:'✍️',src:'원본',s:'생성',stage:'4단계 · 응답',title:'근거를 바탕으로 답하다',
+  prob:'근거를 줘도 LLM이 이를 무시하고 환각을 일으키거나, 검색 자체가 부실하면 애초에 좋은 근거가 없습니다.',
+  sol:'NDCG@k·RR 같은 지표로 검색 품질을 주기적으로 측정하고, 출처를 답변에 함께 표기하도록 프롬프트를 설계합니다.',
+  next:'검색이 부실했다면 임베딩·검색 단계로 돌아가 <b>다시 튜닝</b>합니다 ↺'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${esc(c.s)}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${esc(c.stage)} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${esc(c.title)}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 묶는가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'다음 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* ===== cascade #2 — ReAct loop (Observe -> Plan -> Act, x2, -> Output) ===== */
+const REACT=[
+ {ic:'👀',stage:'관찰 ①',title:'현재 상태 파악',
+  state:'"테디베어가 추워요, 뭔가 해주세요"라는 요청이 들어왔습니다. 방 온도는 아직 모릅니다.',
+  reason:'지금까지 알려진 정보를 종합하고, 무엇이 부족한지 스스로 진단합니다.',
+  next:'→ 무엇을 해야 할지 <b>계획</b>합니다.'},
+ {ic:'🗺️',stage:'계획 ①',title:'해야 할 일 정하기',
+  state:'방의 현재 온도를 확인해야 다음 행동을 정할 수 있습니다.',
+  reason:'구체적으로 어떤 도구를, 어떤 인자로 호출할지 결정하는 단계입니다.',
+  next:'→ <code>get_current_room_temperature()</code> 를 <b>호출</b>합니다.'},
+ {ic:'⚙️',stage:'행동 ①',title:'도구 호출',
+  state:'<code>get_current_room_temperature()</code> API를 실제로 호출합니다.',
+  reason:'계획에서 정한 도구를 실행에 옮기는 단계로, 외부 세계와 접촉하는 유일한 지점입니다.',
+  next:'→ 호출 결과를 다시 <b>관찰</b>합니다.'},
+ {ic:'👀',stage:'관찰 ②',title:'결과 확인',
+  state:'현재 온도는 65°F로, 평균보다 약 5°F 낮습니다. 온도를 올려야 합니다.',
+  reason:'행동의 결과를 자연어로 요약해, 다음 판단의 근거로 삼습니다.',
+  next:'→ 얼마나 올릴지 <b>계획</b>합니다.'},
+ {ic:'🗺️',stage:'계획 ②',title:'구체적 조치 정하기',
+  state:'온도를 5°F만큼 올리기로 결정합니다.',
+  reason:'막연한 목표("따뜻하게")를 실행 가능한 수치(+5°F)로 구체화합니다.',
+  next:'→ <code>increase_temperature(value=5)</code> 를 <b>호출</b>합니다.'},
+ {ic:'⚙️',stage:'행동 ②',title:'두 번째 도구 호출',
+  state:'<code>increase_temperature(value=5)</code> API를 호출해 온도조절기를 조작합니다.',
+  reason:'계획을 다시 실제 행동으로 옮깁니다. 이번엔 목표를 달성할 수 있는지가 관건입니다.',
+  next:'→ 온도가 실제로 올랐는지 <b>관찰</b>합니다.'},
+ {ic:'✅',stage:'출력',title:'최종 응답 생성',
+  state:'온도조절기가 70°F로 설정되었습니다. 관찰·계획·행동 루프를 마치고 사용자에게 알릴 준비가 되었습니다.',
+  reason:'루프에서 쌓인 관찰 결과를 사람이 이해할 수 있는 문장으로 번역합니다.',
+  next:'"온도를 70°F로 설정했어요. 테디베어가 곧 따뜻해질 거예요." — 루프 종료, 처음으로 ↺'}
+];
+let ri=0;const rTrack=$('#reactTrack'),rBody=$('#reactBody'),rNext=$('#reactNext'),rPrev=$('#reactPrev');
+function renderReact(){
+ rTrack.innerHTML=REACT.map((r,i)=>`<div class="casc-step ${i===ri?'active':''} ${i<ri?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(r.stage)} 단계 보기"><div class="si">${r.ic}</div><div class="st">${esc(r.stage)}</div></div>`).join('');
+ const r=REACT[ri];
+ rBody.innerHTML=`<div class="stage">${esc(r.stage)} · <span class="badge b-src">원본</span></div><h4>${r.ic} ${esc(r.title)}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">🧭 지금 아는 것</div>${r.state}</div><div class="blk sol"><div class="t">💭 추론 근거</div>${esc(r.reason)}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 다음 단계</div>${r.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ri+1} / ${REACT.length}</div>`;
+ rPrev.disabled=ri===0;rNext.textContent=ri<REACT.length-1?'다음 →':'처음부터 ↺';
+ $$('#reactTrack .casc-step').forEach(s=>{const go=()=>{ri=+s.dataset.i;renderReact();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+rNext.onclick=()=>{ri=ri<REACT.length-1?ri+1:0;renderReact();};
+rPrev.onclick=()=>{if(ri>0){ri--;renderReact();}};
+renderReact();
+
+/* ===== mini search demo — cosine similarity, self-computed ===== */
+const SIM_CHUNKS=[
+ {id:'A',text:'[…] Huggy likes to work downstairs […]'},
+ {id:'B',text:'[…] Where is Paris located? […]'},
+ {id:'C',text:'[…] he was in a cuddly mood […]'},
+ {id:'D',text:'[…] Cuddly spends most days surrounded by books […]'}
+];
+/* toy 3-D illustrative vectors: [location-pattern, mood-context, literal "cuddly" keyword] */
+const SIM_VEC={A:[0.10,0.10,0.00], B:[0.90,0.05,0.00], C:[0.05,0.85,0.60], D:[0.20,0.10,0.90]};
+const SIM_QUERY={
+ cuddly:{label:'"Cuddly는 어디 있나요?"', vec:[0.85,0.05,0.30], kw:['cuddly']},
+ paris:{label:'"파리는 어디에 있나요?"', vec:[0.90,0.05,0.00], kw:['paris','located']}
+};
+const KEYWORDS={
+ A:['huggy','likes','work','downstairs'],
+ B:['paris','located'],
+ C:['cuddly','mood'],
+ D:['cuddly','spends','days','surrounded','books']
+};
+function dot(a,b){return a.reduce((s,v,i)=>s+v*b[i],0);}
+function vnorm(a){return Math.sqrt(dot(a,a));}
+function cosine(a,b){const n=vnorm(a)*vnorm(b);return n===0?0:dot(a,b)/n;}
+function kwOverlap(qKw,dKw){let s=0;qKw.forEach(k=>{if(dKw.includes(k))s+=1;});return s;}
+let curQ='cuddly', curM='semantic';
+function computeSimScores(){
+ const q=SIM_QUERY[curQ];
+ const raw={};
+ SIM_CHUNKS.forEach(c=>{raw[c.id]={sem:cosine(q.vec,SIM_VEC[c.id]),kw:kwOverlap(q.kw,KEYWORDS[c.id])};});
+ const maxSem=Math.max(...Object.values(raw).map(r=>r.sem),1e-9);
+ const maxKw=Math.max(...Object.values(raw).map(r=>r.kw),1e-9);
+ const out={};
+ SIM_CHUNKS.forEach(c=>{
+  const semN=raw[c.id].sem/maxSem, kwN=raw[c.id].kw/maxKw;
+  let score;
+  if(curM==='semantic') score=semN;
+  else if(curM==='bm25') score=kwN;
+  else score=0.5*semN+0.5*kwN;
+  out[c.id]={score,sem:raw[c.id].sem,kw:raw[c.id].kw};
+ });
+ return out;
+}
+function renderSim(){
+ const scores=computeSimScores();
+ const ranked=[...SIM_CHUNKS].sort((a,b)=>scores[b.id].score-scores[a.id].score);
+ const maxScore=Math.max(...ranked.map(c=>scores[c.id].score),1e-9);
+ $('#simResults').innerHTML=ranked.map(c=>{
+  const pct=Math.round(scores[c.id].score/maxScore*100);
+  return `<div class="simrow"><div class="stxt">${esc(c.text)}</div><div class="simbar"><span style="width:${pct}%"></span></div><div class="simscore">${scores[c.id].score.toFixed(2)}</div></div>`;
+ }).join('');
+ $$('#simQCuddly, #simQParis').forEach(b=>b.classList.toggle('active',b.dataset.q===curQ));
+ $$('#simMBtns .qbtn').forEach(b=>b.classList.toggle('active',b.dataset.m===curM));
+ $('#simNote').innerHTML = curM==='semantic'
+   ? `<b>의미 기반</b> 검색 결과: 질의 ${esc(SIM_QUERY[curQ].label)}를 벡터로 바꿔 각 문장과 코사인 유사도를 비교했습니다. 문장의 "패턴"이 비슷하면 실제 내용이 달라도 점수가 높게 나올 수 있습니다.`
+   : curM==='bm25'
+   ? `<b>BM25(키워드 기반)</b> 검색 결과: 질의에 등장한 단어가 문장에 그대로 들어있는지만 봅니다. 의미는 몰라도 정확한 단어 일치는 놓치지 않습니다.`
+   : `<b>하이브리드</b> 검색 결과: 의미 기반 점수와 키워드 기반 점수를 절반씩 섞었습니다.`;
+}
+$$('#simQCuddly, #simQParis').forEach(b=>b.onclick=()=>{curQ=b.dataset.q;renderSim();});
+$$('#simMBtns .qbtn').forEach(b=>b.onclick=()=>{curM=b.dataset.m;renderSim();});
+renderSim();
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답입니다!':'❌ 다시 살펴보세요 — 정답이 초록색으로 표시됩니다.';});});
+
+/* glossary — [영문, 한글, 정의] */
+const GLOSS=[
+ ['RAG (Retrieval-Augmented Generation)','검색 증강 생성','외부 지식 베이스에서 관련 정보를 검색해 프롬프트에 덧붙인 뒤 생성하는 기법. Lewis et al., 2020.'],
+ ['Chunking','청킹(문서 분할)','긴 문서를 검색하기 좋은 크기의 조각(청크)으로 나누는 전처리 과정.'],
+ ['Embedding','임베딩','텍스트를 의미를 담은 숫자 벡터로 바꾸는 표현.'],
+ ['Bi-encoder','바이 인코더','질의와 문서를 각각 따로 인코딩해 벡터 유사도로 비교하는 빠른 검색 방식. Reimers &amp; Gurevych, 2019(Sentence-BERT).'],
+ ['Cross-encoder','크로스 인코더','질의와 문서를 함께 인코딩해 정밀하지만 느리게 관련도를 매기는 재순위화(reranking) 방식.'],
+ ['BM25','BM25(키워드 기반 검색)','질의 단어의 등장 빈도와 희귀도로 점수를 매기는 고전적 키워드 검색 알고리즘.'],
+ ['Hybrid Search','하이브리드 검색','의미 기반 검색과 BM25를 함께 사용해 서로의 약점을 보완하는 검색 방식.'],
+ ['HyDE (Hypothetical Document Embeddings)','HyDE(가상 문서 임베딩)','질의에 대한 가상의 답변 문서를 먼저 만들어 임베딩한 뒤 검색에 쓰는 기법. Gao et al., 2022.'],
+ ['Contextual Retrieval','컨텍스추얼 리트리벌','각 청크 앞에 문서 전체 맥락을 요약해 붙여, 청크가 원문맥에서 분리되며 생기는 의미 손실을 줄이는 기법. Anthropic, 2024.'],
+ ['NDCG@k','정규화 누적 이득@k','상위 k개 결과에서 관련 문서가 얼마나 상위에 몰려 있는지를 재는 검색 품질 지표.'],
+ ['Reciprocal Rank (RR)','역순위','첫 번째 관련 문서를 얼마나 빨리 찾았는지를 재는 지표(1/순위).'],
+ ['Recall@k / Precision@k','재현율/정밀도@k','재현율은 존재하는 정답을 얼마나 빠짐없이 찾았는지, 정밀도는 가져온 것 중 얼마나 정답인지를 잰다.'],
+ ['Function Calling (Tool Calling)','함수 호출(도구 호출)','LLM이 외부 함수·API의 이름과 인자를 스스로 골라 호출하게 하는 기법.'],
+ ['MCP (Model Context Protocol)','MCP(모델 컨텍스트 프로토콜)','LLM과 도구·데이터를 표준화된 방식으로 연결하는 개방형 프로토콜. Anthropic, 2024.'],
+ ['Agent','에이전트','목표를 스스로 추구하고 사용자를 대신해 작업을 완수하는 자율 시스템.'],
+ ['ReAct (Reason + Act)','ReAct(추론+행동)','관찰→계획→행동을 반복하며 도구를 활용해 문제를 푸는 에이전트 프레임워크. Yao et al., 2022.'],
+ ['A2A (Agent2Agent Protocol)','A2A(에이전트 간 프로토콜)','서로 다른 에이전트끼리 작업을 주고받기 위한 표준 통신 프로토콜. Google, 2025.'],
+ ['Hallucination','환각','LLM이 근거 없는 내용을 사실인 것처럼 지어내는 현상.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${g[1]} <span class="en">${g[0]}</span></div><div class="gd">${g[2]}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

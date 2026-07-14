@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 6강 — LLM 추론 모델과 GRPO — 인터랙티브 해설</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,6vw,58px);margin:.1em 0 .2em;letter-spacing:-1.2px;line-height:1.1}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:760px;margin:0 0 20px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.6px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:18px;line-height:1.6;border-left:3px solid var(--line2);padding:10px 0 10px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:21px;margin:.2em 0 .1em}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+.acc{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden;background:var(--card)}
+.acc summary{padding:15px 18px;cursor:pointer;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .ar{margin-left:auto;transition:.2s;color:var(--ink3)}.acc[open] summary .ar{transform:rotate(90deg)}
+.acc .body{padding:0 18px 18px;color:var(--ink2)}
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+table.bench{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px}
+table.bench th,table.bench td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}
+table.bench th:first-child,table.bench td:first-child{text-align:left}
+table.bench thead th{color:var(--ink2);font-weight:700;border-bottom:2px solid var(--line2)}
+table.bench tbody tr:hover{background:var(--card2)}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.calc .row{display:flex;gap:18px;flex-wrap:wrap}.field{flex:1 1 200px}
+.field label{font-size:13px;color:var(--ink2);font-weight:600;display:flex;justify-content:space-between}.field label b{color:var(--brand2)}
+input[type=range]{width:100%;accent-color:var(--brand);height:6px;margin-top:14px}
+.calc-out{margin-top:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:700px){.calc-out{grid-template-columns:repeat(2,1fr)}}
+.calc-out .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.calc-out .box .big{font-size:22px;font-weight:800}
+.chart-ctrls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.chart-ctrls button{font:inherit;font-weight:700;font-size:13.5px;background:var(--bg3);border:1px solid var(--line);color:var(--ink2);padding:9px 14px;border-radius:10px;cursor:pointer}
+.chart-ctrls button.on{background:var(--brandsoft);border-color:var(--brand);color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME295 · <b>6강</b> 추론모델</span>
+  <nav>
+    <a href="#s1">개요</a>
+    <a href="#compare">비교</a>
+    <a href="#grpo">GRPO</a>
+    <a href="#scaling">스케일링</a>
+    <a href="#cascade">R1 레시피</a>
+    <a href="#distill">증류</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · Lecture 6 · 인터랙티브 해설</span>
+  <h1>CME 295 · 6강 — LLM 추론 모델과 GRPO</h1>
+  <p class="sub">결론부터 말하면, 오늘날의 추론 모델(Reasoning Model)은 완전히 새로운 아키텍처가 아니라 <b>검증 가능한 보상(verifiable reward)으로 "풀이 과정을 더 길게 쓰라"고 강화학습(RL)시킨 같은 언어모델</b>이며, 이 강의의 핵심은 그 학습법 — 특히 GRPO(Group Relative Policy Optimization) — 을 이해하는 것입니다.</p>
+  <div class="metaline">
+    <span><b>강의</b> Afshine Amidi &amp; Shervine Amidi · Stanford ICME</span>
+    <span><b>일자</b> 2025-11-07</span>
+    <span><b>슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture6.pdf" target="_blank" rel="noopener">PDF ↗</a></span>
+    <span><b>영상</b> <a href="https://www.youtube.com/watch?v=k5Fh-UgTuCo" target="_blank" rel="noopener">YouTube ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#s1">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://cme295.stanford.edu/slides/fall25-cme295-lecture6.pdf" target="_blank" rel="noopener">슬라이드 PDF ↗</a>
+    <a class="cta ghost" href="https://www.youtube.com/watch?v=k5Fh-UgTuCo" target="_blank" rel="noopener">강의 영상 ▶</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>CME 295 6강 슬라이드 내용에서 직접 가져온 부분.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>슬라이드가 인용한 <b>논문 등 외부 자료</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 내용을 엮은 <b>작성자 재구성</b>(비유, 위젯 계산, 재구성 다이어그램 등).</span></div>
+  </div>
+</div></section>
+
+<main>
+<section id="s1"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>추론이란 무엇인가? <span class="en">What is "reasoning"?</span></h2>
+  <p class="lead">학원에서 모의고사를 채점하는 두 가지 방식을 떠올려 봅시다.</p>
+  <p>한 선생님은 정답지를 놓고 "80점 이상이면 합격"처럼 절대 기준으로 채점합니다. 다른 선생님은 같은 반 학생 여러 명이 <b>같은 문제</b>를 풀게 한 뒤, 그 반 안에서 상대적으로 잘 푼 답안에만 칭찬 스티커를 주는 상대평가를 씁니다. 이번 6강에서 다루는 추론 모델(Reasoning Model)의 핵심 학습법인 <b>GRPO</b>(Group Relative Policy Optimization, 그룹 상대 정책 최적화)는 두 번째 선생님과 닮았습니다 — 정답을 절대적으로 채점해 줄 별도의 "가치 모델"(Value Model) 없이도, 같은 문제를 여러 번 풀어본 답안끼리 비교해 상대적으로 잘한 풀이를 강화하는 방식으로 모델이 스스로 생각하는 법을 익히게 만드는 것이지요. 이 비유는 앞으로 GRPO·테스트 시점 스케일링·증류를 설명할 때마다 다시 불러오겠습니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 잠정적 정의</div>슬라이드는 <b>추론(Reasoning)</b>을 "<i>문제를 풀어내는(solve) 능력</i>"으로 잠정 정의합니다. "Stanford Transformers &amp; LLMs 강의 코스 코드가 뭐야?"처럼 그냥 알면 답하는 질문은 추론이 필요 없지만, "곰이 2020년에 태어났다. 지금 몇 살일까?"처럼 중간 계산이 필요한 질문은 추론이 필요합니다.</div>
+
+  <h3>바닐라 LLM의 약점, 그리고 오늘의 초점</h3>
+  <p>지난 5강까지 배운 사전학습(pretraining)·미세조정(finetuning)·선호도 튜닝(preference tuning)을 거친 "바닐라" LLM도 모방·아이디어 생성과 코드 작성엔 강하지만, 네 가지 약점이 있습니다: <b>제한된 추론력</b>, 정적인 지식, 행동 불가, 평가의 어려움. 7·8강이 뒤의 세 가지를 다루고, 이번 6강은 <b>제한된 추론력</b>을 정면으로 다룹니다.</p>
+
+  <h3>추론 모델은 언제부터, 어떻게 알아볼까?</h3>
+  <p><span class="badge b-src">원본</span> 슬라이드가 제시한 타임라인에 따르면 OpenAI o1-preview(2024-09-12)를 시작으로 Gemini 2.0 Flash Thinking(2024-12-19), DeepSeek R1(2025-01-20), Grok 3 Beta(2025-02-19), Claude 3.7 Sonnet(2025-02-24), Magistral(2025-06-10) 순으로 주요 추론 모델이 쏟아져 나왔습니다. 추론 모델은 보통 UI에 "Thinking"·"Extended thinking" 표시와 함께, 최종 답 앞에 <b>사고 요약(thought summary)</b>을 보여줍니다 — 다만 전체 사고 사슬(chain of thought)은 대개 숨겨져 있습니다.</p>
+  <div class="callout ext"><div class="h"><span class="badge b-ext">외부</span> 과금 방식의 차이</div>2025년 11월 4일 기준 스크린샷을 보면(OpenAI pricing page, Anthropic developer guide, Google developer guide), OpenAI gpt-5는 입력 $1.25 / 출력 $10.00(100만 토큰당)이며 "사고 토큰은 API에 보이지 않아도 컨텍스트 창을 차지하고 출력으로 과금"됩니다. Anthropic 개발자 가이드는 "청구되는 것은 요약이 아니라 원 요청이 생성한 전체 사고 토큰"이라 명시하고, Google Gemini 2.5 Pro는 "사고 토큰 포함 출력가"를 별도로 표기합니다. 즉 추론 모델은 눈에 보이지 않는 사고 과정까지 값을 치르는 구조입니다.</div>
+
+  <h3>추론을 어떻게 재는가: 벤치마크와 Pass@k</h3>
+  <p>추론 능력을 측정하는 벤치마크는 크게 <b>코딩</b>(HumanEval, CodeForces, SWE-bench — 문제→코드→테스트케이스로 자동 검증)과 <b>수학</b>(AIME, GSM8K — 문제→풀이→정답과 대조)으로 나뉩니다. 둘 다 "정답 여부를 기계적으로 검증할 수 있다"는 공통점이 있는데, 이 성질이 뒤에서 GRPO의 보상 설계에 그대로 쓰입니다.</p>
+  <div class="quote">Pass@k = "적어도 k번 시도 중 하나가 성공할 확률"<span class="src">Chen et al., 2021, <i>Evaluating Large Language Models Trained on Code</i></span></div>
+  <p>이 값을 그냥 n번 중 c번 성공했다고 c/n으로 추정하면 편차가 커서, 논문은 불편추정량(unbiased estimator)을 씁니다: <b>Pass@k = 1 − C(n−c, k) / C(n, k)</b> (n번 샘플링해서 c번 성공했을 때). 특수하게 k=1이면 Pass@1 = c/n입니다. 이 식이 "무엇을 측정하는지" 풀어보면, "k번 뽑을 때 뽑은 것이 전부 실패작(n−c개 중에서만 뽑을) 확률"을 1에서 뺀 것 — 즉 "적어도 하나는 성공"할 확률입니다. <span class="badge b-src">원본</span> 슬라이드는 여기에 <b>Cons@k</b>("Consensus@k", 다수결(majority voting) 답과 정답을 비교하는 지표, DeepSeek-AI 2025)도 함께 소개합니다. 아래 위젯에서 이 공식을 직접 재계산해 볼 수 있습니다 → <a href="#scaling">스케일링 섹션</a>.</p>
+</div></section>
+
+<section id="compare"><div class="wrap reveal">
+  <span class="sec-no">02 — Compare</span>
+  <h2>일반 모델 vs 추론 모델 <span class="en">Vanilla vs reasoning response</span></h2>
+  <p class="lead">같은 질문이라도 사고 과정의 유무에 따라 답이 달라집니다 — 탭을 눌러 비교해 보세요.</p>
+  <div class="tabs" id="tabBar" role="tablist" aria-label="추론 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>추론이 필요 없는 질문</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>사고 없이 답변</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>사고 사슬(CoT)과 함께</button>
+  </div>
+  <div class="tabpane active" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">추론이 필요 없는 질문 vs 필요한 질문</h3>
+    <p><span class="badge b-src">원본</span> 슬라이드의 예시 대조표입니다.</p>
+    <div class="grid g2">
+      <div class="card soft"><h4>❌ Not reasoning</h4><p>"Stanford Transformers &amp; LLMs 강의 코스 코드가 뭐야?"</p><p class="muted">그냥 알고 있으면 바로 답할 수 있는, 인출(recall)형 질문입니다.</p></div>
+      <div class="card soft"><h4>✅ Reasoning</h4><p>"곰이 2020년에 태어났다. 지금 몇 살일까?"</p><p class="muted">현재 연도를 참조해 뺄셈이라는 중간 단계를 거쳐야 답이 나옵니다.</p></div>
+    </div>
+  </div>
+  <div class="tabpane" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">사고 없이 답변</h3>
+    <p><span class="badge b-src">원본</span> Few-shot 예시에 풀이 과정이 없으면, 모델도 풀이 없이 바로 답만 냅니다.</p>
+    <div class="card soft">
+      <p style="font-family:monospace;white-space:pre-wrap">Q: How old is this bear?
+A: 4.
+
+Q: How old will the bear be next year?
+→ LLM →
+A: 5.</p>
+      <p class="muted">중간 계산이 드러나지 않아, 값이 조금만 복잡해져도 틀리기 쉽습니다.</p>
+    </div>
+  </div>
+  <div class="tabpane" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">사고 사슬(Chain-of-Thought)과 함께</h3>
+    <p><span class="badge b-ext">외부</span> Wei et al., 2022의 <a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models ↗</a>가 제안한 방식으로, few-shot 예시에 풀이 과정을 넣어주면 모델도 풀이 과정을 스스로 쓰게 됩니다.</p>
+    <div class="card soft">
+      <p style="font-family:monospace;white-space:pre-wrap">Q: How old is this bear?
+A: The bear was born in 2020. It is therefore 4.
+
+Q: How old will the bear be next year?
+→ LLM →
+A: It will be one year older than its age this year,
+which was 4. Hence, it will be 5.</p>
+      <p class="muted">추론 모델을 만드는 핵심 아이디어는 <i>"CoT를 훨씬 더 큰 규모로 하자"</i>는 것입니다 — 다음 섹션에서 이어집니다.</p>
+    </div>
+  </div>
+</div></section>
+
+<section id="rl"><div class="wrap reveal">
+  <span class="sec-no">03 — Why RL</span>
+  <h2>왜 강화학습으로 추론을 가르치나? <span class="en">RL with verifiable rewards</span></h2>
+  <p class="lead">Idea: 답을 내놓기 전에 "생각"하도록 모델을 유인합니다(incentivize).</p>
+  <p>모의고사 채점 비유로 돌아가 봅시다. 학생에게 "풀이 과정을 꼭 쓰라"고 시키고 싶다면 두 가지 방법이 있습니다: (1) 선생님이 모범 풀이를 일일이 써준 뒤 학생이 그것을 베껴 외우게 하거나(SFT, Supervised Fine-Tuning — 정답 예시를 모방해 학습하는 단계), (2) "맞았는지 틀렸는지"만 알려주고 학생이 스스로 풀이 방식을 찾아내게 하는 것입니다. <span class="badge b-src">원본</span> 슬라이드는 세 가지 이유로 (2)번, 즉 RL을 택합니다: 사고 사슬을 사람이 직접 손으로 쓰는 것은 비현실적이고(SFT data by hand impractical), 사람이 쓴 방식에만 모델을 가두고 싶지 않으며, 무엇보다 "문제를 풀었는가?"라는 <b>자연스러운 검증 가능 보상(natural verifiable reward)</b>이 이미 있기 때문입니다.</p>
+
+  <div class="grid g2">
+    <div class="card"><div class="icon">1️⃣</div><h4>보상 1 — 형식 확인</h4><p><span class="badge b-src">원본</span> 응답이 <code>&lt;think&gt; ... &lt;/think&gt; ANSWER</code> 템플릿을 지켰는지만 규칙으로 확인합니다. DeepSeek-R1 논문의 실제 샘플 응답을 보면 "Wait, wait. Wait. That's an aha moment I can flag here."처럼 스스로 되짚어보는 문장이 자연스럽게 등장합니다.</p></div>
+    <div class="card"><div class="icon">2️⃣</div><h4>보상 2 — 정답 확인</h4><p><span class="badge b-src">원본</span> 코드 문제는 테스트 케이스 실행으로, 수학 문제는 정답과의 대조로 자동 채점합니다. 사람 라벨러 없이도 대량으로 RL을 돌릴 수 있게 하는 핵심입니다.</p></div>
+  </div>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 최종 보상</div>Reward = <b>formatting</b>(think 구분자 준수) + <b>accuracy</b>(정답 여부) — 이 단순한 두 항만으로 RL을 돌린 것이 DeepSeek-R1-Zero입니다.</div>
+  <div class="callout ext"><div class="h"><span class="badge b-ext">외부</span> 실제로 좋아졌나?</div><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener">DeepSeek-R1(DeepSeek-AI, 2025) ↗</a> 논문이 보고한 R1-Zero의 AIME 2024 정확도는 학습 초반 pass@1 약 15%에서 약 8,000스텝 뒤 약 71%까지, 다수결 채점인 cons@16 기준으로는 약 86%까지 올라갑니다 — 별도의 정답 예시(SFT) 없이 오직 "맞았다/틀렸다" 보상만으로 이만큼 개선된 것입니다.</div>
+</div></section>
+
+<section id="grpo"><div class="wrap reveal">
+  <span class="sec-no">04 — GRPO</span>
+  <h2>GRPO: 추론 RL에서 가장 널리 쓰이는 알고리즘 <span class="en">Group Relative Policy Optimization</span></h2>
+  <p class="lead"><b>GRPO</b> = <b>G</b>roup <b>R</b>elative <b>P</b>olicy <b>O</b>ptimization(그룹 상대 정책 최적화). <span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2402.03300" target="_blank" rel="noopener">DeepSeekMath(Shao et al., 2024) ↗</a>가 제안했습니다.</p>
+  <p>5강에서 배운 PPO(Proximal Policy Optimization, 근접 정책 최적화)의 목적함수는 "어드밴티지(advantage)를 최대화하되, 옛 모델에서 너무 멀어지지 말라"는 두 항의 합이었습니다. GRPO도 같은 뼈대를 쓰지만, <b>advantage를 계산하는 방식</b>이 다릅니다 — 별도의 가치 모델(value model)로 절대적인 기준선을 추정하는 대신, <b>같은 질문 q에 대해 G개의 응답을 한 번에 뽑아 그 그룹 안에서 상대적으로 비교</b>합니다. 모의고사 비유에서 "같은 반 학생들끼리 상대평가"하던 두 번째 선생님이 바로 이것입니다.</p>
+
+  <svg viewBox="0 0 900 190" role="img" aria-label="GRPO 파이프라인: 질문이 정책 모델로 들어가 G개의 응답을 생성하고, 보상 모델이 각 응답에 점수를 매기면, 그룹 계산이 그룹 평균 대비 표준화된 advantage를 산출한다" style="width:100%;height:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;margin:22px 0">
+    <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink3)"/></marker></defs>
+    <text x="20" y="30" fill="var(--ink2)" font-size="13" font-weight="700">q</text>
+    <rect x="10" y="70" width="46" height="40" rx="8" fill="var(--card2)" stroke="var(--line2)"/><text x="33" y="94" fill="var(--ink)" font-size="13" text-anchor="middle">q</text>
+    <line x1="56" y1="90" x2="118" y2="90" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="120" y="65" width="110" height="50" rx="10" fill="var(--brandsoft)" stroke="var(--brand)"/><text x="175" y="86" fill="var(--ink)" font-size="12.5" text-anchor="middle" font-weight="700">Policy</text><text x="175" y="102" fill="var(--ink)" font-size="12.5" text-anchor="middle" font-weight="700">Model</text>
+    <line x1="230" y1="90" x2="280" y2="90" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="282" y="20" width="54" height="30" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="309" y="40" fill="var(--ink)" font-size="12" text-anchor="middle">o₁</text>
+    <rect x="282" y="58" width="54" height="30" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="309" y="78" fill="var(--ink)" font-size="12" text-anchor="middle">o₂</text>
+    <text x="309" y="105" fill="var(--ink3)" font-size="14" text-anchor="middle">⋯</text>
+    <rect x="282" y="118" width="54" height="30" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="309" y="138" fill="var(--ink)" font-size="12" text-anchor="middle">o_G</text>
+    <line x1="336" y1="85" x2="392" y2="85" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="394" y="55" width="96" height="60" rx="10" fill="#13243f" stroke="#27508a"/><text x="442" y="80" fill="#bcd4ff" font-size="12" text-anchor="middle" font-weight="700">Reward</text><text x="442" y="96" fill="#bcd4ff" font-size="12" text-anchor="middle" font-weight="700">Model</text>
+    <line x1="490" y1="85" x2="546" y2="85" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="548" y="20" width="54" height="30" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="575" y="40" fill="var(--ink)" font-size="12" text-anchor="middle">r₁</text>
+    <rect x="548" y="58" width="54" height="30" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="575" y="78" fill="var(--ink)" font-size="12" text-anchor="middle">r₂</text>
+    <text x="575" y="105" fill="var(--ink3)" font-size="14" text-anchor="middle">⋯</text>
+    <rect x="548" y="118" width="54" height="30" rx="6" fill="var(--card2)" stroke="var(--line2)"/><text x="575" y="138" fill="var(--ink)" font-size="12" text-anchor="middle">r_G</text>
+    <line x1="602" y1="85" x2="654" y2="85" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="656" y="55" width="100" height="60" rx="10" fill="var(--card2)" stroke="var(--line2)"/><text x="706" y="80" fill="var(--ink)" font-size="12" text-anchor="middle" font-weight="700">Group</text><text x="706" y="96" fill="var(--ink)" font-size="12" text-anchor="middle" font-weight="700">Computation</text>
+    <line x1="756" y1="85" x2="808" y2="85" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="810" y="20" width="54" height="30" rx="6" fill="#08312c" stroke="#125c53"/><text x="837" y="40" fill="#86efe0" font-size="12" text-anchor="middle">A₁</text>
+    <rect x="810" y="58" width="54" height="30" rx="6" fill="#08312c" stroke="#125c53"/><text x="837" y="78" fill="#86efe0" font-size="12" text-anchor="middle">A₂</text>
+    <text x="837" y="105" fill="var(--ink3)" font-size="14" text-anchor="middle">⋯</text>
+    <rect x="810" y="118" width="54" height="30" rx="6" fill="#08312c" stroke="#125c53"/><text x="837" y="138" fill="#86efe0" font-size="12" text-anchor="middle">A_G</text>
+    <text x="450" y="175" fill="var(--ink3)" font-size="12" text-anchor="middle">PPO와 달리 별도의 Value Model·GAE 없이, G개 응답의 보상만으로 advantage를 계산합니다.</text>
+  </svg>
+  <p class="muted" style="margin-top:-8px"><span class="badge b-syn">종합·해석</span> 위 다이어그램은 슬라이드의 GRPO 파이프라인 그림을 단순화해 재구성한 것입니다.</p>
+
+  <div class="quote">Â<sub>i</sub> = ( r<sub>i</sub> − mean({r₁,…,r_G}) ) / std({r₁,…,r_G})<span class="src">그룹 내 보상을 <b>평균 0, 표준편차 1로 표준화(z-score)</b>한 값 — "그룹 평균보다 얼마나 잘/못했는가"만 남깁니다. 슬라이드 원문, Shao et al., 2024</span></div>
+
+  <h3>직접 계산해보기: 그룹 상대 어드밴티지 계산기</h3>
+  <p>같은 질문에 4개의 응답(G=4)을 뽑았다고 하고, 각 응답의 보상(0=완전히 틀림 ~ 1=완전히 맞음)을 슬라이더로 조절해 보세요. GRPO 공식을 그대로 재계산합니다.</p>
+  <div class="calc">
+    <div class="row">
+      <div class="field"><label>응답 o₁ 보상 r₁ <b id="r0Lab">1.00</b></label><input type="range" id="r0" min="0" max="1" step="0.05" value="1"></div>
+      <div class="field"><label>응답 o₂ 보상 r₂ <b id="r1Lab">0.50</b></label><input type="range" id="r1" min="0" max="1" step="0.05" value="0.5"></div>
+      <div class="field"><label>응답 o₃ 보상 r₃ <b id="r2Lab">0.00</b></label><input type="range" id="r2" min="0" max="1" step="0.05" value="0"></div>
+      <div class="field"><label>응답 o₄ 보상 r₄ <b id="r3Lab">1.00</b></label><input type="range" id="r3" min="0" max="1" step="0.05" value="1"></div>
+    </div>
+    <div class="calc-out" id="grpoOut"></div>
+    <p class="muted" id="grpoNote"></p>
+    <button class="cta ghost" id="grpoZeroBtn" type="button" style="margin-top:6px">⚠️ 4개 모두 정답으로 맞추기 (표준편차 0 만들기)</button>
+  </div>
+
+  <h3>PPO와 무엇이 같고 무엇이 다른가</h3>
+  <div class="grid g2">
+    <div class="card soft"><h4>같은 점</h4><p><span class="badge b-src">원본</span> 두 알고리즘 모두 새 정책과 이전 정책의 확률비(ratio) ρ = π_θ/π_θold를 쓰고, 이를 [1−ε, 1+ε] 범위로 <b>클리핑(clipping)</b>해 정책이 한 번에 너무 크게 바뀌지 않도록 막습니다.</p></div>
+    <div class="card soft"><h4>다른 점</h4><p><span class="badge b-src">원본</span> ① GRPO는 advantage 항에 <b>KL 페널티</b>를 별도 항으로 명시적으로 더합니다(PPO는 보상 자체에 KL을 섞기도 함). ② PPO는 응답마다 <b>가치 모델(Value Model)</b>과 GAE로 advantage를 추정하지만, GRPO는 <b>그룹 통계</b>만으로 advantage를 계산해 가치 모델이 아예 필요 없습니다 — 메모리·연산이 크게 절약됩니다.</p></div>
+  </div>
+
+  <h3>부작용: 왜 응답이 점점 길어질까?</h3>
+  <p><span class="badge b-src">원본</span> R1-Zero를 학습시키며 관찰된 현상입니다 — RL 스텝이 진행될수록 평균 응답 길이가 계속 늘어납니다(약 500 토큰 → 약 10,000 토큰). 원인은 advantage 공식의 <b>1/|o_i|</b> 항(응답 토큰 수로 나누는 평균)에 있습니다: 정답(A&gt;0)일 때는 짧을수록 토큰당 보상이 커서 <b>짧은 정답</b>을 더 강하게 밀어주지만, 오답(A&lt;0)일 때는 반대로 <b>긴 오답</b>일수록 토큰당 페널티가 희석되어 덜 억제됩니다 — 즉 "오답이면 차라리 길게 써서 벌점을 나눠 받자"는 나쁜 유인(bad incentive)이 생깁니다.</p>
+  <div class="grid g2">
+    <div class="card"><h4>DAPO의 해법</h4><p><span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener">DAPO(Yu et al., 2025) ↗</a>는 응답별로 나누지 않고, <b>그룹 전체 토큰 수의 합</b>으로 한 번에 나눠 모든 토큰이 손실에 동일하게 기여하도록 합니다. 비대칭 클리핑 범위 ε_low/ε_high로 다양성도 함께 유도합니다.</p></div>
+    <div class="card"><h4>Dr. GRPO의 해법</h4><p><span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2503.20783" target="_blank" rel="noopener">Understanding R1-Zero-Like Training(Liu et al., 2025) ↗</a>는 아예 1/|o_i| 항을 <b>제거</b>해 토큰 수 편향 자체를 없앱니다("GRPO Done Right"). 같은 보상 수준에서 더 짧은 응답으로도 정답률을 유지한다고 보고합니다.</p></div>
+  </div>
+</div></section>
+
+<section id="scaling"><div class="wrap reveal">
+  <span class="sec-no">05 — Test-time scaling</span>
+  <h2>테스트 시점 스케일링 <span class="en">Test-time compute scaling</span></h2>
+  <p class="lead">모의고사를 한 번만 보는 것과, 시간을 더 들여 여러 번 풀어보거나 검산까지 하는 것 중 무엇이 점수가 높을까요?</p>
+  <p>학습이 끝난 모델도 <b>추론(inference) 시점</b>에 연산을 더 쏟으면 정확도를 높일 수 있습니다 — 크게 두 축이 있습니다: <b>① 샘플 수를 늘리기</b>(같은 문제를 여러 번 풀고 그중 최선을 택하거나 다수결로 뽑기, Pass@k/Cons@k) 와 <b>② 사고 길이를 늘리기</b>(더 오래 생각하게 하기). 아래 위젯에서 두 축을 각각 눌러 비교해 보세요.</p>
+
+  <div class="card">
+    <div class="chart-ctrls" id="ptsCtrls">
+      <button data-c="samples" class="on" type="button">① 샘플 수 늘리기 (Pass@k)</button>
+      <button data-c="budget" type="button">② 사고 길이 늘리기 (예산)</button>
+    </div>
+    <div id="samplesInputs" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="field"><label>전체 시도 횟수 n <b id="nLab">20</b></label><input type="range" id="nIn" min="4" max="50" value="20"></div>
+      <div class="field"><label>정답 시도 수 c (n 중) <b id="cLab">6</b></label><input type="range" id="cIn" min="0" max="20" value="6"></div>
+    </div>
+    <div id="budgetInputs" style="display:none;gap:18px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="field"><label>사고 토큰 예산(상대값) <b id="bLab">30</b></label><input type="range" id="bIn" min="0" max="100" value="30"></div>
+    </div>
+    <canvas id="ptsChart" width="980" height="420" style="width:100%" role="img" aria-label="샘플 수 k 또는 사고 예산이 늘어날수록 정답 확률이 증가하다가 포화되는 곡선"></canvas>
+    <table class="sr-only"><caption>Pass@k 곡선 예시 데이터 (n=20, c=6, Chen et al. 2021 공식으로 계산)</caption><tr><th>k</th><th>Pass@k</th></tr><tr><td>1</td><td>0.30</td></tr><tr><td>5</td><td>0.87</td></tr><tr><td>10</td><td>0.99</td></tr><tr><td>20</td><td>1.00</td></tr></table>
+    <p class="muted" id="ptsNote"></p>
+  </div>
+
+  <h3>사고 길이를 어떻게 통제할까?</h3>
+  <p><span class="badge b-src">원본</span> 문제는 "모든 프롬프트가 똑같이 어렵지 않다"는 것입니다 — 쉬운 질문에도 무조건 길게 생각하면 낭비입니다. 슬라이드는 네 가지 통제 아이디어를 소개합니다.</p>
+  <div class="grid g2">
+    <div class="card soft"><h4>동적 예산 · 맥락 인지</h4><p><span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2412.18547" target="_blank" rel="noopener">Token-Budget-Aware LLM Reasoning(Han et al., 2024) ↗</a>은 문제 난이도에 따라 토큰 예산을 동적으로 추정·할당해, 성능 손실을 최소화하며 사고 토큰 비용을 줄입니다.</p></div>
+    <div class="card soft"><h4>예산 강제(Budget forcing)</h4><p><span class="badge b-ext">외부</span> <a href="https://arxiv.org/abs/2501.19393" target="_blank" rel="noopener">s1: Simple test-time scaling(Muennighoff et al., 2025) ↗</a>은 사고 과정을 강제로 끊거나, "Wait" 문구를 덧붙여 더 길게 이어가게 만드는 단순한 개입만으로 test-time scaling 효과를 얻습니다.</p></div>
+  </div>
+  <div class="callout syn"><div class="h"><span class="badge b-ext">외부</span> "연속(continuous)" 사고</div><a href="https://arxiv.org/abs/2412.06769" target="_blank" rel="noopener">Coconut(Hao et al., 2024) ↗</a>은 사고 과정을 사람이 읽는 텍스트 토큰이 아니라, 모델의 마지막 은닉 상태(hidden state)를 그대로 다음 입력으로 되먹이는 "연속 잠재공간 사고"를 제안합니다 — 단어로 디코딩하지 않으니 여러 후보 경로를 동시에 품을 수 있습니다.</div>
+</div></section>
+
+<section id="cascade"><div class="wrap reveal">
+  <span class="sec-no">06 — R1 recipe</span>
+  <h2>DeepSeek R1의 5단계 학습 레시피 <span class="en">Stitching it all together</span></h2>
+  <p class="lead">「해결 →」 버튼으로 진행하며, 각 단계가 이전 단계의 한계를 어떻게 풀어내는지 따라가 보겠습니다.</p>
+  <p><span class="badge b-src">원본</span> R1-Zero는 V3-Base(MoE, 총 671B 파라미터 중 토큰당 약 37B만 활성화)에 GRPO만 바로 적용한 <b>"개념 증명(proof of concept)"</b>이고, R1은 그 위에 여러 단계를 더 쌓은 <b>"전체 파이프라인(full pipeline)"</b>입니다.</p>
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">해결 →</button></div>
+
+  <h3>R1의 최종 성적표</h3>
+  <p><span class="badge b-src">원본</span> DeepSeek-R1 논문이 보고한 벤치마크 일부를 발췌했습니다 — RL 이전 모델(DeepSeek-V3)과 비교하면 추론이 필요한 과제일수록 격차가 큽니다.</p>
+  <div style="overflow-x:auto"><table class="bench">
+    <thead><tr><th>벤치마크 (지표)</th><th>DeepSeek-V3</th><th>OpenAI o1-1217</th><th>DeepSeek-R1</th></tr></thead>
+    <tbody>
+      <tr><td>AIME 2024 (Pass@1)</td><td>39.2</td><td>79.2</td><td>79.8</td></tr>
+      <tr><td>MATH-500 (Pass@1)</td><td>90.2</td><td>96.4</td><td>97.3</td></tr>
+      <tr><td>CNMO 2024 (Pass@1)</td><td>43.2</td><td>–</td><td>78.8</td></tr>
+      <tr><td>LiveCodeBench (Pass@1-COT)</td><td>36.2</td><td>63.4</td><td>65.9</td></tr>
+      <tr><td>Codeforces (백분위)</td><td>58.7</td><td>96.6</td><td>96.3</td></tr>
+      <tr><td>SWE-bench Verified (Resolved)</td><td>42.0</td><td>48.9</td><td>49.2</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section id="distill"><div class="wrap reveal">
+  <span class="sec-no">07 — Distillation</span>
+  <h2>증류: 큰 추론력을 작은 모델로 옮기기 <span class="en">And what about distillation?</span></h2>
+  <p class="lead">잘 푸는 선배의 풀이 과정을 그대로 베껴 배우는 후배를 떠올려 봅시다.</p>
+  <p>2강에서 배운 <b>지식 증류(Distillation)</b>는 교사 모델과 학생 모델의 <b>다음 토큰 확률분포</b>를 손실함수로 직접 맞추는 방식이었습니다(soft label 매칭). 이번 강의의 증류는 다릅니다 — <span class="badge b-src">원본</span> 목표가 <b>"추론 흔적(reasoning trace)을 SFT로 학습"</b>하는 것으로 바뀝니다: R1이 정해둔 문제들(targeted x)에 대해 응답 전체를 생성하면, 그 전체 응답 텍스트로 학생 모델(예: Qwen, Llama)을 지도 미세조정(SFT)합니다 — 확률분포를 맞추는 게 아니라, 통째로 된 "모범 답안"을 베껴 쓰게 하는 셈입니다.</p>
+
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> "잘한" 컴퓨트 사용</div>DeepSeek-R1 논문은 같은 32B 모델에 <b>① RL을 처음부터 직접 돌린 경우</b>(R1-Zero-Qwen-32B)와 <b>② 큰 모델(R1)의 추론 흔적으로 증류만 한 경우</b>(R1-Distill-Qwen-32B)를 비교합니다. 결과는 증류 쪽이 크게 앞섭니다 — 작은 모델을 직접 RL로 단련하는 것보다, <b>더 큰 모델이 이미 찾아낸 추론 패턴을 베껴 배우는 쪽</b>이 같은 컴퓨트로 더 나은 성능을 냅니다.</div>
+
+  <div style="overflow-x:auto"><table class="bench">
+    <thead><tr><th>모델</th><th>AIME 2024 (Pass@1)</th><th>MATH-500 (Pass@1)</th><th>GPQA Diamond (Pass@1)</th><th>LiveCodeBench (Pass@1)</th></tr></thead>
+    <tbody>
+      <tr><td>QwQ-32B-Preview <span class="muted">(참고용, 별도 모델)</span></td><td>50.0</td><td>90.6</td><td>54.5</td><td>41.9</td></tr>
+      <tr><td>DeepSeek-R1-Zero-Qwen-32B <span class="muted">(직접 RL)</span></td><td>47.0</td><td>91.6</td><td>55.0</td><td>40.2</td></tr>
+      <tr><td>DeepSeek-R1-Distill-Qwen-32B <span class="muted">(증류)</span></td><td><b>72.6</b></td><td><b>94.3</b></td><td><b>62.1</b></td><td><b>57.2</b></td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">모든 값은 pass@1 기준. 출처: DeepSeek-R1(DeepSeek-AI, 2025) 논문 결과표를 슬라이드가 발췌.</p>
+</div></section>
+
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">08 — Self-check</span>
+  <h2>자가 점검 <span class="en">Quick check</span></h2>
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 GRPO가 PPO와 가장 크게 다른 점은 무엇인가요?</div>
+    <button class="opt" data-correct="1">가치 모델(Value Model) 없이, 같은 그룹 내 여러 응답을 상대 비교해 advantage를 계산한다</button>
+    <button class="opt">정책 모델을 전혀 업데이트하지 않는다</button>
+    <button class="opt">확률비(ratio)를 클리핑하지 않는다</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 DeepSeek-R1을 Qwen/Llama 같은 작은 모델로 "증류"할 때 실제로 한 일은?</div>
+    <button class="opt" data-correct="1">R1이 생성한 추론 흔적(응답 전체)으로 작은 모델을 SFT시켜 추론 스타일을 모방하게 했다</button>
+    <button class="opt">R1과 작은 모델의 다음 토큰 확률분포를 KL로 직접 맞췄다(2강 방식과 동일)</button>
+    <button class="opt">작은 모델에 처음부터 GRPO만 적용해 추론력을 얻었다</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">09 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색…"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295(Fall 2025) 6강 슬라이드의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=슬라이드에서 직접 가져온 내용, <span class="badge b-ext">외부</span>=슬라이드가 인용한 논문 등 외부 자료(링크 첨부),
+   <span class="badge b-syn">종합·해석</span>=작성자의 비유·다이어그램 재구성·위젯 계산. 스케일링 위젯의 "샘플 수" 곡선은 Chen et al.(2021) 공식으로 <b>직접 재계산</b>했지만, "사고 길이" 곡선은 정확한 논문 수치가 아니라 여러 문헌이 공통으로 보고하는 경향을 형태로만 재구성한 예시(종합·해석)입니다. 가격·스크린샷 정보는 2025년 11월 초 시점 기준이며 이후 바뀌었을 수 있습니다. 벤치마크 표는 원 논문의 큰 표에서 일부 행만 발췌했습니다.</div>
+  <div>제작: Claude · 원저작권은 각 출처(Stanford CME 295, 각 인용 논문)에 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* tabs */
+const tabs=$$('#tabBar .tab');
+function selTab(t){const p=t.dataset.p;tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});$$('.tabpane').forEach(x=>x.classList.toggle('active',x.dataset.p===p));}
+tabs.forEach((t,i)=>{t.onclick=()=>selTab(t);t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};});
+
+/* GRPO calculator */
+const grpoIn=[0,1,2,3].map(i=>$('#r'+i));
+function grpoCalc(){
+  const rs=grpoIn.map(el=>+el.value);
+  rs.forEach((v,i)=>{$('#r'+i+'Lab').textContent=v.toFixed(2);});
+  const G=rs.length;
+  const mean=rs.reduce((a,b)=>a+b,0)/G;
+  const variance=rs.reduce((a,b)=>a+(b-mean)*(b-mean),0)/G;
+  const std=Math.sqrt(variance);
+  const advs=rs.map(r=>std<1e-6?0:(r-mean)/std);
+  const out=$('#grpoOut');
+  out.innerHTML=advs.map((a,i)=>`<div class="box"><div class="big" style="color:${a>1e-6?'var(--ok)':a<-1e-6?'var(--warn)':'var(--ink3)'}">${a>=0?'+':''}${a.toFixed(2)}</div><div class="muted">o${i+1} Â</div></div>`).join('');
+  const note=$('#grpoNote');
+  if(std<1e-6){
+    note.innerHTML=`<span class="badge b-syn">종합·해석</span> 그룹 평균 r̄=${mean.toFixed(2)}, 표준편차 σ=0.00 — <b>4개 응답이 모두 같은 보상</b>을 받으면 분모가 0이 되어 advantage가 정의되지 않습니다(구현에서는 보통 0으로 처리). "전원 정답" 또는 "전원 오답" 그룹에서는 정책이 배울 수 있는 학습 신호가 사라집니다.`;
+  } else {
+    const up=advs.filter(a=>a>1e-6).length, down=advs.filter(a=>a<-1e-6).length;
+    note.innerHTML=`<span class="badge b-syn">종합·해석</span> 그룹 평균 r̄=${mean.toFixed(2)}, 표준편차 σ=${std.toFixed(2)}. 평균보다 잘한 응답(${up}개)은 <b style="color:var(--ok)">양의 advantage</b>로 강화되고, 평균보다 못한 응답(${down}개)은 <b style="color:var(--warn)">음의 advantage</b>로 억제됩니다 — "잘함/못함"은 <b>같은 그룹 안에서의 상대적 위치</b>일 뿐, 절대적인 정답 여부가 아닙니다.`;
+  }
+}
+grpoIn.forEach(el=>el.addEventListener('input',grpoCalc));
+$('#grpoZeroBtn').onclick=()=>{grpoIn.forEach(el=>el.value=1);grpoCalc();};
+grpoCalc();
+
+/* test-time scaling canvas */
+const ptsCv=$('#ptsChart'),ptsCx=ptsCv.getContext('2d'),PW=ptsCv.width,PH=ptsCv.height,PPAD=50;
+const pcss=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+function passAtK(n,c,k){ if(n-c<k) return 1; let prod=1; for(let i=n-c+1;i<=n;i++){ prod*=(1-k/i); } return Math.max(0,1-prod); }
+let ptsMode='samples';
+function drawPts(){
+  ptsCx.clearRect(0,0,PW,PH);
+  ptsCx.strokeStyle=pcss('--line')||'#2a3047'; ptsCx.fillStyle=pcss('--ink3')||'#7f8aa6'; ptsCx.font='12px sans-serif';
+  for(let i=0;i<=4;i++){ const y=PPAD+(PH-2*PPAD)*i/4; ptsCx.beginPath(); ptsCx.moveTo(PPAD,y); ptsCx.lineTo(PW-12,y); ptsCx.stroke(); ptsCx.fillText((1-i/4).toFixed(2), 8, y+4); }
+  if(ptsMode==='samples'){
+    const n=+$('#nIn').value, c=Math.min(+$('#cIn').value,n);
+    ptsCx.strokeStyle=pcss('--gold')||'#fbbf24'; ptsCx.lineWidth=3; ptsCx.beginPath();
+    for(let k=1;k<=n;k++){ const x=Math.log(k)/Math.log(n); const X=PPAD+(PW-PPAD-12)*x; const y=passAtK(n,c,k); const Y=(PH-PPAD)-(PH-2*PPAD)*y; k===1?ptsCx.moveTo(X,Y):ptsCx.lineTo(X,Y); }
+    ptsCx.stroke();
+    $('#ptsNote').innerHTML=`<span class="badge b-ext">외부</span> Chen et al., 2021의 불편추정량 공식으로 <b>직접 재계산</b>한 곡선입니다: n=${n}회 중 c=${c}회가 정답일 때, Pass@1=${(passAtK(n,c,1)*100).toFixed(0)}%에서 시작해 k=${n}에서는 100%로 수렴합니다 — 같은 문제를 여러 번 풀게 하면(k↑) 적어도 한 번은 맞힐 확률이 늘어난다는, 데이터로 확인된 사실입니다.`;
+  } else {
+    const b=+$('#bIn').value;
+    ptsCx.strokeStyle=pcss('--syn')||'#2dd4bf'; ptsCx.lineWidth=3; ptsCx.beginPath();
+    for(let i=0;i<=100;i++){ const x=i/100; const budget=x*100; const acc=0.15+0.65*(1-Math.exp(-budget/22)); const X=PPAD+(PW-PPAD-12)*x; const Y=(PH-PPAD)-(PH-2*PPAD)*acc; i===0?ptsCx.moveTo(X,Y):ptsCx.lineTo(X,Y); }
+    ptsCx.stroke();
+    const curAcc=0.15+0.65*(1-Math.exp(-b/22));
+    ptsCx.fillStyle=pcss('--syn')||'#2dd4bf'; const curX=PPAD+(PW-PPAD-12)*(b/100); const curY=(PH-PPAD)-(PH-2*PPAD)*curAcc; ptsCx.beginPath(); ptsCx.arc(curX,curY,5,0,Math.PI*2); ptsCx.fill();
+    $('#ptsNote').innerHTML=`<span class="badge b-syn">종합·해석</span> 정확한 논문 수치가 아니라, <a href="https://arxiv.org/abs/2412.18547" target="_blank" rel="noopener">Token-Budget-Aware(Han et al., 2024)</a>·<a href="https://arxiv.org/abs/2501.19393" target="_blank" rel="noopener">s1(Muennighoff et al., 2025)</a>이 공통으로 보고하는 "생각을 늘릴수록 정확도가 오르다가 어느 지점부터 정체된다"는 경향을 형태로만 재구성했습니다. 현재 예산=${b} 지점의 예시 정확도는 ${(curAcc*100).toFixed(0)}%.`;
+  }
+}
+$$('#ptsCtrls button').forEach(b=>b.onclick=()=>{ $$('#ptsCtrls button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); ptsMode=b.dataset.c; $('#samplesInputs').style.display=ptsMode==='samples'?'flex':'none'; $('#budgetInputs').style.display=ptsMode==='budget'?'flex':'none'; drawPts(); });
+['nIn','cIn','bIn'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('input',()=>{ if(id==='nIn'){ $('#cIn').max=$('#nIn').value; if(+$('#cIn').value>+$('#nIn').value) $('#cIn').value=$('#nIn').value; } $('#nLab').textContent=$('#nIn').value; $('#cLab').textContent=$('#cIn').value; $('#bLab').textContent=$('#bIn').value; drawPts(); }); });
+window.onThemeChange=()=>drawPts();
+drawPts();
+
+/* cascade — DeepSeek R1 5-stage recipe */
+const CASC=[
+ {ic:'①',src:'원본',s:'1. R1-Zero',stage:'V3-Base → R1-Zero',title:'사전학습 모델에 GRPO만 바로 적용',
+  prob:'사전학습만 마친 V3-Base(MoE, 총 671B/활성 37B)는 문제에 답만 낼 뿐, 스스로 풀이 과정을 쓰지 않습니다.',
+  sol:'형식(&lt;think&gt;…&lt;/think&gt;) 보상 + 정확도 보상만으로 GRPO를 바로 돌려 <b>R1-Zero</b>를 만듭니다. SFT 데이터 없이도 추론 능력이 창발합니다.',
+  next:'하지만 R1-Zero의 사고 과정은 언어가 뒤섞이고 가독성이 떨어집니다 → 이를 고치는 <b>2. 콜드스타트 SFT</b>로'},
+ {ic:'②',src:'원본',s:'2. 콜드스타트 SFT',stage:'"소규모" SFT',title:'가독성 있는 사고 형식을 먼저 주입',
+  prob:'RL만으로 학습하면 추론 흔적의 형식이 어수선해 사람이 읽기 어렵습니다.',
+  sol:'R1-Zero가 만든 긴 사고 사슬을 사람이 다듬어 소량의 SFT 데이터로 V3-Base를 다시 지도학습합니다 — RL이 밟고 올라설 "깨끗한 출발점"을 마련합니다.',
+  next:'형식을 갖춘 모델에 다시 <b>3. 추론 중심 GRPO</b>를 적용해 정확도를 끌어올립니다 →'},
+ {ic:'③',src:'원본',s:'3. 추론 GRPO',stage:'R1-Zero와 거의 동일한 RL',title:'포맷+정확도 보상으로 다시 GRPO',
+  prob:'콜드스타트로 형식은 갖췄지만 아직 추론 정확도는 충분히 강화되지 않았습니다.',
+  sol:'R1-Zero와 거의 같은 RL 과정을 반복하되, 이번엔 형식이 정돈된 모델 위에서 진행해 가독성과 정확도를 동시에 높입니다.',
+  next:'이 단계의 체크포인트에서 대량의 SFT 데이터를 뽑아내는 <b>4. 대규모 SFT</b>로 이어집니다 →'},
+ {ic:'④',src:'원본',s:'4. 대규모 SFT',stage:'~80만 쌍',title:'거부 샘플링 + 범용 데이터로 폭을 넓히다',
+  prob:'지금까지는 수학·코드처럼 검증 가능한 문제에만 집중해, 일반적인 대화 능력이 약해질 위험이 있습니다.',
+  sol:'수학·코딩·논리 약 60만 쌍은 지금까지 모델 응답 중 규칙+V3 판정으로 <b>거부 샘플링(rejection sampling)</b>해 고르고, 일반 대화 약 20만 쌍은 V3의 기존 SFT 데이터를 재사용해 합칩니다.',
+  next:'이 확장된 데이터로 다시 학습한 모델에 마지막으로 <b>5. 최종 GRPO</b>를 적용합니다 →'},
+ {ic:'⑤',src:'원본',s:'5. 최종 GRPO',stage:'추론+비추론 데이터',title:'정확도 + 도움됨·무해함까지 더한 마지막 RL',
+  prob:'추론 능력은 갖췄지만, 사람이 실제로 선호하는 응답 스타일(도움이 되고 해롭지 않은)까지는 보장되지 않습니다.',
+  sol:'수학·코드·논리 문제는 형식+정확도 보상을, 일반 데이터는 V3의 RLHF 데이터를 재사용한 도움됨(helpfulness)+무해함(harmlessness) 보상을 더해 한 번 더 GRPO를 돌립니다.',
+  next:'5단계를 모두 마치면 <b>DeepSeek-R1</b>이 완성되고, 이를 Qwen/Llama로 옮기는 <b>지식 증류</b> 단계로 이어집니다 — 처음부터 다시 보기'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${esc(c.s)}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${esc(c.stage)} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${esc(c.title)}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 걸림돌인가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'해결 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답입니다! 위 설명을 다시 확인해 보세요.':'❌ 다시 생각해 보세요 — 초록색으로 표시된 것이 정답입니다.';});});
+
+/* glossary */
+const GLOSS=[
+ ['Reasoning','추론','문제를 실제로 풀어내는 능력. 정답을 맞히는 것을 넘어 중간 풀이 과정을 스스로 만들어내는 능력을 가리킵니다.'],
+ ['Chain-of-Thought (CoT)','사고 사슬','답을 내놓기 전에 중간 풀이 과정을 순차적으로 적어보게 하는 기법. Wei et al., 2022이 제안했습니다.'],
+ ['Reasoning model','추론 모델','답변 전에 긴 사고 과정을 스스로 생성하도록 훈련된 LLM. o1, DeepSeek-R1, Claude 확장 사고 등이 해당합니다.'],
+ ['Thinking tokens','사고 토큰','모델이 답변 전에 생성하는 중간 추론 텍스트. 과금 대상이지만 API 응답에는 요약만 노출되기도 합니다.'],
+ ['Verifiable reward','검증 가능한 보상','정답 여부를 규칙이나 코드 실행으로 자동 판정할 수 있는 보상. 사람 라벨러 없이도 RL을 대량으로 돌릴 수 있게 해줍니다.'],
+ ['PPO','근접 정책 최적화(Proximal Policy Optimization)','5강에서 다룬 RL 알고리즘. 보통 별도의 가치 모델(value model)로 절대적 기준선을 추정합니다.'],
+ ['GRPO','그룹 상대 정책 최적화(Group Relative Policy Optimization)','같은 질문에 대해 G개의 응답을 샘플링하고, 그룹 내 상대적 보상으로 advantage를 계산해 가치 모델 없이 정책을 업데이트하는 RL 알고리즘.'],
+ ['Advantage','어드밴티지','한 응답이 평균적인 응답보다 얼마나 더/덜 좋았는지 나타내는 값. GRPO에서는 그룹 평균 대비 표준화한 값입니다.'],
+ ['KL penalty','KL 페널티','정책이 기준 모델(reference model)에서 너무 멀어지지 않도록 억제하는 정규화 항.'],
+ ['Pass@k','패스앳케이','같은 문제에 k번 시도했을 때 적어도 한 번 정답을 맞힐 확률의 불편추정량. Chen et al., 2021이 정의했습니다.'],
+ ['Cons@k','합의율(Consensus@k)','k개의 샘플 중 다수결(majority voting) 답과 정답을 비교하는 지표.'],
+ ['Test-time scaling','테스트 시점 스케일링','재학습 없이, 추론(inference) 시점에 더 많은 연산(샘플 수↑ 또는 사고 길이↑)을 투입해 정확도를 높이는 전략.'],
+ ['Budget forcing','예산 강제','사고 과정을 강제로 끊거나 "Wait" 같은 문구로 더 이어가게 만들어 사고 길이를 직접 통제하는 기법.'],
+ ['Cold-start data','콜드스타트 데이터','RL을 시작하기 전, 가독성 있는 형식을 미리 가르치기 위한 소량의 SFT 데이터.'],
+ ['Rejection sampling','거부 샘플링','모델이 생성한 여러 응답 중 규칙이나 판정 모델을 통과한 것만 골라 SFT 데이터로 재사용하는 방법.'],
+ ['Length bias','길이 편향','GRPO의 토큰 평균 방식이 짧은 정답과 긴 오답을 동시에 선호하게 되는 부작용. DAPO·Dr. GRPO가 이를 보정합니다.'],
+ ['Distillation','지식 증류','크고 성능 좋은 모델(교사)의 출력을 작은 모델(학생)이 모방하도록 학습시키는 방법.'],
+ ['MoE','전문가 혼합(Mixture-of-Experts)','전체 파라미터 중 일부 "전문가"만 토큰마다 선택적으로 활성화하는 아키텍처. DeepSeek-V3는 총 671B 중 토큰당 약 37B만 활성화합니다.'],
+ ['Reward hacking','보상 해킹','모델이 보상 신호의 허점을 이용해, 실제 목표와 다른 방식으로 점수만 높이는 현상.'],
+ ['SFT','지도 미세조정(Supervised Fine-Tuning)','정답 예시를 모방해 학습하는 단계.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${esc(g[1])} <span class="en">${esc(g[0])}</span></div><div class="gd">${esc(g[2])}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>

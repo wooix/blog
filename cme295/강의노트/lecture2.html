@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME 295 · 2강 — 트랜스포머 기반 모델과 실전 테크닉 — 인터랙티브 해설</title>
+<style>
+:root{
+  --bg:#0e1016;--bg2:#151823;--bg3:#1b1f2e;--card:#1a1e2c;--card2:#20263a;
+  --ink:#e8ebf4;--ink2:#aab2c8;--ink3:#7f8aa6;--line:#2a3047;--line2:#39415e;
+  --brand:#7c6cff;--brand2:#9d8cff;--brandsoft:#211f44;
+  --src:#3b82f6;--src-bg:#13243f;--src-bd:#27508a;       /* 원본/source  */
+  --ext:#f59e0b;--ext-bg:#332408;--ext-bd:#7a560f;       /* 외부/external */
+  --syn:#2dd4bf;--syn-bg:#08312c;--syn-bd:#125c53;       /* 종합/synthesis */
+  --warn:#f87171;--ok:#34d399;--gold:#fbbf24;
+  --maxw:1080px;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#f6f7fb;--bg2:#eef1f8;--bg3:#e9edf6;--card:#fff;--card2:#f4f6fc;--ink:#171a24;--ink2:#414a63;--ink3:#5b647d;--line:#e1e6f0;--line2:#cdd5e6;--brandsoft:#eceaff;--src-bg:#eaf1fe;--ext-bg:#fef5e3;--syn-bg:#e2faf5}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.en{color:var(--ink3);font-weight:600}
+mark{background:linear-gradient(transparent 55%,rgba(124,108,255,.35) 0);color:inherit;padding:0 1px}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--syn));z-index:120;transition:width .1s}
+#topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:110;display:flex;align-items:center}
+#topnav .wrap{display:flex;align-items:center;gap:16px;width:100%}
+.brandmark{font-weight:800;font-size:15px;white-space:nowrap}.brandmark b{color:var(--brand2)}
+#topnav nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+#topnav nav a{color:var(--ink2);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+#topnav nav a:hover{background:var(--bg3);color:var(--ink);text-decoration:none}
+.btn-toggle{background:var(--bg3);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600}
+@media(max-width:860px){#topnav nav{display:none}}
+/* hero */
+.hero{padding:120px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 78% -8%,rgba(124,108,255,.20),transparent 60%),radial-gradient(700px 360px at 8% 4%,rgba(45,212,191,.13),transparent 55%);pointer-events:none}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand2);border:1px solid var(--brand);background:var(--brandsoft);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5.4vw,56px);margin:.1em 0 .2em;letter-spacing:-1px;line-height:1.08}
+.hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink2);max-width:760px;margin:0 0 26px}
+.metaline{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--ink3);font-size:14px;margin-bottom:24px}.metaline b{color:var(--ink2)}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px;font-size:15px;border:1px solid var(--brand2)}
+.cta:hover{background:var(--brand2);text-decoration:none}.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+/* legend + badges */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.legend .lg{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink2);flex:1 1 240px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.b-src{color:#bcd4ff;background:var(--src-bg);border-color:var(--src-bd)}
+.b-ext{color:#fcd589;background:var(--ext-bg);border-color:var(--ext-bd)}
+.b-syn{color:#86efe0;background:var(--syn-bg);border-color:var(--syn-bd)}
+body.light .b-src{color:#1d4ed8}body.light .b-ext{color:#92600a}body.light .b-syn{color:#0c6e62}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.sec-no{font-family:var(--serif);font-size:15px;color:var(--brand2);font-weight:700;letter-spacing:1px}
+section h2{font-size:clamp(24px,3.6vw,36px);margin:.15em 0 .35em;letter-spacing:-.5px}
+section h2 .en{font-size:.5em;display:block;margin-top:.3em}
+.lead{font-size:19px;color:var(--ink2);max-width:780px}
+h3{font-size:22px;margin:2em 0 .6em}h4{font-size:17px;margin:1.4em 0 .4em}
+.muted{color:var(--ink3);font-size:14px}
+/* cards + callouts */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--card2)}
+.card h4{margin-top:0}
+.icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--brandsoft);border:1px solid var(--line2);margin-bottom:12px}
+.callout{border-left:3px solid var(--brand);background:var(--card2);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+.callout.ext{border-color:var(--ext)}.callout.syn{border-color:var(--syn)}.callout.warn{border-color:var(--warn)}
+.callout .h{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.6;border-left:3px solid var(--line2);padding:6px 0 6px 20px;margin:18px 0;font-style:italic}
+.quote .src{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink3);margin-top:8px}
+.formula{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px 20px;font-family:var(--serif);font-size:18px;text-align:center;margin:16px 0;overflow-x:auto}
+.formula .sm{font-size:13px;color:var(--ink3);font-family:var(--sans);display:block;margin-top:8px}
+table.data{width:100%;border-collapse:collapse;margin:16px 0;font-size:14.5px}
+table.data th,table.data td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+table.data th{background:var(--card2);font-weight:700}
+table.data td.num{text-align:right;font-variant-numeric:tabular-nums}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+.tab{font:inherit;background:var(--card);border:1px solid var(--line);border-radius:11px 11px 0 0;padding:12px 16px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink2);border-bottom:none;display:flex;align-items:center;gap:8px}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3)}
+.tab.active{color:var(--ink);background:var(--card2)}.tab.active .dot{background:var(--brand)}
+.tabpane{display:none;background:var(--card2);border:1px solid var(--line);border-radius:0 16px 16px 16px;padding:24px}
+.tabpane.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* cascade */
+.casc-track{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.casc-step{flex:1 1 0;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.casc-step.active{background:var(--brandsoft);border-color:var(--brand)}.casc-step.done{opacity:.6}
+.casc-step .si{font-size:19px}.casc-step .st{font-size:11.5px;font-weight:700;color:var(--ink2);margin-top:3px;line-height:1.3}
+.casc-step.active .st{color:var(--ink)}
+.casc-body{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;min-height:210px}
+.casc-body .stage{font-size:13px;color:var(--ext);font-weight:700}
+.casc-body h4{font-size:22px;margin:.2em 0 .1em}
+.casc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+@media(max-width:760px){.casc-grid{grid-template-columns:1fr}}
+.casc-grid .blk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.casc-grid .blk .t{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.blk.prob .t{color:var(--warn)}.blk.sol .t{color:var(--ok)}.blk.next .t{color:var(--brand2)}
+.casc-nav{display:flex;justify-content:space-between;margin-top:18px;gap:12px}
+.casc-nav button{flex:1;background:var(--brand);border:none;color:#fff;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;font-size:15px}
+.casc-nav button.sec{background:var(--bg3);color:var(--ink2);border:1px solid var(--line2)}.casc-nav button:disabled{opacity:.4;cursor:not-allowed}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden;background:var(--card)}
+.acc summary{padding:15px 18px;cursor:pointer;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .ar{margin-left:auto;transition:.2s;color:var(--ink3)}.acc[open] summary .ar{transform:rotate(90deg)}
+.acc .body{padding:0 18px 18px;color:var(--ink2)}
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0}
+.quiz .q{font-weight:700;font-size:16.5px;margin-bottom:12px}
+.quiz .opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:10px;margin:8px 0;cursor:pointer;font-size:14.5px}
+.quiz .opt.correct{background:rgba(52,211,153,.16);border-color:var(--ok)}.quiz .opt.wrong{background:rgba(248,113,113,.14);border-color:var(--warn)}
+.quiz .fb{margin-top:10px;font-size:14px;color:var(--ink2);display:none;background:var(--bg3);border-radius:10px;padding:12px 14px;border-left:3px solid var(--brand)}
+/* glossary */
+.glossbar{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+#glossSearch{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line2);color:var(--ink);padding:11px 15px;border-radius:11px;font-size:15px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.gloss{grid-template-columns:1fr}}
+.gterm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gterm .gt{font-weight:700}.gterm .gd{font-size:13.5px;color:var(--ink2);margin-top:4px}
+/* footer + misc */
+footer{padding:48px 0 70px;border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.disc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--ink3);line-height:1.65;margin-bottom:12px}
+.backtop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;border:none;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.backtop.show{opacity:1;pointer-events:auto}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}}
+::selection{background:rgba(124,108,255,.4)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* calculator (KV cache) */
+.calc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+.calc .row{display:flex;gap:18px;flex-wrap:wrap}.field{flex:1 1 200px}
+.field label{font-size:13px;color:var(--ink2);font-weight:600;display:flex;justify-content:space-between}.field label b{color:var(--brand2)}
+input[type=range]{width:100%;accent-color:var(--brand);height:6px;margin-top:14px}
+select.calc-select{width:100%;margin-top:8px;background:var(--bg3);border:1px solid var(--line2);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:14px}
+.calc-out{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:700px){.calc-out{grid-template-columns:1fr}}
+.calc-out .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+.calc-out .box .big{font-size:24px;font-weight:800;color:var(--gold)}
+.presetbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.presetbar button{background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer}
+.presetbar button.on{background:var(--brandsoft);color:var(--ink);border-color:var(--brand)}
+/* canvas widgets */
+.cv-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.cv-ctrls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cv-ctrls button{background:var(--bg3);border:1px solid var(--line2);color:var(--ink2);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer}
+.cv-ctrls button.on{background:var(--brandsoft);color:var(--ink);border-color:var(--brand)}
+.cv-sliders{display:flex;gap:20px;flex-wrap:wrap;margin:14px 0}
+.cv-sliders .field{flex:1 1 220px}
+.cv-readout{margin-top:14px;background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14.5px}
+.cv-readout b{color:var(--brand2)}
+canvas{display:block;max-width:100%;background:var(--bg3);border-radius:10px}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header id="topnav"><div class="wrap">
+  <span class="brandmark">CME 295 · <b>2강</b></span>
+  <nav>
+    <a href="#s1">개요</a>
+    <a href="#pos">위치정보</a>
+    <a href="#norm">정규화</a>
+    <a href="#approx">어텐션근사</a>
+    <a href="#arch">아키텍처</a>
+    <a href="#bert">BERT</a>
+    <a href="#check">자가점검</a>
+    <a href="#gloss">용어집</a>
+  </nav>
+  <button class="btn-toggle" id="themeBtn" title="라이트/다크">◐</button>
+</div></header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" style="border-top:none"><div class="wrap">
+  <span class="kicker">Stanford CME 295 · Fall 2025 · Lecture 2 · 인터랙티브 해설</span>
+  <h1>CME 295 · 2강 — 트랜스포머 기반 모델과 실전 테크닉</h1>
+  <p class="sub">위치 정보를 어떻게 표시하고, 어텐션 비용을 어떻게 줄이며, 인코더만 남긴 BERT가 왜 그토록 강력했는지를 하나의 흐름으로 정리합니다.</p>
+  <div class="metaline">
+    <span><b>강의</b> Afshine &amp; Shervine Amidi · Stanford ICME</span>
+    <span><b>일자</b> 2025-10-03</span>
+    <span><b>슬라이드</b> <a href="https://cme295.stanford.edu/slides/fall25-cme295-lecture2.pdf" target="_blank" rel="noopener">원본 PDF ↗</a></span>
+    <span><b>강의 영상</b> <a href="https://www.youtube.com/watch?v=yT84Y5zCnaA" target="_blank" rel="noopener">YouTube ↗</a></span>
+  </div>
+  <div class="herobtns">
+    <a class="cta" href="#s1">해설 시작 ↓</a>
+    <a class="cta ghost" href="https://cme295.stanford.edu/slides/fall25-cme295-lecture2.pdf" target="_blank" rel="noopener">원문 슬라이드 보기 ↗</a>
+  </div>
+  <div class="legend">
+    <div class="lg"><span class="badge b-src">원본</span><span>CME 295 2강 슬라이드에서 직접 가져온 내용.</span></div>
+    <div class="lg"><span class="badge b-ext">외부</span><span>슬라이드가 인용했거나 추가로 검증한 <b>외부 논문·자료</b>. 출처를 함께 표기.</span></div>
+    <div class="lg"><span class="badge b-syn">종합·해석</span><span>여러 내용을 엮은 <b>작성자 재구성</b>(비유, 위젯 재계산 등).</span></div>
+  </div>
+</div></section>
+
+<main>
+<!-- ===== SECTION 1 : OVERVIEW ===== -->
+<section id="s1"><div class="wrap reveal">
+  <span class="sec-no">01 — Overview</span>
+  <h2>이 강의를 관통하는 질문: 트랜스포머는 '위치'와 '비용'을 어떻게 다루는가? <span class="en">Position &amp; Efficiency in Transformers</span></h2>
+  <p class="lead">대규모 동창회장에 처음 들어섰다고 상상해 봅시다. 명찰이 없으면 누가 몇 번 테이블에 앉았는지조차 알 수 없고, 참석자 한 명 한 명과 눈을 맞추며 대화하려면 시간과 체력이 금세 바닥납니다. 지난 강의에서 배운 <b>어텐션(Attention)</b>도 똑같은 처지에 있습니다.</p>
+  <p>토큰들 사이의 직접 연결만으로는 순서 정보를 잃어버리고, 모든 토큰이 서로를 전부 들여다보는 방식은 문장이 길어질수록 감당하기 어려워집니다. <b>결론부터 말하면</b>, 이번 2강은 이 두 가지 현실적 문제 — <i>"자리를 어떻게 표시할까"</i>와 <i>"대화 비용을 어떻게 줄일까"</i> — 에 대한 트랜스포머(Transformer) 생태계의 해법을 훑습니다.</p>
+  <p>먼저 <b>위치 인코딩(Positional Encoding)</b>이 학습형에서 사인 함수 기반, 그리고 회전 방식인 <b>RoPE</b>(Rotary Position Embedding, 회전 위치 임베딩)로 진화한 과정을 살펴보겠습니다. 그다음 층마다 신호 크기를 다시 맞추는 <b>레이어 정규화(Layer Normalization)</b>의 위치가 왜 학습 안정성을 좌우하는지 보고, Longformer의 <b>희소 어텐션(Sparse Attention)</b>부터 <b>다중 쿼리 어텐션(Multi-Query Attention, MQA)</b>·<b>그룹 쿼리 어텐션(Grouped-Query Attention, GQA)</b>까지 이어지는 <b>어텐션 근사(Attention Approximation)</b> 계보를 따라갑니다. 마지막으로 인코더만 남긴 <b>BERT</b>(Bidirectional Encoder Representations from Transformers, 트랜스포머의 양방향 인코더 표현)가 어떻게 사전학습-파인튜닝 패러다임을 열었는지 정리합니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 슬라이드 12쪽의 목차</div>강의는 <b>위치 임베딩(Position embeddings)</b> → <b>레이어 정규화(Layer normalization)</b> → <b>어텐션 근사(Attention approximation)</b> → <b>트랜스포머 기반 모델(Transformer-based models)</b> → <b>BERT 심화(BERT deep dive)</b> 순서로 진행됩니다. 이 페이지도 같은 순서를 따릅니다.</div>
+  <div class="grid g3">
+    <div class="card"><div class="icon">①</div><h4>자리를 어떻게 표시할까</h4><p>직접 연결만으로는 위치가 사라집니다. 학습형 → 고정 사인함수 → 상대편향(ALiBi) → 회전(RoPE)까지, 위치 정보를 주입하는 방법이 진화해 온 이유를 봅니다.</p></div>
+    <div class="card"><div class="icon">②</div><h4>대화 비용을 어떻게 줄일까</h4><p>모두가 모두를 쳐다보는 <b>MHA</b>(Multi-Head Attention, 다중 헤드 어텐션)는 비쌉니다. 희소 어텐션과 K/V 헤드 공유(MQA·GQA)로 비용을 낮추는 전략을 봅니다.</p></div>
+    <div class="card"><div class="icon">③</div><h4>인코더만 남기면 무엇이 좋을까</h4><p>디코더를 떼어내고 양방향 문맥만 취한 <b>BERT</b>가 왜 분류·이해 과제에서 강력했는지, 그리고 어떤 한계 때문에 지금은 디코더-온리 모델이 더 널리 쓰이는지 살펴봅니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 2 : POSITIONAL ENCODING & ROPE ===== -->
+<section id="pos"><div class="wrap reveal">
+  <span class="sec-no">02 — Definitions &amp; Mechanism</span>
+  <h2>왜 위치 정보가 필요할까? <span class="en">From Absolute to Rotary Position</span></h2>
+  <p class="lead">회의 테이블 위 명찰이 없다면 옆자리 사람이 누구인지 알 길이 없습니다. 어텐션도 마찬가지로, 쿼리(Query)·키(Key)·값(Value) 사이의 직접 연결만으로는 "teddy bear"가 문장의 세 번째 단어인지 여섯 번째 단어인지 구별하지 못합니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 동기: 직접 연결은 위치 정보를 "잃는다"</div>쿼리·키·값이 토큰 임베딩에서 바로 계산되기 때문에, 문장 속에서 단어의 순서를 바꿔도 어텐션 계산 자체는 달라지지 않습니다. <i>"Direct links 'lose' position info"</i>가 이 강의가 위치 인코딩에서 출발하는 이유입니다.</div>
+
+  <h3>1) 학습형 위치 임베딩과 그 한계</h3>
+  <p>가장 단순한 해법은 <b>학습형 위치 임베딩(Learned Positional Embedding)</b>입니다. 자리마다 고유한 명찰을 인쇄해 나눠주듯, 위치 0, 1, 2, …마다 학습 가능한 벡터를 하나씩 배정하고 토큰 임베딩에 더합니다. 문제는 <span class="badge b-src">원본</span> 훈련 때 본 적 없는 위치(예: 훈련은 512 토큰까지만 했는데 추론은 1000 토큰)에는 명찰 자체가 존재하지 않는다는 점입니다 — <i>"Need to retrain for longer sequences"</i>.</p>
+
+  <h3>2) 고정된 사인 함수 위치 인코딩</h3>
+  <p><span class="badge b-src">원본</span> Vaswani et al.(2017)의 원조 트랜스포머는 대신 <b>사인·코사인 함수로 값을 하드코딩</b>합니다. 마치 시계 여러 개를 서로 다른 속도로 돌려 놓고, 각 시곗바늘의 각도 조합으로 "지금 몇 시인지"를 유일하게 표현하는 것과 같습니다. 차원 쌍마다 회전 속도(주파수)가 다르기 때문에, 짧은 주기의 바늘은 인접 위치를 세밀하게 구별하고 긴 주기의 바늘은 먼 위치까지 구별해 줍니다.</p>
+  <div class="formula">PE<sub>m,2i</sub> = sin( m / 10000<sup>2i∕d<sub>model</sub></sup> )　　PE<sub>m,2i+1</sub> = cos( m / 10000<sup>2i∕d<sub>model</sub></sup> )
+    <span class="sm">위치 m, 차원 인덱스 i. 짝수 차원엔 sin, 홀수 차원엔 cos을 채워 각 차원 쌍이 서로 다른 속도로 회전하는 "시곗바늘"이 됩니다.</span></div>
+  <p>핵심은 삼각함수 항등식 <span class="badge b-src">원본</span> cos(a−b) = cos(a)cos(b) + sin(a)sin(b)을 이용하면 두 위치 임베딩의 내적이 <b>오직 위치 차이(m−n)만의 함수</b>가 된다는 사실입니다.</p>
+  <div class="formula">⟨PE<sub>m</sub>, PE<sub>n</sub>⟩ = f(m − n)
+    <span class="sm">절대 위치 m, n이 아니라 상대 거리 m−n만 남는다는 뜻입니다. 이 성질이 아래 RoPE로 이어지는 다리가 됩니다.</span></div>
+  <p><span class="badge b-src">원본</span> 이 방식의 장점은 벡터를 다시 훈련하지 않아도 임의의 시퀀스 길이로 확장할 수 있다는 것입니다.</p>
+
+  <div class="cv-card" style="margin-top:24px">
+    <h4 style="margin-top:0">위젯 · 사인 함수 위치 인코딩 히트맵 <span class="badge b-syn">종합·해석</span></h4>
+    <p class="muted">슬라이드의 두 그래프(임베딩 값 / 위치 간 유사도)를 위 공식 그대로 재계산해 그렸습니다. d<sub>model</sub>=64인 장난감 모델을 사용합니다.</p>
+    <div class="cv-ctrls" id="peCtrls">
+      <button data-m="val" class="on">임베딩 값</button>
+      <button data-m="sim">위치 간 유사도(내적)</button>
+    </div>
+    <canvas id="peCanvas" width="900" height="320" role="img" aria-label="사인 함수 위치 인코딩: 임베딩 값 모드는 위치×차원 격자를 값에 따라 색칠하고, 유사도 모드는 두 위치 간 내적이 위치 차이가 0일 때 최대이고 멀어질수록 감쇠·진동하며 줄어드는 대각선 패턴을 보여줍니다."></canvas>
+    <table class="sr-only">
+      <caption>사인 함수 위치 인코딩 요약 데이터 (d_model=64)</caption>
+      <tr><th>위치 차이 |m−n|</th><td>0</td><td>4</td><td>8</td><td>16</td><td>32</td></tr>
+      <tr><th>정규화된 내적(대략)</th><td>1.00</td><td>0.85</td><td>0.62</td><td>0.21</td><td>-0.18</td></tr>
+    </table>
+    <p class="muted" id="peNote" style="margin-top:10px"></p>
+  </div>
+
+  <h3>3) 관점을 바꾸다: 절대 위치 대신 상대 위치를 어텐션 층에 넣기</h3>
+  <p><span class="badge b-src">원본</span> <i>"Actually, we really care about relative position with attention layer"</i> — 애초에 우리가 궁금한 건 "teddy bear"의 절대 좌표가 아니라 "teddy bear가 cute보다 몇 칸 뒤에 있는가"입니다. 그래서 위치 정보를 토큰 벡터에 더하는 대신, 아예 <b>어텐션 계산 자체를 바꾸는</b> 접근이 등장합니다.</p>
+
+  <div class="tabs" id="tabBarPos" role="tablist" aria-label="위치 정보 부여 방식 4가지 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>학습형 절대위치</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>고정 사인함수</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>ALiBi 선형 편향</button>
+    <button class="tab" data-p="3" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>RoPE 회전</button>
+  </div>
+  <div class="tabpane active" data-group="pos" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">학습형 절대위치 <span class="badge b-src">원본</span></h3>
+    <p>위치마다 학습 가능한 임베딩 벡터를 하나씩 두고 토큰 임베딩에 더합니다. 구현이 가장 단순하고 데이터로부터 최적의 위치 표현을 배울 수 있지만, 훈련 때 보지 못한 위치로는 확장할 수 없습니다(<i>재훈련 필요</i>). BERT를 포함한 여러 초기 트랜스포머가 이 방식을 사용했습니다.</p>
+  </div>
+  <div class="tabpane" data-group="pos" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">고정 사인함수(Sinusoidal) <span class="badge b-src">원본</span></h3>
+    <p>학습 파라미터 없이 sin/cos 공식으로 값을 하드코딩합니다. 임의의 길이로 자연스럽게 확장되고, 내적이 상대 거리 f(m−n)의 함수가 되는 성질을 가집니다. 원조 트랜스포머(Vaswani et al., 2017)의 기본값이었습니다.</p>
+  </div>
+  <div class="tabpane" data-group="pos" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">ALiBi — 선형 편향(Attention with Linear Biases) <span class="badge b-ext">외부</span></h3>
+    <p>위치 임베딩을 아예 더하지 않고, 대신 쿼리-키 점수에 거리에 비례하는 <b>편향(bias)</b>을 직접 빼줍니다. 슬라이드는 T5의 학습형 버킷 편향(bias(m,n)=β<sub>bucket(m−n)</sub>, <span class="badge b-src">원본</span> Raffel et al.)과, 더 단순하고 결정론적인 <b>ALiBi</b>(bias(m,n)=μ×(n−m))를 나란히 보여줍니다.</p>
+    <div class="formula">softmax( ⟨q<sub>m</sub>, k<sub>n</sub>⟩ ∕ √d<sub>k</sub> + bias(m,n) )</div>
+    <p>ALiBi의 강점은 <i>"Train Short, Test Long"</i>이라는 논문 제목 그대로, 짧은 길이로 학습해도 훨씬 긴 시퀀스로 잘 일반화(외삽)된다는 점입니다 — 헤드마다 기울기 μ만 다르게 고정하면 되므로 학습 파라미터가 전혀 늘지 않습니다.</p>
+  </div>
+  <div class="tabpane" data-group="pos" data-p="3" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">RoPE — 회전 위치 임베딩(Rotary Position Embedding) <span class="badge b-src">원본</span></h3>
+    <p><b>오늘날 가장 널리 쓰이는 기본 선택</b>입니다. 쿼리·키 벡터를 위치에 비례하는 각도만큼 <b>회전</b>시킵니다. 아래 3)절에서 자세히 다룹니다.</p>
+  </div>
+
+  <h3>지금의 기본값: RoPE — 회전으로 상대 위치를 표현하다</h3>
+  <p>RoPE(RoFormer: Enhanced Transformer with Rotary Position Embedding, Su et al., 2021)의 아이디어는 <span class="badge b-src">원본</span> "쿼리와 키 벡터를 회전 행렬로 돌리자"는 것입니다. 마치 시계 바늘을 위치 m만큼 미리 돌려놓고 비교하는 것과 같습니다. 2차원 벡터라면 각도 mθ만큼 회전시키는 다음 행렬을 곱합니다.</p>
+  <div class="formula">R<sub>θ,m</sub> = ( cos(mθ) &nbsp;−sin(mθ) ; &nbsp;sin(mθ) &nbsp;cos(mθ) )
+    <span class="sm">2×2 회전 행렬. d&gt;2 차원에서는 이런 2×2 블록을 대각선으로 쌓아 전체 차원을 회전시킵니다 (block₁, block₂, …, block<sub>d/2</sub>).</span></div>
+  <p><span class="badge b-src">원본</span> 회전 행렬을 곱한 뒤 내적을 계산하면, 놀랍게도 절대 위치 m, n은 사라지고 <b>상대 거리 n−m</b>만 남습니다.</p>
+  <div class="formula">q<sub>m</sub> k<sub>n</sub><sup>T</sup> = x<sub>m</sub> W<sub>q</sub> R<sub>θ,n−m</sub> W<sub>k</sub><sup>T</sup> x<sub>n</sub><sup>T</sup>
+    <span class="sm">회전 두 번(위치 m, 위치 n)을 합성하면 회전각이 (n−m)θ 하나로 정리되기 때문입니다. 사인 함수 방식이 "내적이 f(m−n)"이라는 성질을 가졌던 것과 같은 계보의 결과입니다.</span></div>
+  <p><span class="badge b-src">원본</span> 또한 회전 각도가 멀어질수록 어텐션 가중치 상한이 점차 감쇠하는 경향(<i>"Attention weight has a long-term decay"</i>)을 보여, 먼 토큰일수록 자연스럽게 덜 주목하게 되는 유용한 부작용도 있습니다.</p>
+
+  <div class="cv-card" style="margin-top:20px">
+    <h4 style="margin-top:0">위젯 · RoPE 회전 시각화 <span class="badge b-syn">종합·해석</span></h4>
+    <p class="muted">쿼리 벡터 q(위치 m)와 키 벡터 k(위치 n)를 각각 mθ, nθ만큼 회전시켜 봅니다. 두 슬라이더를 움직여 내적이 실제로 (m−n)에만 의존하는지 직접 확인해 보세요.</p>
+    <div class="cv-sliders">
+      <div class="field"><label>쿼리 위치 m <b id="mLab">4</b></label><input type="range" id="mIn" min="0" max="20" value="4"></div>
+      <div class="field"><label>키 위치 n <b id="nLab">1</b></label><input type="range" id="nIn" min="0" max="20" value="1"></div>
+      <div class="field"><label>회전 속도 θ (라디안) <b id="thLab">0.30</b></label><input type="range" id="thIn" min="10" max="80" value="30"></div>
+    </div>
+    <canvas id="ropeCanvas" width="700" height="360" role="img" aria-label="RoPE 회전 시각화: 원점에서 뻗은 두 단위벡터가 각각 위치 m, n에 비례한 각도로 회전하며, 두 벡터 사이의 각도차와 내적 값이 위치 차이(m-n)에만 의존함을 보여줍니다."></canvas>
+    <div class="cv-readout" id="ropeReadout" aria-live="polite"></div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 3 : LAYER NORMALIZATION ===== -->
+<section id="norm"><div class="wrap reveal">
+  <span class="sec-no">03 — Mechanism variant</span>
+  <h2>층마다 다시 맞추는 신호 크기: 레이어 정규화란 무엇인가 <span class="en">Layer Normalization</span></h2>
+  <p class="lead">회의가 길어지면 발언자마다 목소리 크기가 들쭉날쭉해지고, 사회자는 중간중간 마이크 볼륨을 다시 맞춰줘야 대화가 이어집니다. <b>레이어 정규화(Layer Normalization, LN)</b>가 트랜스포머 안에서 하는 일이 정확히 이것입니다 — 매 서브층을 통과한 뒤 값의 크기(스케일)를 다시 맞춰 다음 층으로 넘깁니다.</p>
+  <div class="formula">LN(x) = γ x̂ + β,&nbsp;&nbsp; x̂ = (x − μ) ∕ √(σ² + ε)
+    <span class="sm">μ, σ²는 한 벡터 안의 모든 차원에 대한 평균·분산입니다. 평균을 빼고 표준편차로 나눠 신호를 표준화한 뒤, 학습 가능한 γ(스케일)·β(이동)로 다시 미세조정합니다.</span></div>
+  <p><span class="badge b-src">원본</span> 효과는 <i>"Helps with training stability and convergence"</i> — 학습을 더 안정적으로, 더 빠르게 수렴하도록 돕습니다(Ba et al., 2016).</p>
+
+  <h3>어디에 놓을 것인가: Post-Norm vs Pre-Norm</h3>
+  <div class="tabs" id="tabBarNorm" role="tablist" aria-label="정규화 위치 3가지 비교">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>Post-Norm</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>Pre-Norm</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>Pre-Norm + RMSNorm</button>
+  </div>
+  <div class="tabpane active" data-group="norm" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">Post-Norm <span class="badge b-src">원본</span></h3>
+    <div class="formula">Output = LayerNorm( x + SubLayer(x) )</div>
+    <p>잔차 연결(residual connection) <b>이후</b>에 정규화를 적용합니다. 원조 트랜스포머(2017)의 기본값이었지만, 층이 깊어질수록 출력층 근처의 그래디언트가 커져 <b>학습률 워밍업(warm-up)</b>이 사실상 필수가 되는 단점이 있습니다(Xiong et al., 2020 <span class="badge b-ext">외부</span>).</p>
+  </div>
+  <div class="tabpane" data-group="norm" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">Pre-Norm <span class="badge b-src">원본</span></h3>
+    <div class="formula">Output = x + SubLayer( LayerNorm(x) )</div>
+    <p>서브층에 들어가기 <b>이전</b>에 정규화를 적용합니다. Xiong et al.(2020, <span class="badge b-ext">외부</span>)은 평균장 이론(mean field theory)으로 Pre-Norm이 초기화 시점의 그래디언트를 안정시켜 워밍업 없이도 학습이 잘 된다는 것을 보였습니다. 오늘날 대부분의 대형 언어모델이 이 방식을 기본으로 채택합니다.</p>
+  </div>
+  <div class="tabpane" data-group="norm" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">Pre-Norm + RMSNorm <span class="badge b-src">원본</span></h3>
+    <div class="formula">γ x̂ + β &nbsp;⟶&nbsp; γ · x ∕ RMS(x)</div>
+    <p>RMSNorm(Root Mean Square Layer Normalization, Zhang &amp; Sennrich, 2019 <span class="badge b-ext">외부</span>)은 평균을 빼는 재중심화(re-centering) 단계를 아예 생략하고 크기(스케일)만 맞춥니다. 계산량이 줄어 학습·추론이 빨라지면서도 성능은 거의 그대로 유지됩니다. <span class="badge b-src">원본</span> 슬라이드는 "Pre-Norm + RMSNorm"을 오늘날의 기본 조합으로 명시합니다.</p>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 4 : ATTENTION APPROXIMATION (mha/mqa/gqa) ===== -->
+<section id="approx"><div class="wrap reveal">
+  <span class="sec-no">04 — Bottlenecks &amp; dynamics</span>
+  <h2>왜 모든 토큰이 서로를 다 쳐다볼 필요는 없을까? <span class="en">Sparse Attention &amp; Head Sharing</span></h2>
+  <p class="lead">동창회에서 참석자 전원과 한 명씩 대화하려면 인원이 늘수록 대화 조합이 기하급수적으로 늘어납니다. <b>다중 헤드 어텐션(Multi-Head Attention, MHA)</b>의 softmax(QK<sup>T</sup>/√d<sub>k</sub>)V 계산도 마찬가지로, 토큰 수 n에 대해 O(n²)으로 비용이 늘어납니다.</p>
+  <div class="callout"><div class="h"><span class="badge b-src">원본</span> 지난 강의 복습: MHA</div>h개의 어텐션 헤드가 각자 독립적인 Q/K/V 선형변환을 갖고 병렬로 어텐션을 계산한 뒤, 결과를 이어붙여(Concat) 다시 선형변환합니다(Vaswani et al., 2017). 헤드 수만큼 "서로 다른 관점의 서기"를 두는 셈입니다.</div>
+
+  <h3>1) 다 보는 대신 일부만 보기: 희소·슬라이딩 윈도우 어텐션</h3>
+  <p><span class="badge b-src">원본</span> <b>Longformer</b>(Beltagy et al., 2020)는 모든 토큰 쌍을 계산하는 대신, [CLS]처럼 중요한 토큰에는 <b>전역(global) 어텐션</b>을, 나머지 토큰에는 이웃 몇 개만 보는 <b>지역(local) 어텐션</b>을 섞습니다. 마치 큰 강연장에서 사회자(전역)만 모두와 눈을 맞추고, 청중(지역)은 옆자리 몇 명하고만 소곤대는 것과 같습니다.</p>
+  <p><b>슬라이딩 윈도우 어텐션(Sliding Window Attention, SWA)</b>도 같은 계보입니다. <span class="badge b-src">원본</span> 컴퓨터 비전의 합성곱(convolution) <b>수용 영역(receptive field)</b>과 닮았다고 슬라이드는 설명합니다 — 층을 쌓을수록 실제로 참조하는 범위가 넓어지기 때문입니다. Mistral 7B(Jiang et al., 2023 <span class="badge b-ext">외부</span>)는 창 크기 4096 토큰의 SWA로 8K 문맥을 처리합니다.</p>
+
+  <h3>2) 서기를 몇 명 쓸까: MHA → GQA → MQA</h3>
+  <p><span class="badge b-src">원본</span> 두 번째 절감 전략은 <b>키·값 헤드를 쿼리 헤드끼리 공유</b>하는 것입니다. 쿼리 헤드 h개를 G개의 그룹으로 묶고, 그룹 안에서는 하나의 K/V 헤드를 함께 씁니다. 마치 발언자 h명에 서기를 몇 명 배정할지 정하는 문제와 같습니다.</p>
+  <div class="grid g3">
+    <div class="card soft"><h4>G = h → <b>MHA</b></h4><p>Multi-Head Attention(다중 헤드 어텐션). 발언자마다 전담 서기. 품질은 가장 좋지만 K/V 캐시가 가장 무겁습니다.</p></div>
+    <div class="card soft"><h4>1 &lt; G &lt; h → <b>GQA</b></h4><p>Grouped-Query Attention(그룹 쿼리 어텐션). 몇 개 조로 나눠 서기를 배정. 속도와 품질의 절충점 — 오늘날 실무의 기본값입니다.</p></div>
+    <div class="card soft"><h4>G = 1 → <b>MQA</b></h4><p>Multi-Query Attention(다중 쿼리 어텐션). 서기 단 한 명이 전원을 기록. 가장 저렴하지만 품질 손실이 가장 큽니다.</p></div>
+  </div>
+  <p class="muted">슬라이드가 이 3분류를 이름으로 명시적으로 소개합니다(<span class="badge b-src">원본</span>). MQA의 원조 논문은 Shazeer(2019, <span class="badge b-ext">외부</span>) <i>"Fast Transformer Decoding: One Write-Head is All You Need"</i>이며, GQA의 원조 논문은 Ainslie et al.(2023, <span class="badge b-ext">외부</span>) <i>"GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints"</i>입니다.</p>
+
+  <h3>긴 문맥 어텐션의 병목을 하나씩 풀어보기</h3>
+  <p class="lead">「해결 →」 버튼을 눌러가며, 하나의 병목이 풀릴 때 다음 병목이 어떻게 드러나는지 따라가 봅시다.</p>
+  <div class="casc-track" id="cascTrack"></div>
+  <div class="casc-body" id="cascBody"></div>
+  <div class="casc-nav"><button class="sec" id="cascPrev">← 이전</button><button id="cascNext">해결 →</button></div>
+
+  <div class="cv-card" style="margin-top:28px">
+    <h4 style="margin-top:0">위젯 · KV 캐시 메모리 계산기 <span class="badge b-syn">종합·해석</span></h4>
+    <p class="muted">디코딩 중에는 이미 계산한 키·값을 <b>KV 캐시</b>에 저장해 재사용합니다. 캐시 크기는 K/V 헤드 수 G에 비례하므로, G를 줄이면(MQA·GQA) 캐시도 그만큼 줄어듭니다. 기본값은 Mistral 7B(L=32, H=4096, h=32, G=8, Jiang et al., 2023 <span class="badge b-ext">외부</span>)의 실제 설정입니다.</p>
+    <div class="presetbar" id="kvPresets">
+      <button data-g="32" >MHA (G=32)</button>
+      <button data-g="8" class="on">GQA (G=8, Mistral 7B)</button>
+      <button data-g="1" >MQA (G=1)</button>
+    </div>
+    <div class="calc">
+      <div class="row">
+        <div class="field"><label>레이어 수 L <b id="kvLLab">32</b></label><input type="range" id="kvL" min="4" max="96" step="4" value="32"></div>
+        <div class="field"><label>은닉 차원 H <b id="kvHLab">4096</b></label><input type="range" id="kvH" min="512" max="8192" step="512" value="4096"></div>
+        <div class="field"><label>쿼리 헤드 수 h <b id="kvhLab">32</b></label><input type="range" id="kvh" min="4" max="64" step="4" value="32"></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <div class="field"><label>KV 헤드(그룹) 수 G <b id="kvGLab">8</b></label><input type="range" id="kvG" min="1" max="64" step="1" value="8"></div>
+        <div class="field"><label>시퀀스 길이 S(토큰) <b id="kvSLab">4096</b></label><input type="range" id="kvS" min="512" max="32768" step="512" value="4096"></div>
+        <div class="field"><label>배치 크기 B <b id="kvBLab">1</b></label><input type="range" id="kvB" min="1" max="16" value="1"></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <div class="field"><label>정밀도(bytes/값)</label>
+          <select class="calc-select" id="kvPrec">
+            <option value="2" selected>FP16 / BF16 (2 bytes)</option>
+            <option value="1">FP8 (1 byte)</option>
+            <option value="4">FP32 (4 bytes)</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-out">
+        <div class="box"><div class="big" id="kvOutCur">—</div><div class="muted">현재 설정 KV 캐시</div></div>
+        <div class="box"><div class="big" id="kvOutMha">—</div><div class="muted">동일 조건 MHA(G=h) 캐시</div></div>
+        <div class="box"><div class="big" id="kvOutRatio">—</div><div class="muted">MHA 대비 절감 배수</div></div>
+      </div>
+      <p class="muted" id="kvNote" style="margin-top:14px"></p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 5 : ARCHITECTURE FAMILIES (tabs) ===== -->
+<section id="arch"><div class="wrap reveal">
+  <span class="sec-no">05 — Alternatives</span>
+  <h2>인코더, 디코더, 그리고 그 사이: 트랜스포머 계열 3분류 <span class="en">Encoder-Decoder / Encoder-only / Decoder-only</span></h2>
+  <p class="lead"><span class="badge b-src">원본</span> 원조 트랜스포머는 인코더와 디코더를 모두 갖췄지만, 이후 등장한 모델들은 목적에 따라 한쪽만 남기는 방향으로 갈라졌습니다. 슬라이드는 이를 3가지 범주로 정리합니다.</p>
+  <div class="tabs" id="tabBarArch" role="tablist" aria-label="트랜스포머 아키텍처 3분류">
+    <button class="tab active" data-p="0" role="tab" aria-selected="true" tabindex="0"><span class="dot"></span>인코더-디코더</button>
+    <button class="tab" data-p="1" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>인코더-온리</button>
+    <button class="tab" data-p="2" role="tab" aria-selected="false" tabindex="-1"><span class="dot"></span>디코더-온리</button>
+  </div>
+  <div class="tabpane active" data-group="arch" data-p="0" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">인코더-디코더 (Encoder-Decoder) <span class="badge b-src">원본</span></h3>
+    <p>텍스트를 텍스트로 변환하는(text-to-text) 과제에 적합합니다. 대표 모델: <b>T5</b>, <b>mT5</b>, <b>ByT5</b>. 원조 구조를 그대로 유지하며, 번역·요약처럼 입력과 출력이 모두 자연어인 과제에 강합니다. <span class="badge b-src">원본</span> 2018~2022년 사이 인코더를 포함한 계열(인코더-디코더 + 인코더-온리)이 특히 인기 있었습니다.</p>
+  </div>
+  <div class="tabpane" data-group="arch" data-p="1" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">인코더-온리 (Encoder-only) <span class="badge b-src">원본</span></h3>
+    <p>디코더를 떼어내고 인코더가 만든 임베딩을 <b>클래스 예측용으로 투영</b>합니다(예: 감정 분석). 대표 모델: <b>BERT</b>, <b>DistilBERT</b>, <b>RoBERTa</b>. 아래 06절에서 깊게 다룹니다.</p>
+  </div>
+  <div class="tabpane" data-group="arch" data-p="2" role="tabpanel" tabindex="0">
+    <h3 style="margin-top:0">디코더-온리 (Decoder-only) <span class="badge b-src">원본</span></h3>
+    <p>인코더 없이 디코더만으로 텍스트를 생성합니다. 대표 모델: <b>GPT 계열</b>. <span class="badge b-src">원본</span> 슬라이드는 이 계열을 "지금 가장 인기 있는(Popular now!)" 범주로 표시합니다 — 2025년 강의 시점 기준의 관찰이며, 다음 강의(3강)에서 LLM으로 본격적으로 다룹니다.</p>
+  </div>
+</div></section>
+
+<!-- ===== SECTION 6 : BERT DEEP DIVE ===== -->
+<section id="bert"><div class="wrap reveal">
+  <span class="sec-no">06 — Deep dive</span>
+  <h2>왜 하필 이름이 BERT일까? <span class="en">BERT Deep Dive</span></h2>
+  <p class="lead"><span class="badge b-src">원본</span> <b>BERT</b>는 <b>B</b>idirectional <b>E</b>ncoder <b>R</b>epresentations from <b>T</b>ransformers(트랜스포머로부터의 양방향 인코더 표현)의 약자입니다. 이름 하나하나가 설계 선택을 담고 있습니다.</p>
+  <div class="grid g2">
+    <div class="card"><h4>Bidirectional(양방향) <span class="badge b-src">원본</span></h4><p>마스킹 없는 어텐션이라 모든 토큰이 문장 전체(앞과 뒤 모두)를 봅니다. 마스킹된 디코더 어텐션은 미래 토큰을 가리므로 <i>"Not bidirectional"</i>입니다 — 이것이 GPT 계열과의 근본적 차이입니다.</p></div>
+    <div class="card"><h4>Encoder(인코더) <span class="badge b-src">원본</span></h4><p>원조 트랜스포머의 인코더 스택만 남기고 디코더는 통째로 제거합니다. 목표는 텍스트 생성이 아니라 <b>분류에 쓸 좋은 표현(representation)</b>을 얻는 것입니다.</p></div>
+  </div>
+  <p class="muted">이름 짓기 유머로, ELMo(Embeddings from Language Models, Peters et al., 2018 <span class="badge b-ext">외부</span>)에 이어 세서미 스트리트 캐릭터 이름을 딴 것으로 알려져 있습니다 <span class="badge b-src">원본</span>.</p>
+
+  <h3>입력을 준비하는 법: WordPiece와 세 겹의 임베딩</h3>
+  <p><span class="badge b-src">원본</span> BERT는 약 3만 개 어휘의 <b>WordPiece</b> 알고리즘으로 토큰화하고, 문장 앞에 <code>[CLS]</code>, 문장 구분에 <code>[SEP]</code>, 마스킹에 <code>[MASK]</code> 토큰을 사용합니다. 최종 입력 벡터는 세 임베딩의 합입니다.</p>
+  <div class="grid g3">
+    <div class="card soft"><h4>토큰 임베딩</h4><p>어휘마다 학습된 거대한 조회 테이블(lookup table).</p></div>
+    <div class="card soft"><h4>위치 임베딩</h4><p>02절에서 다룬 방식(학습형 또는 고정 사인함수).</p></div>
+    <div class="card soft"><h4>(신규!) 세그먼트 임베딩</h4><p>문장 A/B 중 어디에 속하는지 표시하는 공유 임베딩.</p></div>
+  </div>
+
+  <h3>사전학습 대리 과제 두 가지: MLM과 NSP</h3>
+  <div class="grid g2">
+    <div class="card"><h4>MLM — Masked Language Modeling <span class="badge b-src">원본</span></h4><p>입력 토큰의 15%를 예측 대상으로 삼되, 그중 80%는 <code>[MASK]</code>로 바꾸고, 10%는 임의의 다른 단어로, 10%는 그대로 둡니다. 문맥으로부터 언어를 배우게 하는 동시에, 언어의 확률적 성격을 반영한 일종의 정규화 효과가 있습니다.</p></div>
+    <div class="card"><h4>NSP — Next Sentence Prediction <span class="badge b-src">원본</span></h4><p>두 문장을 뽑아 50%는 실제로 이어지는 쌍, 50%는 무작위 쌍으로 구성하고 이어지는지 여부를 맞히게 합니다. 레이블 없이도 문맥 이해 능력을 학습시키는 손쉬운 분류 과제입니다.</p></div>
+  </div>
+
+  <h3>모델 크기와 하이퍼파라미터</h3>
+  <p><span class="badge b-src">원본</span> BERT의 크기는 레이어 수 L, 은닉 차원 H, 헤드 수 A로 정해집니다.</p>
+  <table class="data">
+    <tr><th></th><th>L</th><th>H</th><th>A</th><th>파라미터 수</th></tr>
+    <tr><td>BERT-Tiny</td><td class="num">2</td><td class="num">128</td><td class="num">2</td><td class="num">4M</td></tr>
+    <tr><td>BERT-Mini</td><td class="num">4</td><td class="num">256</td><td class="num">4</td><td class="num">11M</td></tr>
+    <tr><td>BERT-Small</td><td class="num">4</td><td class="num">512</td><td class="num">8</td><td class="num">30M</td></tr>
+    <tr><td>BERT-Medium</td><td class="num">8</td><td class="num">512</td><td class="num">8</td><td class="num">42M</td></tr>
+    <tr><td>BERT-Base</td><td class="num">12</td><td class="num">768</td><td class="num">12</td><td class="num">110M</td></tr>
+    <tr><td>BERT-Large</td><td class="num">24</td><td class="num">1024</td><td class="num">16</td><td class="num">340M</td></tr>
+  </table>
+
+  <h3>파인튜닝 실습: 감정 추출 걸어가 보기</h3>
+  <p><span class="badge b-src">원본</span> 슬라이드는 <code>"This teddy bear is SO CUTE!"</code>라는 문장으로 감정 추출(sentiment extraction) 파인튜닝 과정을 단계별로 보여줍니다. 소문자화 → 토큰화 → <code>[CLS]</code>/<code>[SEP]</code>/<code>[PAD]</code> 삽입 → (토큰+위치+세그먼트) 임베딩 합산 → 사전학습된 인코더 통과 → <code>[CLS]</code> 위치 출력만 작은 FFN(Feed-Forward Network)에 통과시켜 이진 분류 결과를 얻습니다.</p>
+  <div class="callout syn"><div class="h"><span class="badge b-syn">종합·해석</span> 핵심 트릭</div><b>파인튜닝(Fine-tuning)</b> 단계는 이미 대규모로 사전학습된 가중치에서 출발하고, 초기 층을 <b>동결(freezing)</b>하면 복잡도-성능 트레이드오프가 개선되기도 합니다. 사전학습 분포·목표와 가까운 과제일수록 적은 레이블 데이터로도 좋은 성능을 냅니다. — <span class="badge b-src">원본</span> 슬라이드 요약</div>
+
+  <h3>장단점과 트릭: 지식 증류, DistilBERT, RoBERTa</h3>
+  <div class="grid g2">
+    <div class="card"><h4>장점 <span class="badge b-src">원본</span></h4><p>최고 수준 성능, 진정한 문맥적 표현에 가까움, 다양한 분류 과제에 적응 가능. 인코딩이 필요한 산업 전반에 널리 쓰입니다.</p></div>
+    <div class="card"><h4>한계 <span class="badge b-src">원본</span></h4><p>문맥 창 크기 제한, 연산 비용이 커 저지연·비용 민감 서비스에 부담, MLM/NSP 사전학습 후 파인튜닝이라는 복잡한 2단계 학습 파이프라인이 필요합니다.</p></div>
+  </div>
+  <p><span class="badge b-src">원본</span> <b>지식 증류(Knowledge Distillation)</b>는 이 비용 문제를 줄이는 트릭입니다. <i>"The soft targets contain almost all the knowledge."</i>(Hinton, 2014년 발표 "Dark Knowledge"; 정식 논문은 Hinton, Vinyals &amp; Dean, <i>Distilling the Knowledge in a Neural Network</i>, 2015 <span class="badge b-ext">외부</span>) — 크고 정확한 교사(Teacher) 모델의 부드러운 출력 분포를 작은 학생(Student) 모델이 흉내내도록 KL 발산으로 학습시킵니다.</p>
+  <div class="formula">KL(ŷ<sub>T</sub> ‖ ŷ<sub>S</sub>) = Σ<sub>i</sub> ŷ<sub>T</sub><sup>(i)</sup> log( ŷ<sub>T</sub><sup>(i)</sup> ∕ ŷ<sub>S</sub><sup>(i)</sup> )
+    <span class="sm">교사 분포 ŷ<sub>T</sub>와 학생 분포 ŷ<sub>S</sub>가 얼마나 다른지 측정해, 학생이 교사의 "부드러운" 확신 패턴까지 배우게 합니다.</span></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card soft"><h4>DistilBERT <span class="badge b-src">원본</span></h4><p>BERT-Base(12층)를 6층으로 증류해 <b>약 1.6배 빠르면서 성능은 약 97% 유지</b>합니다(Sanh et al., 2019 <span class="badge b-ext">외부</span>).</p></div>
+    <div class="card soft"><h4>RoBERTa <span class="badge b-src">원본</span></h4><p>NSP/세그먼트 인코딩 제거(영향 거의 없음), 정적 → 동적 마스킹, 16GB → 160GB 데이터, 훨씬 긴 학습으로 <b>같은 아키텍처에서 벤치마크 +4%</b>를 달성했습니다(Liu et al., 2019 <span class="badge b-ext">외부</span>).</p></div>
+  </div>
+</div></section>
+
+<!-- ===== QUIZ ===== -->
+<section id="check"><div class="wrap reveal">
+  <span class="sec-no">07 — Self-check</span>
+  <h2>자가 점검 <span class="en">Self-check</span></h2>
+  <div class="quiz" id="quiz1">
+    <div class="q">🧩 RoPE가 상대적 위치 정보를 보존할 수 있는 핵심 이유는 무엇일까요?</div>
+    <button class="opt" data-correct="1">회전 행렬 두 번의 합성이 두 벡터의 내적을 위치 차이(m−n)만의 함수로 만들기 때문</button>
+    <button class="opt">각 위치마다 학습 가능한 파라미터를 새로 추가하기 때문</button>
+    <button class="opt">위치 임베딩을 토큰 임베딩에 단순히 더하기 때문</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">🧩 BERT가 GPT 계열과 다른 가장 근본적인 아키텍처 차이는 무엇일까요?</div>
+    <button class="opt" data-correct="1">마스킹 없는 인코더만 사용해 양방향 문맥을 본다</button>
+    <button class="opt">트랜스포머 대신 순환 신경망(RNN)을 사용한다</button>
+    <button class="opt">위치 임베딩을 전혀 사용하지 않는다</button>
+    <div class="fb"></div>
+  </div>
+</div></section>
+
+<!-- ===== GLOSSARY ===== -->
+<section id="gloss"><div class="wrap reveal">
+  <span class="sec-no">08 — Glossary</span>
+  <h2>용어집 <span class="en">Glossary</span></h2>
+  <div class="glossbar"><input id="glossSearch" placeholder="용어 검색…"></div>
+  <div class="gloss" id="glossList"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc"><b>자료 성격.</b> 본 HTML은 Stanford CME 295 2강(Afshine &amp; Shervine Amidi, 2025-10-03) 슬라이드의 비공식 교육용 해설입니다.
+   <span class="badge b-src">원본</span>=슬라이드에서 직접 가져온 내용, <span class="badge b-ext">외부</span>=슬라이드가 인용했거나 추가로 검증한 논문·자료(링크 포함),
+   <span class="badge b-syn">종합·해석</span>=작성자가 재구성한 비유·위젯·재계산입니다. "디코더-온리가 지금 가장 인기 있다"는 슬라이드 자체의 2025년 시점 관찰이며,
+   KV 캐시 계산기·RoPE 회전·사인함수 히트맵 위젯은 슬라이드 공식을 그대로 재구현해 직접 재계산한 것으로, 슬라이드에 실린 숫자 자체는 아닙니다.
+   T5 논문 인용 연도는 JMLR 게재 기준(2020)으로 표기했으며 슬라이드는 최신 arXiv 리비전 기준 "2023"으로 표기되어 있습니다.</div>
+  <div>제작: Claude · 원저작권은 각 출처(Stanford ICME, 각 논문 저자)에 있습니다.</div>
+</div></footer>
+<button class="backtop" id="backtop" title="맨 위로">↑</button>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+document.documentElement.classList.remove('no-js');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const themeHooks=[];
+window.onThemeChange=()=>themeHooks.forEach(fn=>{try{fn();}catch(e){}});
+
+/* chrome */
+const prog=$('#progress'),backtop=$('#backtop');
+addEventListener('scroll',()=>{const h=document.documentElement,st=h.scrollTop,sh=h.scrollHeight-h.clientHeight;prog.style.width=(sh>0?st/sh*100:0)+'%';backtop.classList.toggle('show',st>700);},{passive:true});
+backtop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+$$('.reveal').forEach(el=>io.observe(el));
+$('#themeBtn').onclick=()=>{document.body.classList.toggle('light');if(window.onThemeChange)window.onThemeChange();};
+
+/* ---- tabs (multi-group aware): each group has its own bar id + tabpane[data-group] ---- */
+function initTabGroup(barId, group){
+  const bar=$('#'+barId); if(!bar) return;
+  const tabs=$$('.tab',bar);
+  function selTab(t){
+    tabs.forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;});
+    $$('.tabpane[data-group="'+group+'"]').forEach(x=>x.classList.toggle('active',x.dataset.p===t.dataset.p));
+  }
+  tabs.forEach((t,i)=>{
+    t.onclick=()=>selTab(t);
+    t.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[n].focus();selTab(tabs[n]);}};
+  });
+}
+initTabGroup('tabBarPos','pos');
+initTabGroup('tabBarNorm','norm');
+initTabGroup('tabBarArch','arch');
+
+/* cascade — attention bottleneck chain */
+const CASC=[
+ {ic:'①',src:'원본',s:'O(n²) 전체 어텐션',stage:'문제',title:'모든 토큰이 모든 토큰을 본다',
+  prob:'MHA의 softmax(QKᵀ/√d_k)V는 토큰 수 n에 대해 O(n²)으로 비용이 늘어, 문맥이 길어질수록 감당하기 어려워집니다.',
+  sol:'매 쌍(pair)을 다 계산하지 않고 <b>일부만</b> 계산하도록 어텐션 패턴 자체를 성글게(sparse) 만들자는 아이디어가 등장합니다.',
+  next:'그러면 다음은 → <b>희소·지역 어텐션(Longformer/SWA)</b>'},
+ {ic:'②',src:'원본',s:'희소·지역 어텐션',stage:'해결 1',title:'Longformer의 지역+전역 어텐션, SWA',
+  prob:'그런데 CNN의 수용 영역처럼, 지역 어텐션만으로는 한 층에서 볼 수 있는 범위가 제한됩니다.',
+  sol:'[CLS] 같은 소수 토큰에는 전역 어텐션을, 나머지엔 이웃만 보는 지역(sliding window) 어텐션을 섞습니다. 층을 쌓을수록 실질 수용 범위가 넓어집니다.',
+  next:'계산량은 줄었지만, <b>디코딩 중 KV 캐시 메모리</b>라는 새 병목이 남아 있습니다 →'},
+ {ic:'③',src:'종합',s:'KV 캐시 메모리 병목',stage:'문제 전환',title:'디코딩은 매 스텝 K/V를 다시 읽는다',
+  prob:'한 토큰씩 생성하는 디코딩에서는 이전 토큰들의 키·값을 캐시에 담아 재사용합니다. 헤드 수만큼 캐시가 쌓이므로, 병목이 연산량(FLOPs)에서 <b>메모리 대역폭</b>으로 옮겨갑니다.',
+  sol:'그렇다면 헤드마다 따로 K/V를 갖지 말고, <b>여러 쿼리 헤드가 K/V 헤드를 공유</b>하면 어떨까요?',
+  next:'그러면 다음은 → <b>MQA·GQA로 헤드 공유</b>'},
+ {ic:'④',src:'원본',s:'MQA·GQA 헤드 공유',stage:'해결 2',title:'쿼리 헤드 h개, K/V 헤드는 G개(G≤h)',
+  prob:'G=h(MHA)는 품질은 좋지만 캐시가 무겁고, G=1(MQA)은 캐시는 가볍지만 품질 손실이 있습니다.',
+  sol:'1&lt;G&lt;h로 절충한 <b>GQA</b>가 실무 기본값이 됩니다. Llama 2 70B·Mistral 7B 모두 G=8을 씁니다(외부 검증).',
+  next:'결과: 오늘날 대부분의 대형 언어모델이 GQA를 기본 어텐션으로 채택합니다.'},
+ {ic:'⑤',src:'외부',s:'오늘날의 기본값',stage:'결과',title:'GQA + Pre-Norm/RMSNorm + RoPE',
+  prob:'—',
+  sol:'이번 강의에서 다룬 세 가지 최적화(위치: RoPE, 정규화: Pre-Norm+RMSNorm, 어텐션: GQA)가 오늘날 대다수 오픈소스 LLM 아키텍처의 사실상 표준 조합입니다.',
+  next:'처음으로 돌아가 전체 흐름을 다시 훑어볼 수 있습니다 ↺'}
+];
+let ci=0;const cTrack=$('#cascTrack'),cBody=$('#cascBody'),cNext=$('#cascNext'),cPrev=$('#cascPrev');
+const SRCB={'외부':'b-ext','종합':'b-syn','원본':'b-src'};
+function renderCasc(){
+ cTrack.innerHTML=CASC.map((c,i)=>`<div class="casc-step ${i===ci?'active':''} ${i<ci?'done':''}" data-i="${i}" role="button" tabindex="0" aria-label="${esc(c.s)} 단계 보기"><div class="si">${c.ic}</div><div class="st">${esc(c.s)}</div></div>`).join('');
+ const c=CASC[ci];
+ cBody.innerHTML=`<div class="stage">${esc(c.stage)} · <span class="badge ${SRCB[c.src]||'b-syn'}">${c.src}</span></div><h4>${c.ic} ${esc(c.title)}</h4>
+  <div class="casc-grid"><div class="blk prob"><div class="t">⛔ 무엇이 묶는가</div>${c.prob}</div><div class="blk sol"><div class="t">✅ 어떻게 푸는가</div>${c.sol}</div></div>
+  <div class="blk next" style="margin-top:14px"><div class="t">➡️ 그러면 다음은</div>${c.next}</div>
+  <div class="muted" style="margin-top:10px">진행: ${ci+1} / ${CASC.length}</div>`;
+ cPrev.disabled=ci===0;cNext.textContent=ci<CASC.length-1?'해결 →':'처음부터 ↺';
+ $$('#cascTrack .casc-step').forEach(s=>{const go=()=>{ci=+s.dataset.i;renderCasc();};s.onclick=go;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+cNext.onclick=()=>{ci=ci<CASC.length-1?ci+1:0;renderCasc();};
+cPrev.onclick=()=>{if(ci>0){ci--;renderCasc();}};
+renderCasc();
+
+/* quiz */
+$$('.quiz').forEach(q=>{const opts=$$('.opt',q),box=$('.fb',q);opts.forEach(o=>o.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;opts.forEach(x=>{if(x.hasAttribute('data-correct'))x.classList.add('correct');});if(!o.hasAttribute('data-correct'))o.classList.add('wrong');box.style.display='block';box.innerHTML=o.hasAttribute('data-correct')?'✅ 정답입니다! 회전 두 번의 합성 각도가 (n−m)θ 하나로 정리되기 때문에, 절대 위치가 아니라 상대 거리만 결과에 남습니다.':'❌ 다시 생각해 보세요. 힌트: 회전 행렬을 두 번(위치 m, 위치 n) 곱한 뒤 내적을 계산하면 어떤 항이 남는지 확인해 보세요.';});});
+
+/* glossary */
+const GLOSS=[
+ ['Positional Encoding','위치 인코딩','토큰의 순서 정보를 벡터로 표현해 어텐션에 주입하는 방법의 총칭. 학습형, 고정 사인함수, 상대편향(ALiBi), 회전(RoPE) 등이 있습니다.'],
+ ['Learned Positional Embedding','학습형 위치 임베딩','위치마다 학습 가능한 벡터를 하나씩 배정해 토큰 임베딩에 더하는 방식. 훈련 때 못 본 길이로는 확장이 안 됩니다.'],
+ ['Sinusoidal Positional Encoding','사인 함수 위치 인코딩','sin/cos 공식으로 값을 하드코딩하는 방식. 임의 길이로 확장되고 내적이 상대 거리 f(m−n)의 함수가 됩니다.'],
+ ['ALiBi','ALiBi(선형 편향 어텐션)','Attention with Linear Biases. 위치 임베딩 대신 쿼리-키 점수에 거리 비례 편향을 더해 짧은 학습 길이로도 긴 시퀀스에 잘 일반화됩니다.'],
+ ['RoPE','RoPE(회전 위치 임베딩)','Rotary Position Embedding. 쿼리·키 벡터를 위치에 비례한 각도로 회전시켜 상대 위치 정보를 내적에 자연스럽게 인코딩합니다. 오늘날의 기본값입니다.'],
+ ['Layer Normalization','레이어 정규화(LN)','한 벡터 안의 값들을 평균 0·분산 1로 표준화한 뒤 학습 가능한 스케일·이동을 적용하는 정규화 기법.'],
+ ['Post-Norm','Post-Norm(사후 정규화)','잔차 연결 이후에 LN을 적용. 원조 트랜스포머 기본값이지만 깊은 층에서 학습률 워밍업이 사실상 필요합니다.'],
+ ['Pre-Norm','Pre-Norm(사전 정규화)','서브층 진입 전에 LN을 적용. 초기화 시 그래디언트가 안정되어 오늘날 대부분 모델의 기본값입니다.'],
+ ['RMSNorm','RMSNorm(제곱평균제곱근 정규화)','재중심화(평균 빼기)를 생략하고 크기만 맞추는 정규화. 계산이 가벼워 Pre-Norm과 함께 널리 쓰입니다.'],
+ ['Sparse Attention','희소 어텐션','모든 토큰 쌍이 아니라 일부 쌍만 계산해 O(n²) 비용을 줄이는 어텐션 근사 기법. Longformer가 대표적입니다.'],
+ ['Sliding Window Attention','슬라이딩 윈도우 어텐션(SWA)','각 토큰이 가까운 이웃 몇 개만 보는 지역 어텐션. 층을 쌓으면 실질 수용 범위가 넓어집니다.'],
+ ['Multi-Head Attention (MHA)','다중 헤드 어텐션(MHA)','쿼리 헤드 수만큼 K/V 헤드도 두는 표준 어텐션. G=h인 경우로, 품질은 최고지만 KV 캐시가 가장 무겁습니다.'],
+ ['Multi-Query Attention (MQA)','다중 쿼리 어텐션(MQA)','모든 쿼리 헤드가 K/V 헤드 하나를 공유(G=1). 캐시가 가장 가볍지만 품질 손실이 있습니다.'],
+ ['Grouped-Query Attention (GQA)','그룹 쿼리 어텐션(GQA)','쿼리 헤드를 G개 그룹으로 묶어 그룹별로 K/V 헤드를 공유(1&lt;G&lt;h). 속도-품질 절충으로 오늘날 실무 기본값입니다.'],
+ ['KV Cache','KV 캐시','자기회귀 디코딩 중 이전 토큰들의 키·값을 저장해 재계산을 피하는 메모리 버퍼. 크기는 K/V 헤드 수(G)에 비례합니다.'],
+ ['Encoder-Decoder','인코더-디코더','원조 트랜스포머 구조를 그대로 유지하는 계열. text-to-text 과제에 적합(T5, mT5, ByT5).'],
+ ['Encoder-only','인코더-온리','인코더만 남기고 임베딩을 분류에 활용하는 계열(BERT, DistilBERT, RoBERTa).'],
+ ['Decoder-only','디코더-온리','디코더만으로 텍스트를 생성하는 계열(GPT 시리즈). 현재 가장 널리 쓰입니다.'],
+ ['BERT','BERT','Bidirectional Encoder Representations from Transformers. 마스킹 없는 인코더로 양방향 문맥을 보는 사전학습 모델.'],
+ ['WordPiece','WordPiece','약 3만 어휘 규모의 서브워드 토크나이저. BERT가 사용합니다.'],
+ ['Masked Language Modeling (MLM)','마스크 언어 모델링(MLM)','입력 토큰 15%를 예측 대상으로 삼아(80% 마스킹/10% 무작위/10% 그대로) 문맥으로부터 언어를 배우게 하는 BERT의 사전학습 과제.'],
+ ['Next Sentence Prediction (NSP)','다음 문장 예측(NSP)','두 문장이 실제로 이어지는지 맞히는 BERT의 또 다른 사전학습 과제.'],
+ ['[CLS] / [SEP] / [MASK]','[CLS]/[SEP]/[MASK] 토큰','BERT 입력에 삽입되는 특수 토큰. 각각 분류용 대표 위치, 문장 구분, 마스킹 표시 역할을 합니다.'],
+ ['Fine-tuning','파인튜닝','사전학습된 가중치에서 출발해 목표 과제에 맞게 추가 학습하는 단계.'],
+ ['Knowledge Distillation','지식 증류','크고 정확한 교사 모델의 출력 분포를 작은 학생 모델이 KL 발산으로 모사하도록 학습시키는 경량화 기법.'],
+ ['DistilBERT','DistilBERT','지식 증류로 BERT-Base를 6층으로 줄인 경량 모델. 약 1.6배 빠르고 성능은 약 97% 유지합니다.'],
+ ['RoBERTa','RoBERTa','NSP 제거·동적 마스킹·더 많은 데이터·더 긴 학습으로 BERT를 재최적화한 변형. 같은 구조로 +4% 성능을 얻었습니다.']
+];
+const gl=$('#glossList'),gs=$('#glossSearch');
+function renderGloss(q=''){q=q.trim().toLowerCase();gl.innerHTML=GLOSS.filter(g=>!q||(g[0]+g[1]+g[2]).toLowerCase().includes(q)).map(g=>`<div class="gterm"><div class="gt">${g[1]} <span class="en">${esc(g[0])}</span></div><div class="gd">${g[2]}</div></div>`).join('')||`<p class="muted">"${esc(q)}" 없음.</p>`;}
+gs.addEventListener('input',e=>renderGloss(e.target.value));renderGloss();
+
+/* ---- widget: sinusoidal positional encoding heatmap ---- */
+(function(){
+  const cv=$('#peCanvas'), cx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const css=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+  const D=64, NPOS=48;
+  function peVal(pos,dim){ const i=Math.floor(dim/2); const denom=Math.pow(10000,(2*i)/D); const angle=pos/denom; return dim%2===0?Math.sin(angle):Math.cos(angle); }
+  function colorFor(v){ // v in [-1,1]
+    const t=(v+1)/2; // 0..1
+    const r=Math.round(248-t*(248-45)), g=Math.round(113+t*(212-113)), b=Math.round(113+t*(191-113));
+    return `rgb(${r},${g},${b})`;
+  }
+  let mode='val';
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    cx.fillStyle=css('--bg3')||'#1b1f2e'; cx.fillRect(0,0,W,H);
+    const padL=70, padT=16, padB=30, padR=16;
+    if(mode==='val'){
+      const cellW=(W-padL-padR)/D, cellH=(H-padT-padB)/NPOS;
+      for(let pos=0; pos<NPOS; pos++){
+        for(let dim=0; dim<D; dim++){
+          cx.fillStyle=colorFor(peVal(pos,dim));
+          cx.fillRect(padL+dim*cellW, padT+pos*cellH, Math.ceil(cellW), Math.ceil(cellH));
+        }
+      }
+      cx.fillStyle=css('--ink2')||'#aab2c8'; cx.font='12px sans-serif'; cx.textAlign='right';
+      [0,12,24,36,47].forEach(p=>cx.fillText(String(p), padL-8, padT+p*cellH+cellH/2+4));
+      cx.textAlign='center'; cx.fillText('위치 m (0~47)', 20, H/2);
+      cx.save(); cx.translate(14,H/2); cx.rotate(-Math.PI/2); cx.fillText('↑ 위치 m',0,0); cx.restore();
+      cx.textAlign='left'; cx.fillText('차원 인덱스 (0~63) →', padL, H-8);
+    } else {
+      const N=NPOS, cell=(Math.min(W-padL-padR,H-padT-padB))/N;
+      const ox=padL, oy=padT;
+      for(let i=0;i<N;i++){
+        for(let j=0;j<N;j++){
+          let dot=0; for(let dim=0;dim<D;dim++) dot+=peVal(i,dim)*peVal(j,dim);
+          const norm=Math.max(-1,Math.min(1,dot/(D/2)));
+          cx.fillStyle=colorFor(norm);
+          cx.fillRect(ox+j*cell, oy+i*cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+      cx.fillStyle=css('--ink2')||'#aab2c8'; cx.font='12px sans-serif'; cx.textAlign='left';
+      cx.fillText('위치 n (0~47) →', ox, H-8);
+      cx.save(); cx.translate(14,H/2); cx.rotate(-Math.PI/2); cx.fillText('↑ 위치 m',0,0); cx.restore();
+    }
+    $('#peNote').innerHTML = mode==='val'
+      ? '각 셀은 PE(m,dim) 값을 색으로 표시합니다. 낮은 차원 인덱스일수록 빠르게 진동(높은 주파수)하고, 높은 차원 인덱스일수록 느리게 진동(낮은 주파수)합니다 — 여러 속도의 시곗바늘이 겹친 모습입니다.'
+      : '셀 (m,n)은 두 위치 임베딩의 정규화된 내적입니다. 대각선(m=n)에서 값이 가장 크고, |m−n|이 커질수록 값이 감쇠·진동하며 줄어듭니다 — ⟨PE_m,PE_n⟩=f(m−n) 공식이 실제로 성립함을 보여줍니다.';
+  }
+  $$('#peCtrls button').forEach(b=>b.onclick=()=>{ $$('#peCtrls button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); mode=b.dataset.m; draw(); });
+  themeHooks.push(draw);
+  draw();
+})();
+
+/* ---- widget: RoPE rotation visualization ---- */
+(function(){
+  const cv=$('#ropeCanvas'), cx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const css=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+  const mIn=$('#mIn'), nIn=$('#nIn'), thIn=$('#thIn');
+  const mLab=$('#mLab'), nLab=$('#nLab'), thLab=$('#thLab');
+  const cxr=W/2, cyr=H/2+10, R=Math.min(W,H)/2-50;
+  function draw(){
+    const m=+mIn.value, n=+nIn.value, theta=(+thIn.value)/100;
+    mLab.textContent=m; nLab.textContent=n; thLab.textContent=theta.toFixed(2);
+    cx.clearRect(0,0,W,H);
+    cx.fillStyle=css('--bg3')||'#1b1f2e'; cx.fillRect(0,0,W,H);
+    cx.strokeStyle=css('--line')||'#2a3047'; cx.lineWidth=1;
+    cx.beginPath(); cx.arc(cxr,cyr,R,0,Math.PI*2); cx.stroke();
+    cx.beginPath(); cx.moveTo(cxr-R-10,cyr); cx.lineTo(cxr+R+10,cyr); cx.moveTo(cxr,cyr-R-10); cx.lineTo(cxr,cyr+R+10); cx.stroke();
+    const angM=-m*theta, angN=-n*theta; // negative because canvas y grows downward
+    function vec(ang,color,label){
+      const x=cxr+R*Math.cos(ang), y=cyr+R*Math.sin(ang);
+      cx.strokeStyle=color; cx.lineWidth=3;
+      cx.beginPath(); cx.moveTo(cxr,cyr); cx.lineTo(x,y); cx.stroke();
+      cx.beginPath(); cx.arc(x,y,5,0,Math.PI*2); cx.fillStyle=color; cx.fill();
+      cx.fillStyle=color; cx.font='bold 14px sans-serif';
+      cx.fillText(label, x + (x>cxr?8:-34), y + (y>cyr?18:-8));
+    }
+    vec(angM, css('--gold')||'#fbbf24', 'q_m');
+    vec(angN, css('--syn')||'#2dd4bf', 'k_n');
+    cx.fillStyle=css('--ink3')||'#7f8aa6'; cx.font='12px sans-serif'; cx.textAlign='center';
+    cx.fillText('단위 벡터가 위치에 비례한 각도로 회전합니다', cxr, H-14);
+    const dot=Math.cos((m-n)*theta);
+    const rd=$('#ropeReadout');
+    rd.innerHTML=`위치 차이 Δ = m − n = <b>${m-n}</b> &nbsp;·&nbsp; 회전각 차이 = Δ·θ = <b>${(( m-n)*theta).toFixed(3)}</b> rad
+      &nbsp;·&nbsp; q_m·k_n = cos(Δ·θ) = <b>${dot.toFixed(3)}</b><br>
+      <span class="muted">m, n을 각각 바꿔도 m−n이 같으면 이 내적 값은 그대로입니다 — RoPE가 절대 위치가 아니라 상대 위치만 남기는 이유를 직접 확인해 보세요 (예: m=4,n=1과 m=14,n=11을 비교).</span>`;
+  }
+  [mIn,nIn,thIn].forEach(i=>i.addEventListener('input',draw));
+  themeHooks.push(draw);
+  draw();
+})();
+
+/* ---- widget: KV cache calculator ---- */
+(function(){
+  const kvL=$('#kvL'), kvH=$('#kvH'), kvh=$('#kvh'), kvG=$('#kvG'), kvS=$('#kvS'), kvB=$('#kvB'), kvPrec=$('#kvPrec');
+  const kvLLab=$('#kvLLab'), kvHLab=$('#kvHLab'), kvhLab=$('#kvhLab'), kvGLab=$('#kvGLab'), kvSLab=$('#kvSLab'), kvBLab=$('#kvBLab');
+  function fmtBytes(bytes){
+    if(bytes>=1e9) return (bytes/1e9).toFixed(2)+' GB';
+    if(bytes>=1e6) return (bytes/1e6).toFixed(1)+' MB';
+    if(bytes>=1e3) return (bytes/1e3).toFixed(1)+' KB';
+    return bytes.toFixed(0)+' B';
+  }
+  function calc(){
+    const L=+kvL.value, H=+kvH.value, h=+kvh.value;
+    if(+kvG.value>h) kvG.value=h;
+    const G=+kvG.value, S=+kvS.value, B=+kvB.value, prec=+kvPrec.value;
+    kvLLab.textContent=L; kvHLab.textContent=H; kvhLab.textContent=h; kvGLab.textContent=G; kvSLab.textContent=S; kvBLab.textContent=B;
+    kvG.max=h;
+    const dHead=H/h;
+    const bytesCur = 2 * L * G * dHead * S * B * prec;
+    const bytesMha = 2 * L * h * dHead * S * B * prec;
+    $('#kvOutCur').textContent = fmtBytes(bytesCur);
+    $('#kvOutMha').textContent = fmtBytes(bytesMha);
+    $('#kvOutRatio').textContent = (h/G).toFixed(1)+'×';
+    $('#kvNote').innerHTML = `공식: KV 캐시(bytes) = 2 × L × G × d_head × S × B × 정밀도bytes, d_head = H/h = <b>${dHead.toFixed(0)}</b>. `+
+      `G=${G} (h=${h}이면 MHA, 1이면 MQA, 그 사이면 GQA)일 때 MHA 대비 <b>${(100*(1-G/h)).toFixed(0)}%</b> 메모리를 절감합니다.`;
+  }
+  [kvL,kvH,kvh,kvG,kvS,kvB,kvPrec].forEach(el=>el.addEventListener('input',calc));
+  $$('#kvPresets button').forEach(b=>b.onclick=()=>{
+    $$('#kvPresets button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    kvG.value=Math.min(+b.dataset.g, +kvh.value); calc();
+  });
+  calc();
+})();
+</script>
+<a href="../" class="eep-home" aria-label="설명자 목록으로 돌아가기" title="목록으로">📚 목록</a>
+<style>.eep-home{position:fixed;left:16px;bottom:16px;z-index:95;display:inline-flex;align-items:center;gap:6px;background:var(--brand,#3cffd0);color:#000;border:none;padding:10px 16px;border-radius:40px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none}.eep-home:hover{background:rgba(255,255,255,.2);color:#000;box-shadow:0 0 0 1px #c2c2c2;text-decoration:none}@media(max-width:600px){.eep-home{left:12px;bottom:12px;padding:9px 13px}}</style>
+</body>
+</html>
